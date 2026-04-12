@@ -1,0 +1,129 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-money"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li><a href="{{@BASE . '/currency'}}"><i class="fa fa-money"></i> Currencies</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_general"><a href="#tab_1" data-toggle="tab"><i class="fa fa-gear"></i> General</a></li>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createcurrency'}}" id="create-new-currency-2"><i class="fa fa-plus-circle"></i>Add Currency</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editcurrency'}}" method="post" enctype="multipart/form-data" name="currency-form">
+														<div class="box-body">
+															<div class="form-group">
+																<label for="" class="col-xs-2 control-label">ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.id}}" id="" name="" placeholder="ID" disabled>
+																</div>
+															</div><!-- /.form-group -->		
+															<div class="form-group">
+																<label for="currencycode" class="col-xs-2 control-label">Code</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.code}}" id="currencycode" name = "currencycode" placeholder="Code" required>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="currencyname" class="col-xs-2 control-label">Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.name}}" id="currencyname" name = "currencyname" placeholder="Name" required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="currencydescription" class="col-xs-2 control-label">Description</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.description}}" id="currencydescription" name = "currencydescription" placeholder="Description">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="currencyerpid" class="col-xs-2 control-label">ERP ID</label>
+																<div class="col-xs-10">
+																	<check if="{{@currency.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@currency.erpid}}" id="currencyerpid" name = "currencyerpid" placeholder="ERP ID" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@currency.erpid}}" id="currencyerpid" name = "currencyerpid" placeholder="ERP ID"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="currencyerpcode" class="col-xs-2 control-label">ERP Code</label>
+																<div class="col-xs-10">
+																	<check if="{{@currency.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@currency.erpcode}}" id="currencyerpcode" name = "currencyerpcode" placeholder="ERP Code" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@currency.erpcode}}" id="currencyerpcode" name = "currencyerpcode" placeholder="ERP Code"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="currencyrate" class="col-xs-2 control-label">Rate</label>
+																<div class="col-xs-10">
+																	<input type="number" class="form-control" value="{{@currency.rate}}" id="currencyrate" name="currencyrate" placeholder="Rate" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="currencyexportLevy" class="col-xs-2 control-label">Export Levy</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.exportLevy}}" id="currencyexportLevy" name="currencyexportLevy" placeholder="Export Levy" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="currencyimportDutyLevy" class="col-xs-2 control-label">ImportDuty Levy</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.importDutyLevy}}" id="currencyimportDutyLevy" name="currencyimportDutyLevy" placeholder="ImportDuty Levy" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="currencyinComeTax" class="col-xs-2 control-label">Income Tax</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.inComeTax}}" id="currencyinComeTax" name="currencyinComeTax" placeholder="Income Tax" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="currencyinserteddt" class="col-xs-2 control-label">Create Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.inserteddt}}" id="currencyinserteddt" name="currencyinserteddt" placeholder="Create Date" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="currencymodifieddt" class="col-xs-2 control-label">Modified Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@currency.modifieddt}}" id="currencymodifieddt" name="currencymodifieddt" placeholder="Modified Date" disabled>
+																</div>
+															</div><!-- /.form-group -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="currenttab" id="currenttab" value="tab_general" />
+															<input type="hidden" name="currenttabpane" id="currenttabpane"  value="tab_1" />
+															<input type="hidden" name="currencyid" id="currencyid" value="{{@currency.id}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->						
+				</section>

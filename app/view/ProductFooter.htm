@@ -1,0 +1,45 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- bootstrap datepicker -->
+		<script src="{{@path . 'plugins/datepicker/bootstrap-datepicker.js'}}"></script>
+		<!-- Select2 -->
+        <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>		
+		<!-- product javascript -->
+		<script src="{{@path . 'js/product.js'}}"></script>
+		<script>
+		
+			/**
+			 * @desc initialise a date picker called productiondate
+			 */	
+		    $('#productiondate').datepicker({
+		      autoclose: true
+		    });	
+		    
+		    $('#productiondate').datepicker('update', new Date());	
+		
+			$(window).load(function(){
+				$('#li-products-1').addClass('active');//mark the product link as active
+				listproducts();//load the product list table on load
+				
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}
+			});		
+			
+			//onclick event handler for the anchor called refresh-product-list-1
+			$('#refresh-product-list-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-product-list').append('<div class="overlay" id="otbl-product-list"><i class="fa fa-refresh fa-spin"></i></div>');
+				listproducts();
+			});
+			
+			//onclick event handler for the anchor called refresh-product-list-2
+			$('#refresh-product-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-product-list').append('<div class="overlay" id="otbl-product-list"><i class="fa fa-refresh fa-spin"></i></div>');
+				listproducts();
+			});	
+								
+		</script>

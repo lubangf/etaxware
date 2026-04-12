@@ -1,0 +1,136 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-cogs"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_general"><a href="#tab_1" data-toggle="tab"><i class="fa fa-gear"></i> General</a></li>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '../../etaxware/setting/'}}" id=""><i class="fa fa-refresh"></i>Refresh Settings</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editsettings'}}" method="post" enctype="multipart/form-data" name="general-settings-form">
+														<div class="box-body">
+															<fieldset>
+																<legend>General:</legend>
+																	<div class="form-group">
+																		<label for="" class="col-xs-2 control-label">Application Short Name</label>
+																		<div class="col-xs-10">
+																			<input type="text" class="form-control" value="{{ @settings.APPSHORTNAME }}" id="APPSHORTNAME" name="APPSHORTNAME" placeholder="Application Short Name" required disabled>
+																		</div>
+																	</div><!-- /.form-group -->		
+																	<div class="form-group">
+																		<label for="" class="col-xs-2 control-label">Application Long Name</label>
+																		<div class="col-xs-10">
+																			<input type="text" class="form-control" value="{{ @settings.APPLONGNAME }}" id="APPLONGNAME" name="APPLONGNAME" placeholder="Application Long Name" required disabled>
+																		</div>
+																	</div><!-- /.form-group -->	
+																	<div class="form-group">
+																		<label for="" class="col-xs-2 control-label">Application Version</label>
+																		<div class="col-xs-10">
+																			<input type="text" class="form-control" value="{{ @settings.APPVERSION }}" id="APPVERSION" name="APPVERSION" placeholder="Application Version" required disabled>
+																		</div>
+																	</div><!-- /.form-group -->	
+																	<div class="form-group">
+																		<label for="" class="col-xs-2 control-label">Application Domain</label>
+																		<div class="col-xs-10">
+																			<input type="text" class="form-control" value="{{ @settings.APPDOMAIN }}" id="APPDOMAIN" name="APPDOMAIN" placeholder="Application Domain" required disabled>
+																		</div>
+																	</div><!-- /.form-group -->
+																	<div class="form-group">
+																		<label for="" class="col-xs-2 control-label">Home Directory</label>
+																		<div class="col-xs-10">
+																			<input type="text" class="form-control" value="{{ @settings.HOME }}" id="HOME" name="HOME" placeholder="Home Directory" required disabled>
+																			<p class="help-block">This is the directory where file-related operations happen from.</p>
+																		</div>
+																	</div><!-- /.form-group -->	
+																	<div class="form-group">
+																		<label for="" class="col-xs-2 control-label">Superadmin Role</label>
+																		<div class="col-xs-6">
+																			<select class="form-control" name="SUPERADMINROLEID" id="SUPERADMINROLEID" required>
+																				<option value="" selected disabled hidden>Select Role</option>
+																				<repeat group="{{@roles}}" value="{{@role}}">
+																					<check if="{{@role.id == @settings.SUPERADMINROLEID}}">
+																						<true><option value="{{@role.id}}" selected>{{@role.id}} - {{@role.name}}</option></true>
+																						<false><option value="{{@role.id}}">{{@role.id}} - {{@role.name}}</option></false>
+																					</check>
+																				</repeat>
+																			</select>
+																			<p class="help-block">This is the superadmin role used to administer the platfom.</p>
+																		</div>
+																		<label for="" class="col-xs-2 control-label"><strong><a href="{{@BASE . '/createrole'}}" title="Add Role" id="add-role-1"><i class="fa fa-plus-circle"></i><span> Add a role</span></a></strong></label>
+																	</div><!-- /.form-group -->																					
+															</fieldset>																	
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="currenttab" id="currenttab" value="tab_general" />
+															<input type="hidden" name="currenttabpane" id="currenttabpane"  value="tab_1" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_2">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editsettings'}}" method="post" enctype="multipart/form-data" name="reports-settings-form">
+														<div class="box-body">
+															<!-- Insert form elements here -->									
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="reportcurrenttab" id="reportcurrenttab" value="tab_reports" />
+															<input type="hidden" name="reportcurrenttabpane" id="reportcurrenttabpane"  value="tab_1" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_3">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editsettings'}}" method="post" enctype="multipart/form-data" name="email-settings-form">
+														<div class="box-body">
+															<!-- Insert form elements here -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="emailcurrenttab" id="emailcurrenttab" value="tab_email" />
+															<input type="hidden" name="emailcurrenttabpane" id="emailcurrenttabpane"  value="tab_1" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->						
+				</section>

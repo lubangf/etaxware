@@ -1,0 +1,416 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-product-hunt"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-info" id="ctnr-tbl-product-list">
+								<div class="box-header with-border">
+									<h3 class="box-title">Products</h3>
+									<div class="box-tools pull-right">
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+										<div class="btn-group">
+											<button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown"><i class="fa fa-wrench"></i></button>
+											<ul class="dropdown-menu" role="menu">
+												<li><a href="#" id="refresh-product-list-1"><i class="fa fa-refresh"></i>Refresh List</a></li>
+												<li><a href="{{@BASE . '/exportproducts'}}"><i class="fa fa-download"></i>Export List</a></li>
+												<li class="divider"></li>
+												<li><a href="{{@BASE . '/createproduct'}}"><i class="fa fa-plus-circle"></i>Add Product</a></li>
+												<li class="divider"></li>
+												<li><a href="{{@BASE . '/syncproducts'}}"><i class="fa fa-refresh"></i>Sync EFRIS Products</a></li>
+												<li><a href="{{@BASE . '/uploadOpeningStock'}}"><i class="fa fa-upload"></i>Upload Opening Stock</a></li>
+												<li><a href="{{@BASE . '/downloadErpProducts'}}"><i class="fa fa-download"></i>Download from ERP</a></li>
+											</ul>
+										</div>
+									</div>
+								</div><!-- ./box-header -->
+								<div class="box-body">
+									<table id="tbl-product-list" class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>ID</th>
+												<th>Code</th>
+												<th>Name</th>
+												<th>Description</th>
+												<th>Status</th>
+												<th>Modified By</th>
+												<th>Modified Date</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+									</table>
+								</div><!-- ./box-body -->
+								<div class="overlay" id="otbl-product-list">
+									<i class="fa fa-refresh fa-spin"></i>
+								</div>
+								<div class="box-footer clearfix">
+									<a href="#" id="refresh-product-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh List</span></a>
+									<a href="{{@BASE . '/createproduct'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> Add Product</span></a>
+								</div><!-- ./box-footer -->
+							</div><!-- ./box -->
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->	
+					
+					<div class="modal fade" id="modal-product-upload"><!-- modal-product-upload -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Upload/Update Product</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/uploadproduct'}}" method="post" enctype="multipart/form-data" id="upload-product-form" name="upload-product-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="uploadproductcode" class="col-xs-4 control-label">Product Code</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="uploadproductcode" name="uploadproductcode" placeholder="Code" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="uploadproductid" id="uploadproductid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-product-upload -->	
+					
+					<div class="modal fade" id="modal-product-stockquery"><!-- modal-product-stockquery -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Query Stock</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/stockqueryproduct'}}" method="post" enctype="multipart/form-data" id="stockquery-product-form" name="stockquery-product-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="stockqueryproductcode" class="col-xs-4 control-label">Product Code</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="stockqueryproductcode" name="stockqueryproductcode" placeholder="Code" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="stockqueryproductid" id="stockqueryproductid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-product-stockquery -->
+					
+					<div class="modal fade" id="modal-fetch-efris-id"><!-- modal-fetch-efris-id -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Product</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/fetchproduct'}}" method="post" enctype="multipart/form-data" id="fetch-product-form" name="fetch-product-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="fetchproductcode" class="col-xs-4 control-label">Product Code</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="fetchproductcode" name="fetchproductcode" placeholder="Code" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="fetchproductid" id="fetchproductid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-fetch-efris-id -->
+					
+					<div class="modal fade" id="modal-fetch-erp-id"><!-- modal-fetch-erp-id -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Product from ERP</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/fetchErpproduct'}}" method="post" enctype="multipart/form-data" id="fetch-erp-product-form" name="fetch-erp-product-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="fetchproductcode" class="col-xs-4 control-label">Product Code</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="fetcherpproductcode" name="fetcherpproductcode" placeholder="Code" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="fetcherpproductid" id="fetcherpproductid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-fetch-erp-id -->
+					
+					<div class="modal fade" id="modal-product-stockin"><!-- modal-product-stockin -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Stock In</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/stockin'}}" method="post" enctype="multipart/form-data" id="upload-stock-form" name="upload-stock-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="stockinoperationtype" class="col-xs-4 control-label">Operation Type</label>
+                                                <div class="col-xs-8">
+													<select class="form-control" name="stockinoperationtype" id="stockinoperationtype" required disabled>
+														<option value="" selected disabled hidden>Select Operation Type</option>
+														<repeat group="{{@stockoperationtypes}}" value="{{@stockoperationtype}}">																		
+															<check if="{{@stockoperationtype.code == @appsettings.STOCKINOPERATIONTYPE}}">
+																<true><check if="{{@stockoperationtype.disabled == 1}}"><true><option value="{{@stockoperationtype.code}}" selected disabled>{{@stockoperationtype.code}} - {{@stockoperationtype.name}}</option></true><false><option value="{{@stockoperationtype.code}}" selected>{{@stockoperationtype.code}} - {{@stockoperationtype.name}}</option></false></check></true>
+																<false><check if="{{@stockoperationtype.disabled == 1}}"><true><option value="{{@stockoperationtype.code}}" disabled>{{@stockoperationtype.code}} - {{@stockoperationtype.name}}</option></true><false><option value="{{@stockoperationtype.code}}">{{@stockoperationtype.code}} - {{@stockoperationtype.name}}</option></false></check></false>
+															</check>
+														</repeat>
+													</select>
+												</div>
+                                            </div><!-- ./form-group -->
+                                            <div class="form-group">
+                                                <label for="stockinsuppliertin" class="col-xs-4 control-label">Supplier TIN</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" pattern=".{10,10}"  title="10 characters required" id="stockinsuppliertin" name="stockinsuppliertin" placeholder="TIN">
+                                                    <p id="tin-val-text"></p>
+                                                </div>
+                                            </div><!-- ./form-group -->
+                                            <div class="form-group">
+                                                <label for="stockinsuppliername" class="col-xs-4 control-label">Supplier Name</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="stockinsuppliername" name="stockinsuppliername" placeholder="Name">
+                                                </div>
+                                            </div><!-- ./form-group -->
+											<div class="form-group">
+                                                <label for="stockinproductcode" class="col-xs-4 control-label">Product Code</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="stockinproductcode" name="stockinproductcode" placeholder="Code" required disabled>
+                                                </div>
+                                            </div><!-- ./form-group -->                                            
+                                            <div class="form-group">
+                                                <label for="stockintype" class="col-xs-4 control-label">Stock-in Type</label>
+                                                <div class="col-xs-8">
+												<select class="form-control" name="stockintype" id="stockintype" required>
+													<option value="" selected disabled hidden>Select Stock-in Type</option>
+													<repeat group="{{@stockintypes}}" value="{{@stockintype}}">																		
+														<check if="{{@stockintype.disabled == 1}}">
+															<true><option value="{{@stockintype.code}}" disabled>{{@stockintype.code}} - {{@stockintype.name}}</option></true>
+															<false><option value="{{@stockintype.code}}">{{@stockintype.code}} - {{@stockintype.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>
+                                            </div><!-- ./form-group -->                                             
+                                            <div class="form-group">
+												<label for="productiondate" class="col-xs-4 control-label">Production Date</label>
+												<div class="col-xs-6 input-group date" >
+													<div class="input-group-addon">
+														<i class="fa fa-calendar"></i>
+													</div><!-- /.input group addon -->
+													<input type="text" class="form-control pull-right" id="productiondate" name="productiondate">
+												</div><!-- /.input group -->
+											</div><!-- ./form-group -->
+                                            <div class="form-group">
+                                                <label for="productionbatchno" class="col-xs-4 control-label">Batch Number</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="productionbatchno" name="productionbatchno" placeholder="Production Batch Number">
+                                                </div>
+                                            </div><!-- ./form-group -->
+                                            <div class="form-group">
+                                                <label for="stockinunitprice" class="col-xs-4 control-label">Unit Price</label>
+                                                <div class="col-xs-8">
+                                                    <input type="number" step="0.01" min="0" class="form-control" id="stockinunitprice" name="stockinunitprice" placeholder="Unit Price" required>
+                                                    <p class="help-block text-aqua"><i class="fa fa-bell-o"></i> This is the commodity purchase price.</p>
+                                                </div>
+                                            </div><!-- ./form-group -->
+                                            <div class="form-group">
+                                                <label for="stockinproductqty" class="col-xs-4 control-label">Stock Qty</label>
+                                                <div class="col-xs-8">
+                                                    <input type="number" min="0" class="form-control" id="stockinproductqty" name="stockinproductqty" placeholder="Stock Qty" required>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, add stock and confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group -->																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="stockinproductid" id="stockinproductid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-product-stockin -->	
+					
+					<div class="modal fade" id="modal-product-stockout"><!-- modal-product-stockout -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Adjust Stock</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/stockout'}}" method="post" enctype="multipart/form-data" id="reduce-stock-form" name="reduce-stock-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="stockoutoperationtype" class="col-xs-4 control-label">Operation Type</label>
+                                                <div class="col-xs-8">
+													<select class="form-control" name="stockoutoperationtype" id="stockoutoperationtype" required disabled>
+														<option value="" selected disabled hidden>Select Operation Type</option>
+														<repeat group="{{@stockoperationtypes}}" value="{{@stockoperationtype}}">																		
+															<check if="{{@stockoperationtype.code == @appsettings.STOCKOUTOPERATIONTYPE}}">
+																<true><check if="{{@stockoperationtype.disabled == 1}}"><true><option value="{{@stockoperationtype.code}}" selected disabled>{{@stockoperationtype.code}} - {{@stockoperationtype.name}}</option></true><false><option value="{{@stockoperationtype.code}}" selected>{{@stockoperationtype.code}} - {{@stockoperationtype.name}}</option></false></check></true>
+																<false><check if="{{@stockoperationtype.disabled == 1}}"><true><option value="{{@stockoperationtype.code}}" disabled>{{@stockoperationtype.code}} - {{@stockoperationtype.name}}</option></true><false><option value="{{@stockoperationtype.code}}">{{@stockoperationtype.code}} - {{@stockoperationtype.name}}</option></false></check></false>
+															</check>
+														</repeat>
+													</select>
+												</div>
+                                            </div><!-- ./form-group -->
+                                            										
+											<div class="form-group">
+                                                <label for="stockoutproductcode" class="col-xs-4 control-label">Product Code</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="stockoutproductcode" name="stockoutproductcode" placeholder="Code" required disabled>
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+                                                <label for="stockoutadjustmenttype" class="col-xs-4 control-label">Adjustment Type</label>
+                                                <div class="col-xs-8">
+												<select class="form-control" name="stockoutadjustmenttype" id="stockoutadjustmenttype" required>
+													<option value="" selected disabled hidden>Select Adjustment Type</option>
+													<repeat group="{{@stockadjustmenttypes}}" value="{{@stockadjustmenttype}}">																		
+														<check if="{{@stockadjustmenttype.disabled == 1}}">
+															<true><option value="{{@stockadjustmenttype.code}}" disabled>{{@stockadjustmenttype.code}} - {{@stockadjustmenttype.name}}</option></true>
+															<false><option value="{{@stockadjustmenttype.code}}">{{@stockadjustmenttype.code}} - {{@stockadjustmenttype.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+                                                <label for="stockoutremarks" class="col-xs-4 control-label">Remarks</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="stockoutremarks" name="stockoutremarks" placeholder="Remarks">
+                                                    <p class="help-block text-aqua"><i class="fa fa-bell-o"></i> If operationType = 101 and adjustType = 104, Remarks cannot be empty!</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                                                                                                                   
+                                            <div class="form-group">
+                                                <label for="stockoutproductqty" class="col-xs-4 control-label">Stock Qty</label>
+                                                <div class="col-xs-8">
+                                                    <input type="number" step="0.01" min="0" class="form-control" id="stockoutproductqty" name="stockoutproductqty" placeholder="Stock Qty" required>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, reduce stock and confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group -->																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="stockoutproductid" id="stockoutproductid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-product-stockout -->	
+					
+					<div class="modal fade" id="modal-product-transfer"><!-- modal-product-transfer -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Transfer Stock</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/stocktransfer'}}" method="post" enctype="multipart/form-data" id="transfer-stock-form" name="transfer-stock-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="transferproductcode" class="col-xs-4 control-label">Product Code</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="transferproductcode" name="transferproductcode" placeholder="Code" required disabled>
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+                                                <label for="transfersourcebranch" class="col-xs-4 control-label">Source Branch</label>
+                                                <div class="col-xs-8">
+												<select class="form-control" name="transfersourcebranch" id="transfersourcebranch" required>
+													<option value="" selected disabled hidden>Select Branch</option>
+													<repeat group="{{@urabranches}}" value="{{@branch}}">																		
+														<check if="{{@branch.disabled == 1}}">
+															<true><option value="{{@branch.branchid}}" disabled>{{@branch.branchid}} - {{@branch.name}}</option></true>
+															<false><option value="{{@branch.branchid}}">{{@branch.branchid}} - {{@branch.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>
+                                            </div><!-- ./form-group -->
+                                            <div class="form-group">
+                                                <label for="transferdestinationbranch" class="col-xs-4 control-label">Destination Branch</label>
+                                                <div class="col-xs-8">
+												<select class="form-control" name="transferdestinationbranch" id="transferdestinationbranch" required>
+													<option value="" selected disabled hidden>Select Branch</option>
+													<repeat group="{{@urabranches}}" value="{{@branch}}">																		
+														<check if="{{@branch.disabled == 1}}">
+															<true><option value="{{@branch.branchid}}" disabled>{{@branch.branchid}} - {{@branch.name}}</option></true>
+															<false><option value="{{@branch.branchid}}">{{@branch.branchid}} - {{@branch.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+                                                <label for="transferremarks" class="col-xs-4 control-label">Remarks</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="transferremarks" name="transferremarks" placeholder="Remarks">
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                                                                                                                   
+                                            <div class="form-group">
+                                                <label for="transferproductqty" class="col-xs-4 control-label">Stock Qty</label>
+                                                <div class="col-xs-8">
+                                                    <input type="number" step="0.01" min="0" class="form-control" id="transferproductqty" name="transferproductqty" placeholder="Stock Qty" required>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Transfer stock and confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group -->																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="transferproductid" id="transferproductid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-product-transfer -->	
+				</section>

@@ -1,0 +1,151 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-purchaseorder-hunt"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-info" id="ctnr-tbl-purchaseorder-list">
+								<div class="box-header with-border">
+									<h3 class="box-title">Purchase Orders</h3>
+									<div class="box-tools pull-right">
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+										<div class="btn-group">
+											<button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown"><i class="fa fa-wrench"></i></button>
+											<ul class="dropdown-menu" role="menu">
+												<li><a href="#" id="refresh-purchaseorder-list-1"><i class="fa fa-refresh"></i>Refresh List</a></li>
+												<li class="divider"></li>
+												<li><a href="#" data-toggle="modal" data-target="#modal-download-erp-purchaseorders"><i class="fa fa-download"></i>Download from ERP</a></li>
+											</ul>
+										</div>
+									</div>
+								</div><!-- ./box-header -->
+								<div class="box-body">
+									<table id="tbl-purchaseorder-list" class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>ID</th>
+												<th>Code</th>
+												<th>Name</th>
+												<th>Description</th>
+												<th>Status</th>
+												<th>Modified By</th>
+												<th>Modified Date</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+									</table>
+								</div><!-- ./box-body -->
+								<div class="overlay" id="otbl-purchaseorder-list">
+									<i class="fa fa-refresh fa-spin"></i>
+								</div>
+								<div class="box-footer clearfix">
+									<a href="#" id="refresh-purchaseorder-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh List</span></a>
+								</div><!-- ./box-footer -->
+							</div><!-- ./box -->
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->	
+					
+					<div class="modal fade" id="modal-download-erp-purchaseorders"><!-- modal-download-erp-purchaseorders -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Purchase Orders from ERP</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/downloadErpPurchaseorders'}}" method="post" enctype="multipart/form-data" id="download-erp-purchaseorders-form" name="download-erp-purchaseorders-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="checkpurchaseorderid_2" class="col-xs-4 control-label">Start Date</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="downloaderppurchaseordersstartdate" name="downloaderppurchaseordersstartdate">
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+											<label for="checkpurchaseordercommoditycode" class="col-xs-4 control-label">End Date</label>
+											<div class="col-xs-8">
+												<input type="text" class="form-control" id="downloaderppurchaseordersenddate" name="downloaderppurchaseordersenddate">
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="checkpurchaseordercommoditycode" class="col-xs-4 control-label">Purchase Order Number</label>
+											<div class="col-xs-8">
+												<input type="text" class="form-control" id="downloaderppurchaseordernumber" name="downloaderppurchaseordernumber">
+											</div>															
+											</div><!-- /.form-group -->																																																			
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-download-erp-purchaseorders -->
+					
+					<div class="modal fade" id="modal-purchaseorder-efris-upload"><!-- modal-purchaseorder-efris-upload -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Upload Purchase Order</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/uploadpurchaseorder'}}" method="post" enctype="multipart/form-data" id="upload-efris-purchaseorder-form" name="upload-efris-purchaseorder-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="uploadpurchaseordercode" class="col-xs-4 control-label">Purchase Order ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="efrisuploadpurchaseorderid_2" name="efrisuploadpurchaseorderid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="efrisuploadpurchaseorderid" id="efrisuploadpurchaseorderid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-purchaseorder-efris-upload -->	
+					
+					<div class="modal fade" id="modal-purchaseorder-erp-download"><!-- modal-purchaseorder-erp-download -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Purchase Order from ERP</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/fetchErpPurchaseorder'}}" method="post" enctype="multipart/form-data" id="download-erp-purchaseorder-form" name="download-erp-purchaseorder-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="fetchpurchaseordercode" class="col-xs-4 control-label">Purchase Order ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="erpdownloadpurchaseorderid_2" name="erpdownloadpurchaseorderid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="erpdownloadpurchaseorderid" id="erpdownloadpurchaseorderid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-purchaseorder-erp-download -->	
+				</section>

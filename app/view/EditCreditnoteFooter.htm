@@ -1,0 +1,189 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Select2 -->
+        <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>
+		<!-- credit/debit note javascript -->
+		<script src="{{@path . 'js/creditnote.js'}}"></script>
+		<script>
+			var currenttab = $('#currenttab').text();
+			console.log(currenttab);
+			
+			var currenttabpane = $('#currenttabpane').text();
+			console.log(currenttabpane);
+			
+			var oriinvoiceid_2 = $('#oriinvoiceid').text();
+			console.log('oriinvoiceid = ' + oriinvoiceid_2);
+			
+			var oriinvoiceno_2 = $('#oriinvoiceno').text();
+			console.log('oriinvoiceno = ' + oriinvoiceno_2);
+
+			var creditnotecurrency_2 = $('#creditnotecurrency').text();
+			var creditnotereasoncode_2 = $('#creditnotereasoncode').text();
+			var creditnotedatasource_2 = $('#creditnotedatasource').text();
+
+			// 2026-04-11 19:07:14 +03:00 - Normalize hidden span values so blank and literal NULL/null are treated as empty for Select2 prefill.
+			var normalizeCodeValue = function(value){
+				var normalized = $.trim(value || '');
+				return (normalized.toUpperCase() === 'NULL') ? '' : normalized;
+			};
+
+			var prefillSelect2FromSearch = function(selector, value, endpoint){
+				if (value === '') {
+					return;
+				}
+
+				$.ajax({
+					type: 'POST',
+					url: endpoint,
+					dataType: 'json',
+					cache: false,
+					data: {
+						name: value
+					},
+					success: function(data){
+						var selectedValue = value;
+						var selectedLabel = value;
+
+						$.each(data || [], function(_, item){
+							var itemCode = $.trim((item.Code || '').toString());
+							var itemName = $.trim((item.Name || '').toString());
+							if (itemCode === value || itemName === value) {
+								selectedValue = itemCode !== '' ? itemCode : value;
+								selectedLabel = (itemCode !== '' && itemName !== '') ? (itemCode + ' - ' + itemName) : (itemName !== '' ? itemName : value);
+								return false;
+							}
+						});
+
+					$(selector).empty();
+					$(selector).append($("<option/>").val(selectedValue).text(selectedLabel));
+					$(selector).val(selectedValue).trigger('change');
+					},
+					error: function(){
+						$(selector).empty();
+						$(selector).append($("<option/>").val(value).text(value));
+						$(selector).val(value).trigger('change');
+					}
+				});
+			};
+			oriinvoiceid_2 = normalizeCodeValue(oriinvoiceid_2);
+			oriinvoiceno_2 = $.trim(oriinvoiceno_2 || '');
+			creditnotecurrency_2 = normalizeCodeValue(creditnotecurrency_2);
+			creditnotereasoncode_2 = normalizeCodeValue(creditnotereasoncode_2);
+			creditnotedatasource_2 = normalizeCodeValue(creditnotedatasource_2);
+			
+			var gooddetailgroupid_2 = {{@creditnote.gooddetailgroupid}}
+			console.log('The gooddetailgroupid is: ' + gooddetailgroupid_2);			
+			var paymentdetailgroupid_2 = {{@creditnote.paymentdetailgroupid}}
+			console.log('The paymentdetailgroupid_2 is: ' + paymentdetailgroupid_2);
+			var taxdetailgroupid_2 = {{@creditnote.taxdetailgroupid}}
+			console.log('The taxdetailgroupid_2 is: ' + taxdetailgroupid_2);
+								
+			$(window).load(function(){
+				$('#li-sales-1').addClass('active');//mark the creditnotes link as active
+				$('#' + currenttab).addClass('active');//set the tab to active
+				$('#' + currenttabpane).addClass('active');//set the corresponding tab-pane to active	
+				
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}	
+				
+				if (gooddetailgroupid_2 !== undefined) {
+					listgoods(gooddetailgroupid_2.toString());	
+				}	
+				
+				if (taxdetailgroupid_2 !== undefined) {
+					listtaxes(taxdetailgroupid_2.toString());	
+				}	
+				
+				if (paymentdetailgroupid_2 !== undefined) {
+					//listpayments(paymentdetailgroupid_2.toString());	
+				}	
+				
+				// 2026-04-11 19:07:14 +03:00 - Guard Select2 prefill against empty/NULL-string id values and use id fallback for display label.
+				if (oriinvoiceid_2 !== undefined && oriinvoiceid_2.trim() !== '') {//if the original invoice is already set, then set it as the selected choice
+					
+					$('#searchinvoice').empty();
+	        		$('#searchinvoice').append($("<option/>").val(oriinvoiceid_2).text(oriinvoiceno_2 !== '' ? oriinvoiceno_2 : oriinvoiceid_2));
+        			$('#searchinvoice').val(oriinvoiceid_2).trigger('change');
+				}
+
+				prefillSelect2FromSearch('#currency', creditnotecurrency_2, '../etaxware/searchcurrencies');
+				prefillSelect2FromSearch('#reasoncode', creditnotereasoncode_2, '../etaxware/searchcdnotereasoncodes');
+				prefillSelect2FromSearch('#datasource', creditnotedatasource_2, '../etaxware/searchdatasources');							
+			});	
+			
+			//ensure the tab content are refreshed again when user is navigating through the tabs
+			$(document).ready(function(){
+				var anchor;
+				$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+					anchor = $(e.target).attr('href');//Read the a href of the anchor that was clicked
+					anchor = anchor.substr(1, anchor.length);// Trim the leading '#' from the href attribute
+					if(anchor == "tab_1"){// Call the ajax associated with the tab
+						$('#tab_general').addClass('active');
+						$('#tab_1').addClass('active');
+					} else if(anchor == "tab_2"){
+						$('#tab_seller').addClass('active');
+						$('#tab_2').addClass('active');					
+					} else if(anchor == "tab_3"){
+						$('#tab_buyer').addClass('active');
+						$('#tab_3').addClass('active');					
+					} else if(anchor == "tab_4"){
+						$('#tab_good').addClass('active');
+						$('#tab_4').addClass('active');	
+						
+						if (gooddetailgroupid_2 !== undefined) {
+							$('#ctnr-tbl-creditnote-goods').append('<div class="overlay" id="otbl-creditnote-goods"><i class="fa fa-refresh fa-spin"></i></div>');
+							listgoods(gooddetailgroupid_2.toString());	
+						}				
+					} else if(anchor == "tab_5"){
+						$('#tab_tax').addClass('active');
+						$('#tab_5').addClass('active');	
+
+						if (taxdetailgroupid_2 !== undefined) {
+							$('#ctnr-tbl-creditnote-taxes').append('<div class="overlay" id="otbl-creditnote-taxes"><i class="fa fa-refresh fa-spin"></i></div>');
+							listtaxes(taxdetailgroupid_2.toString());	
+						}				
+					} else if(anchor == "tab_6"){
+						$('#tab_payment').addClass('active');
+						$('#tab_6').addClass('active');
+						
+						if (paymentdetailgroupid_2 !== undefined) {
+							$('#ctnr-tbl-creditnote-payments').append('<div class="overlay" id="otbl-creditnote-payments"><i class="fa fa-refresh fa-spin"></i></div>');
+							//listpayments(paymentdetailgroupid_2.toString());	
+						}					
+					}
+				});
+			});
+			
+			//onclick event handler for the anchor called add-good-refresh-1
+			$('#add-good-refresh-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+
+				if (gooddetailgroupid_2 !== undefined) {
+					$('#ctnr-tbl-creditnote-goods').append('<div class="overlay" id="otbl-creditnote-goods"><i class="fa fa-refresh fa-spin"></i></div>');
+					listgoods(gooddetailgroupid_2.toString());	
+				}
+			});
+			
+			//onclick event handler for the anchor called add-tax-refresh-1
+			$('#add-tax-refresh-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				
+				if (taxdetailgroupid_2 !== undefined) {
+					$('#ctnr-tbl-creditnote-goods').append('<div class="overlay" id="otbl-creditnote-goods"><i class="fa fa-refresh fa-spin"></i></div>');
+					listtaxes(taxdetailgroupid_2.toString());	
+				}
+			});
+			
+			//onclick event handler for the anchor called add-payment-refresh-1
+			$('#add-payment-refresh-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				
+				if (paymentdetailgroupid_2 !== undefined) {
+					$('#ctnr-tbl-creditnote-goods').append('<div class="overlay" id="otbl-creditnote-goods"><i class="fa fa-refresh fa-spin"></i></div>');
+					//listpayments(paymentdetailgroupid_2.toString());	
+				}
+			});
+		</script>

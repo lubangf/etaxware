@@ -1,0 +1,135 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-tags"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li><a href="{{@BASE . '/administration'}}"><i class="fa fa-briefcase"></i> Administration</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_general"><a href="#tab_1" data-toggle="tab"><i class="fa fa-gear"></i> General</a></li>
+									<check if="{{@role.id !== null}}"><true><li id="tab_permissions"><a href="#tab_2" data-toggle="tab"><i class="fa fa-unlock"></i> Permissions</a></li></true></check>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createrole'}}" id="create-new-role-2"><i class="fa fa-plus-circle"></i>New Role</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editrole'}}" method="post" enctype="multipart/form-data" name="role-form">
+														<div class="box-body">
+															<div class="form-group">
+																<label for="" class="col-xs-2 control-label">ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@role.id}}" id="" name="" placeholder="ID" disabled>
+																</div>
+															</div><!-- /.form-group -->		
+															<div class="form-group">
+																<label for="rolecode" class="col-xs-2 control-label">Code</label>
+																<div class="col-xs-10">
+																	<check if="{{@role.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@role.code}}" id="rolecode" name = "rolecode" placeholder="Code" required></true>
+																		<false><input type="text" class="form-control" value="{{@role.code}}" id="rolecode" name = "rolecode" placeholder="Code" required disabled></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="rolename" class="col-xs-2 control-label">Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@role.name}}" id="rolename" name = "rolename" placeholder="Name" required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="roledescription" class="col-xs-2 control-label">Description</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@role.description}}" id="roledescription" name = "roledescription" placeholder="Description">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="rolestatus" class="col-xs-2 control-label">Status</label>
+																<div class="col-xs-10">
+																	<check if="{{@role.id !== null}}">
+																		<true><select class="form-control" name="rolestatus" id="rolestatus" required></true>
+																		<false><select class="form-control" name="rolestatus" id="rolestatus" required disabled></false>
+																	</check>
+																		<option value="" selected disabled hidden>Select Status</option>
+																		<repeat group="{{@rolestatuses}}" value="{{@rolestatus}}">
+																			<check if="{{@rolestatus.id == @role.status}}">
+																				<true><option value="{{@rolestatus.id}}" selected>{{@rolestatus.id}} - {{@rolestatus.name}}</option></true>
+																				<false><option value="{{@rolestatus.id}}">{{@rolestatus.id}} - {{@rolestatus.name}}</option></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="roleinserteddt" class="col-xs-2 control-label">Create Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@role.inserteddt}}" id="roleinserteddt" name="roleinserteddt" placeholder="Create Date" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="rolemodifieddt" class="col-xs-2 control-label">Modified Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@role.modifieddt}}" id="rolemodifieddt" name="rolemodifieddt" placeholder="Modified Date" disabled>
+																</div>
+															</div><!-- /.form-group -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="currenttab" id="currenttab" value="tab_general" />
+															<input type="hidden" name="currenttabpane" id="currenttabpane"  value="tab_1" />
+															<input type="hidden" name="roleid" id="roleid" value="{{@role.id}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_2">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editrole'}}" method="post" enctype="multipart/form-data" name="role-form">
+														<div class="box-body">
+															<div class="form-group">
+																<div class="col-xs-12">
+																	<select class="form-control" multiple="multiple" size="10" name="rolepermissions[]" id="rolepermissions">
+																		<repeat group="{{@plts}}" value="{{@plt}}">
+																			{{@plt}}
+																		</repeat>
+																	</select>
+																</div>
+															</div><!-- /.form-group -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="permissioncurrenttab" id="permissioncurrenttab" value="tab_permission" />
+															<input type="hidden" name="permissioncurrenttabpane" id="permissioncurrenttabpane"  value="tab_2" />
+															<input type="hidden" name="permissionroleid" id="permissionroleid" value="{{@role.id}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->						
+				</section>

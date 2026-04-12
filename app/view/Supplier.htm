@@ -1,0 +1,157 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-users"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-info" id="ctnr-tbl-supplier-list">
+								<div class="box-header with-border">
+									<h3 class="box-title">Suppliers</h3>
+									<div class="box-tools pull-right">
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+										<div class="btn-group">
+											<button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown"><i class="fa fa-wrench"></i></button>
+											<ul class="dropdown-menu" role="menu">
+												<li><a href="#" id="refresh-supplier-list-1"><i class="fa fa-refresh"></i>Refresh List</a></li>
+												<li class="divider"></li>
+												<li><a href="{{@BASE . '/createsupplier'}}"><i class="fa fa-plus-circle"></i>Add Supplier</a></li>
+												<li><a href="#" data-toggle="modal" data-target="#modal-download-erp-suppliers"><i class="fa fa-plus-circle"></i>Download from ERP</a></li>
+											</ul>
+										</div>
+									</div>
+								</div><!-- ./box-header -->
+								<div class="box-body">
+									<table id="tbl-supplier-list" class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>ID</th>
+												<th>Name</th>
+												<th>Status</th>
+												<th>Modified By</th>
+												<th>Modified Date</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+									</table>
+								</div><!-- ./box-body -->
+								<div class="overlay" id="otbl-supplier-list">
+									<i class="fa fa-refresh fa-spin"></i>
+								</div>
+								<div class="box-footer clearfix">
+									<a href="#" id="refresh-supplier-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh List</span></a>
+									<a href="{{@BASE . '/createsupplier'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> Add Supplier</span></a>
+								</div><!-- ./box-footer -->
+							</div><!-- ./box -->
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->	
+					
+					<div class="modal fade" id="modal-supplier-check"><!-- modal-supplier-check -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Check Supplier</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/checksupplier'}}" method="post" enctype="multipart/form-data" id="check-supplier-form" name="check-supplier-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="checksupplierid_2" class="col-xs-4 control-label">Supplier ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="checksupplierid_2" name="checksupplierid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+											<label for="checksuppliercommoditycode" class="col-xs-4 control-label">Commodity</label>
+											<div class="col-xs-8">
+												<select class="form-control select2" style="width: 100%;" id="checksuppliercommoditycode" name="checksuppliercommoditycode"></select>
+											</div>															
+											</div><!-- /.form-group -->																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="checksupplierid" id="checksupplierid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-supplier-check -->	
+					
+					<div class="modal fade" id="modal-download-erp-suppliers"><!-- modal-download-erp-suppliers -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Suppliers from ERP</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/downloadErpSuppliers'}}" method="post" enctype="multipart/form-data" id="download-erp-suppliers-form" name="download-erp-suppliers-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="checksupplierid_2" class="col-xs-4 control-label">Start Date</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="downloaderpsuppliersstartdate" name="downloaderpsuppliersstartdate">
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+											<label for="checksuppliercommoditycode" class="col-xs-4 control-label">End Date</label>
+											<div class="col-xs-8">
+												<input type="text" class="form-control" id="downloaderpsuppliersenddate" name="downloaderpsuppliersenddate">
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="checksuppliercommoditycode" class="col-xs-4 control-label">Supplier Number</label>
+											<div class="col-xs-8">
+												<input type="text" class="form-control" id="downloaderpsuppliernumber" name="downloaderpsuppliernumber">
+											</div>															
+											</div><!-- /.form-group -->																																																			
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-download-erp-suppliers -->
+					
+					
+					<div class="modal fade" id="modal-supplier-erp-download"><!-- modal-supplier-erp-download -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Supplier from ERP</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/fetchErpSupplier'}}" method="post" enctype="multipart/form-data" id="download-erp-supplier-form" name="download-erp-supplier-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="checksupplierid_2" class="col-xs-4 control-label">Supplier ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="erpdownloadsupplierid_2" name="erpdownloadsupplierid_2" placeholder="ID" required disabled>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																		
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+											<input type="hidden" name="erpdownloadsupplierid" id="erpdownloadsupplierid" />
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-supplier-erp-download -->
+				</section>

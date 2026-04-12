@@ -1,0 +1,21 @@
+		<!-- JQuery QR -->
+		<script src="{{@path . 'plugins/jquery-qrcode/jquery-qrcode-0.18.0.min.js'}}"></script>
+		<!-- View creditnote JS -->
+		<script src="{{@path . 'js/viewcreditnote.js'}}"></script>
+		<script>
+			
+			var creditnote_2 = {{@creditnote.id}}
+			//console.log(creditnote_2);
+								
+			$(window).load(function(){
+				$('#li-sales-1').addClass('active');//mark the creditnotes link as active
+				
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}	
+				
+				printqr(creditnote_2.toString());
+											
+			});									
+		</script>

@@ -1,0 +1,46 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Select2 -->
+		<script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>
+		<!-- bootstrap datepicker -->
+		<script src="{{@path . 'plugins/datepicker/bootstrap-datepicker.js'}}"></script>		
+		<!-- supplier javascript -->
+		<script src="{{@path . 'js/supplier.js'}}"></script>
+		<script>
+		    $('#downloaderpsuppliersstartdate').datepicker({
+		        autoclose: true
+		    });
+
+		    $('#downloaderpsuppliersstartdate').datepicker('update', new Date());
+
+		    $('#downloaderpsuppliersenddate').datepicker({
+		        autoclose: true
+		    });
+
+		    $('#downloaderpsuppliersenddate').datepicker('update', new Date());
+
+		    $(window).load(function() {
+		        $('#li-suppliers-1').addClass('active'); //mark the supplier link as active
+		        listsuppliers(); //load the supplier list table on load
+
+		        /*Check system alert & session id are the same, then display alert*/
+		        if (systemalerttext !== '') {
+		            $('#modal-system-alert').modal('show');
+		        }
+		    });
+
+		    //onclick event handler for the anchor called refresh-supplier-list-1
+		    $('#refresh-supplier-list-1').click(function(e) {
+		        e.preventDefault(); //prevent anchor from behaving normally
+		        $('#ctnr-tbl-supplier-list').append('<div class="overlay" id="otbl-supplier-list"><i class="fa fa-refresh fa-spin"></i></div>');
+		        listsuppliers();
+		    });
+
+		    //onclick event handler for the anchor called refresh-supplier-list-2
+		    $('#refresh-supplier-list-2').click(function(e) {
+		        e.preventDefault(); //prevent anchor from behaving normally
+		        $('#ctnr-tbl-supplier-list').append('<div class="overlay" id="otbl-supplier-list"><i class="fa fa-refresh fa-spin"></i></div>');
+		        listsuppliers();
+		    });
+		</script>

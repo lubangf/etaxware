@@ -1,0 +1,70 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Select2 -->
+		<script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>
+		<!-- bootstrap datepicker -->
+		<script src="{{@path . 'plugins/datepicker/bootstrap-datepicker.js'}}"></script>
+		<!-- credit/debit note javascript -->
+		<script src="{{@path . 'js/creditnote.js'}}"></script>
+		<script>
+		    /**
+		     * @desc initialise a date picker called startdate
+		     */
+		    $('#startdate').datepicker({
+		        autoclose: true
+		    });
+
+		    /**
+		     * @desc initialise a date picker called enddate
+		     */
+		    $('#enddate').datepicker({
+		        autoclose: true
+		    });
+
+		    $('#downloaderpcreditnotesstartdate').datepicker({
+		        autoclose: true
+		    });
+
+		    $('#downloaderpcreditnotesenddate').datepicker({
+		        autoclose: true
+		    });
+
+		    $('#startdate').datepicker('update', new Date());
+		    $('#enddate').datepicker('update', new Date());
+		    $('#downloaderpcreditnotesstartdate').datepicker('update', new Date());
+		    $('#downloaderpcreditnotesenddate').datepicker('update', new Date());
+
+		    $(window).load(function() {
+		        $('#li-sales-1').addClass('active'); //mark the creditnote link as active
+
+
+		        /*Check system alert & session id are the same, then display alert*/
+		        if (systemalerttext !== '') {
+		            $('#modal-system-alert').modal('show');
+		        }
+
+		        listcreditnotes(); //load the creditnote list table on load
+		    });
+
+		    //onclick event handler for the anchor called refresh-creditnote-list-1
+		    $('#refresh-creditnote-list-1').click(function(e) {
+		        e.preventDefault(); //prevent anchor from behaving normally
+		        $('#ctnr-tbl-creditnote-list').append('<div class="overlay" id="otbl-creditnote-list"><i class="fa fa-refresh fa-spin"></i></div>');
+		        listcreditnotes();
+		    });
+
+		    //onclick event handler for the anchor called refresh-creditnote-list-2
+		    $('#refresh-creditnote-list-2').click(function(e) {
+		        e.preventDefault(); //prevent anchor from behaving normally
+		        $('#ctnr-tbl-creditnote-list').append('<div class="overlay" id="otbl-creditnote-list"><i class="fa fa-refresh fa-spin"></i></div>');
+		        listcreditnotes();
+		    });
+
+		    //submit the form called sync-efriscreditnotes-form
+		    $("#sync-efriscreditnotes-button").click(function() {
+		        //event.preventDefault();
+		        $('#ctnr-sync-efriscreditnotes-form').append('<div class="overlay" id=""><i class="fa fa-refresh fa-spin"></i></div>');
+		        $('#sync-efriscreditnotes-form').submit();
+		    });
+		</script>

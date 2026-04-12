@@ -1,0 +1,170 @@
+				<section class="content-header">
+				    <!-- Content Header (Page header) -->
+				    <h1>
+				        <i class="fa fa-home"></i>
+				        <span>{{@pagetitle}}</span>
+				    </h1>
+				</section>
+				<!-- ./content-header -->
+				<section class="content">
+				    <!-- Main content -->
+				    <div class="row">
+				        <div class="col-xs-2"></div>
+				        <!-- ./col-xs-2 -->
+				        <div class="col-xs-8">
+				            <div class="box box-solid">
+				                <div class="box-header">
+				                    <i class="fa fa-user"></i>
+				                    <h3 class="box-title">Welcome, {{@user.firstname}} {{@user.lastname}}</h3>
+				                    <div class="box-tools pull-right">
+				                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
+				                            <i class="fa fa-minus"></i>
+				                        </button>
+				                        <div class="btn-group">
+				                            <button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown">
+				                                <i class="fa fa-bars"></i>
+				                            </button>
+				                            <ul class="dropdown-menu" role="menu">
+				                                <check if="{{@userpermissions.VIEWDASHBOARD == true}}">
+				                                    <true>
+				                                        <li>
+				                                            <a href="{{ @BASE . '/'}}" id="">
+				                                                <i class="fa fa-dashboard"></i>View Dashboard </a>
+				                                        </li>
+				                                    </true>
+				                                </check>
+				                                <check if="{{@userpermissions.VIEWREPORTS == true}}">
+				                                    <true>
+				                                        <li>
+				                                            <a href="{{ @BASE . '/report'}}" id="">
+				                                                <i class="fa fa-pie-chart"></i>View Reports </a>
+				                                        </li>
+				                                    </true>
+				                                </check>
+				                                <li class="divider"></li>
+				                                <check if="{{@userpermissions.VIEWPRODUCTS == true}}">
+				                                    <true>
+				                                        <li>
+				                                            <a href="{{ @BASE . '/product'}}" id="">
+				                                                <i class="fa fa-product-hunt"></i>View Products </a>
+				                                        </li>
+				                                    </true>
+				                                </check>
+				                                <check if="{{@userpermissions.VIEWCUSTOMERS == true}}">
+				                                    <true>
+				                                        <li>
+				                                            <a href="{{ @BASE . '/customer'}}" id="">
+				                                                <i class="fa fa-users"></i>View Customers </a>
+				                                        </li>
+				                                    </true>
+				                                </check>
+				                                <check if="{{@userpermissions.VIEWINVOICES == true}}">
+				                                    <true>
+				                                        <li>
+				                                            <a href="{{ @BASE . '/invoice'}}" id="">
+				                                                <i class="fa fa-sticky-note"></i>View Invoices </a>
+				                                        </li>
+				                                    </true>
+				                                </check>
+				                                <check if="{{@userpermissions.VIEWCREDITDEBITNOTES == true}}">
+				                                    <true>
+				                                        <li>
+				                                            <a href="{{ @BASE . '/creditnote'}}" id="">
+				                                                <i class="fa fa-plus-square"></i>View Credit Notes </a>
+				                                        </li>
+				                                    </true>
+				                                </check>
+				                                <check if="{{@userpermissions.VIEWDEBITNOTES == true}}">
+				                                    <true>
+				                                        <li>
+				                                            <a href="{{ @BASE . '/debitnote'}}" id="">
+				                                                <i class="fa fa-minus-square"></i>View Debit Notes </a>
+				                                        </li>
+				                                    </true>
+				                                </check>
+				                                <check if="{{@userpermissions.VIEWCURRENCIES == true}}">
+				                                    <true>
+				                                        <li>
+				                                            <a href="{{ @BASE . '/currency'}}" id="">
+				                                                <i class="fa fa-money"></i>View Currencies </a>
+				                                        </li>
+				                                    </true>
+				                                </check>
+				                            </ul>
+				                        </div>
+				                    </div>
+				                </div>
+				                <!-- ./box-header -->
+				                <div class="box-body">
+				                    <form class="form-horizontal" role="form" action="{{@BASE . '/searchoperations'}}" method="post" enctype="multipart/form-data" name="search-operation-form">
+				                        <div class="form-group">
+				                            <div class="col-xs-12">
+				                                <select class="form-control select2" style="width: 100%;" id="searchoperations" name="searchoperations" required></select>
+				                            </div>
+				                        </div>
+				                        <!-- ./form-group -->
+				                    </form>
+				                    <!-- ./form -->
+				                </div>
+				                <!-- ./box-body -->
+				            </div>
+				            <!-- ./box -->
+				        </div>
+				        <!-- ./col-xs-8 -->
+				        <div class="col-xs-2"></div>
+				        <!-- ./col-xs-2 -->
+				    </div>
+				    <!-- ./row -->
+				    <div class="row">
+				        <div class="col-xs-2"></div>
+				        <!-- ./col-xs-2 -->
+				        <div class="col-xs-8">
+				            <check if="{{@platformMode == 'Integrated'}}">
+				                <true>
+				                    <div class="box box-primary collapsed-box" id="">
+				                        <div class="box-header">
+				                            <i class="fa fa-cogs"></i>
+				                            <h3 class="box-title">ERP Connections</h3>
+				                            <div class="box-tools pull-right">
+				                                <button type="button" class="btn btn-box-tool" data-widget="collapse">
+				                                    <i class="fa fa-plus"></i>
+				                                </button>
+				                            </div>
+				                        </div>
+				                        <!-- ./box-header -->
+				                        <div class="box-body">
+				                            <div class="alert alert-success alert-dismissible">
+				                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				                                <h5>
+				                                </h5> e-TaxWare is running in integrated mode. The integrated ERP is {{@integratedErp}}.
+				                            </div>
+				                            <check if="{{@integratedErp == 'QBO'}}">
+				                            	<true>
+				                            		<button type="button" name="" id="" onclick="oauth.loginPopup()" class="btn btn-primary">Connect to {{@integratedErp}}</button>
+				                            		<p>Access Token Expiry: {{@expires_in}}</p>
+				                            	</true>
+				                            </check>
+				                        </div>
+				                        <!-- ./box-body -->
+				                    </div>
+				                    <!-- ./box -->
+				                </true>
+				            </check>
+				            <div class="callout callout-info">
+				                <h4>About EFRIS &amp; e-TaxWare</h4>
+				                <p>The commissioner General of Uganda revenue authority (EFRIS), on 23 June 2020, issued a Gazette Notice No.595, which made it mandatory for all registered VAT tax payers to issue e-invoices and e-receipts through a EFRIS platform called the Electronic Fiscal receipting and invoicing system (EFRIS). <br>
+				                    <br> EFRIS is being implemented by EFRIS, as one of the Domestic Revenue Mobilization Initiatives designed to improve Uganda&lsquo;s VAT efficiency, CIT productivity and address challenges hindering VAT administration efficiency and revenue mobilization. <br>
+				                    <br> In a public notice, dated 13 July 2020, EFRIS granted a three-month transition period, up to 30 September 2020, for all taxpayers to implement EFRIS. The grace period was further extended up to 31 December 2020. <br>
+				                    <br> e-TaxWare is software, which was developed to be used by any business dealing in either goods, services or both, with or without a robust accounting enterprise resource planning (ERP) system, to deploy as an interface and/or middleware to facilitate the exchange of transaction data between the business and EFIRS, and consequently enable generation of e-receipts, e-invoices, credit and debit notes. <br>
+				                    <br> e-TaxWare enable all business types comply with the EFRIS requirements using the system to system integration option. The Software has been developed in accordance with the EFRIS APIs (Application Programming Interfaces) User Requirements Specifications (Business Requirements) v15. The software passed the EFRIS user acceptance tests for the various interface codes and was, as a result, given a green light by the EFRIS Business and Technical Teams on 13 October 2020 to be used to integrate tax payers to the EFRIS platform. <br>
+				                    <br> e-TaxWare can be deployed as an interface between the business&lsquo; ERP and EFRIS but can also be used as an abridged ERP that handled stock and sales management. The system operates in both Online and Offline modes as defined by EFRIS standard.
+				                </p>
+				            </div>
+				        </div>
+				        <!-- ./col-xs-8 -->
+				        <div class="col-xs-2"></div>
+				        <!-- ./col-xs-2 -->
+				    </div>
+				    <!-- ./row -->
+				</section>
+				<!-- ./content -->

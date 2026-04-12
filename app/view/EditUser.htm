@@ -1,0 +1,228 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-user"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li><a href="{{@BASE . '/administration'}}"><i class="fa fa-briefcase"></i> Administration</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_general"><a href="#tab_1" data-toggle="tab"><i class="fa fa-gear"></i> General</a></li>
+									<check if="{{@edit_user.id !== null}}"><true><li id="tab_permissions"><a href="#tab_2" data-toggle="tab"><i class="fa fa-unlock"></i> Permissions</a></li></true></check>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createuser'}}" id="create-new-user-2"><i class="fa fa-plus-circle"></i>New User</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/edituser'}}" method="post" enctype="multipart/form-data" name="user-form">
+														<div class="box-body">
+															<div class="form-group">
+																<label for="" class="col-xs-2 control-label">ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@edit_user.id}}" id="" name="" placeholder="ID" disabled>
+																</div>
+															</div><!-- /.form-group -->		
+															<div class="form-group">
+																<label for="editusername" class="col-xs-2 control-label">User Name</label>
+																<div class="col-xs-10">
+																	<check if="{{@edit_user.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@edit_user.username}}" id="editusername" name = "editusername" placeholder="User Name" required></true>
+																		<false><input type="text" class="form-control" value="{{@edit_user.username}}" id="editusername" name = "editusername" placeholder="User Name" required disabled></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="edituserpassword" class="col-xs-2 control-label">Password</label>
+																<div class="col-xs-10">
+																	<check if="{{@edit_user.id == null}}">
+																		<true>
+																			<input type="password" class="form-control" value="{{@edit_user.password}}" id="edituserpassword" name="edituserpassword" placeholder="Password" required>
+																		</true>
+																		<false>
+																			<input type="password" class="form-control" id="edituserpassword" name="edituserpassword" placeholder="">
+																			<p class="help-block text-red"><i class="fa fa-bell-o"></i> Leave the password blank, if you do not wish to edit.</p>
+																		</false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="editfirstname" class="col-xs-2 control-label">First Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@edit_user.firstname}}" id="editfirstname" name = "editfirstname" placeholder="First Name" required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="editmiddlename" class="col-xs-2 control-label">Middle Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@edit_user.middlename}}" id="editmiddlename" name = "editmiddlename" placeholder="Middle Name">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="editlastname" class="col-xs-2 control-label">Last Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@edit_user.lastname}}" id="editlastname" name = "editlastname" placeholder="Last Name" required>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="editemail" class="col-xs-2 control-label">Email</label>
+																<div class="col-xs-10">
+																	<input type="email" class="form-control" value="{{@edit_user.email}}" id="editemail" name = "editemail" placeholder="Email" required>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+															<label for="editbranch" class="col-xs-2 control-label">Branch</label>
+															<div class="col-xs-6">
+																<select class="form-control" name="editbranch" id="editbranch" required>
+																	<option value="" selected disabled hidden>Select Branch</option>
+																	<repeat group="{{@branches}}" value="{{@branch}}">																		
+																		<check if="{{@branch.id == @edit_user.branch}}">
+																			<true><check if="{{@branch.disabled == 1}}"><true><option value="{{@branch.id}}" selected disabled>{{@branch.id}} - {{@branch.name}}</option></true><false><option value="{{@branch.id}}" selected>{{@branch.id}} - {{@branch.name}}</option></false></check></true>
+																			<false><check if="{{@branch.disabled == 1}}"><true><option value="{{@branch.id}}" disabled>{{@branch.id}} - {{@branch.name}}</option></true><false><option value="{{@branch.id}}">{{@branch.id}} - {{@branch.name}}</option></false></check></false>
+																		</check>
+																	</repeat>
+																</select>
+															</div>
+															<label for="add-branch-1" class="col-xs-4 control-label"><strong><a href="{{@BASE . '/createbranch'}}" title="Add Branch" id="add-branch-1"><i class="fa fa-plus-circle"></i><span> Add a branch</span></a></strong></label>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+															<label for="editrole" class="col-xs-2 control-label">Role</label>
+															<div class="col-xs-6">
+																<select class="form-control" name="editrole" id="editrole" required>
+																	<option value="" selected disabled hidden>Select Role</option>
+																	<repeat group="{{@roles}}" value="{{@role}}">																		
+																		<check if="{{@role.id == @edit_user.role}}">
+																			<true><check if="{{@role.disabled == 1}}"><true><option value="{{@role.id}}" selected disabled>{{@role.id}} - {{@role.name}}</option></true><false><option value="{{@role.id}}" selected>{{@role.id}} - {{@role.name}}</option></false></check></true>
+																			<false><check if="{{@role.disabled == 1}}"><true><option value="{{@role.id}}" disabled>{{@role.id}} - {{@role.name}}</option></true><false><option value="{{@role.id}}">{{@role.id}} - {{@role.name}}</option></false></check></false>
+																		</check>
+																	</repeat>
+																</select>
+																<check if="{{@edituser.id !== null}}"><true><p class="help-block text-red"><i class="fa fa-bell-o"></i> Be very careful when changing the role. A change will lead to loss of custom permissions granted to the user.</p></true></check>
+															</div>															
+															<label for="add-role-1" class="col-xs-4 control-label"><strong><a href="{{@BASE . '/createrole'}}" title="Add Role" id="add-role-1"><i class="fa fa-plus-circle"></i><span> Add a role</span></a></strong></label>
+															</div><!-- /.form-group -->															
+															<div class="form-group">
+															<label for="editstatus" class="col-xs-2 control-label">Status</label>
+															<div class="col-xs-10">
+																<check if="{{@edit_user.id !== null}}">
+																	<true><select class="form-control" name="editstatus" id="editstatus" required></true>
+																	<false><select class="form-control" name="editstatus" id="editstatus" required disabled></false>
+																</check>
+																	<option value="" selected disabled hidden>Select Status</option>
+																	<repeat group="{{@userstatuses}}" value="{{@userstatus}}">
+																		<check if="{{@userstatus.id == @edit_user.status}}">
+																			<true><option value="{{@userstatus.id}}" selected>{{@userstatus.id}} - {{@userstatus.name}}</option></true>
+																			<false><option value="{{@userstatus.id}}">{{@userstatus.id}} - {{@userstatus.name}}</option></false>
+																		</check>
+																	</repeat>
+																</select>
+															</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="editerpid" class="col-xs-2 control-label">ERP ID</label>
+																<div class="col-xs-10">
+																	<check if="{{@edit_user.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@edit_user.erpid}}" id="editerpid" name = "editerpid" placeholder="ERP ID" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@edit_user.erpid}}" id="editerpid" name = "editerpid" placeholder="ERP ID"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="editerpcode" class="col-xs-2 control-label">ERP Code</label>
+																<div class="col-xs-10">
+																	<check if="{{@edit_user.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@edit_user.erpcode}}" id="editerpcode" name = "editerpcode" placeholder="ERP Code" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@edit_user.erpcode}}" id="editerpcode" name = "editerpcode" placeholder="ERP Code"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="edituraid" class="col-xs-2 control-label">EFRIS ID</label>
+																<div class="col-xs-10">
+																	<check if="{{@edit_user.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@edit_user.uraid}}" id="edituraid" name = "edituraid" placeholder="EFRIS ID" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@edit_user.uraid}}" id="edituraid" name = "edituraid" placeholder="EFRIS ID"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="edituracode" class="col-xs-2 control-label">EFRIS Code</label>
+																<div class="col-xs-10">
+																	<check if="{{@edit_user.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@edit_user.urauode}}" id="edituracode" name = "edituracode" placeholder="EFRIS Code" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@edit_user.uracode}}" id="edituracode" name = "edituracode" placeholder="EFRIS Code"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="edituserinserteddt" class="col-xs-2 control-label">Create Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@edit_user.inserteddt}}" id="edituserinserteddt" name="edituserinserteddt" placeholder="Create Date" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="editusermodifieddt" class="col-xs-2 control-label">Modified Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@edit_user.modifieddt}}" id="editusermodifieddt" name="editusermodifieddt" placeholder="Modified Date" disabled>
+																</div>
+															</div><!-- /.form-group -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="currenttab" id="currenttab" value="tab_general" />
+															<input type="hidden" name="currenttabpane" id="currenttabpane"  value="tab_1" />
+															<input type="hidden" name="edituserid" id="edituserid" value="{{@edit_user.id}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_2">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/edituser'}}" method="post" enctype="multipart/form-data" name="user-permission-form">
+														<div class="box-body">
+															<div class="form-group">
+																<div class="col-xs-12">
+																	<select class="form-control" multiple="multiple" size="10" name="edituserpermissions[]" id="edituserpermissions">
+																		<repeat group="{{@plts}}" value="{{@plt}}">
+																			{{@plt}}
+																		</repeat>
+																	</select>
+																</div>
+															</div><!-- /.form-group -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="permissioncurrenttab" id="permissioncurrenttab" value="tab_permission" />
+															<input type="hidden" name="permissioncurrenttabpane" id="permissioncurrenttabpane"  value="tab_2" />
+															<input type="hidden" name="permissionuserid" id="permissionuserid" value="{{@edit_user.id}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->						
+				</section>

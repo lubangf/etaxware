@@ -1,0 +1,143 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Bootstrap Dual Listbox -->
+        <script src="{{@path . 'plugins/bootstrap-duallistbox/jquery.bootstrap-duallistbox.js'}}"></script>		
+		<!-- administration JS -->
+		<script src="{{@path . 'js/administration.js'}}"></script>
+		<script>
+			var currenttab = $('#currenttab').text();
+			//console.log(currenttab);
+			
+			var currenttabpane = $('#currenttabpane').text();
+			//console.log(currenttabpane);	
+			
+			var varoverridelists = $('[id=editoverridelists]').bootstrapDualListbox();
+			
+			
+			var varenforcetaxexclusionlists = $('[id=editenforcetaxexclusionlists]').bootstrapDualListbox();
+			
+			
+			var companydetailstin_1 = $('#companydetailstin_1').text();
+			var companydetailstaxpayerid_1 = $('#companydetailstaxpayerid_1').text();
+			var companydetailslatitude_1 = $('#companydetailslatitude_1').text();
+			var companydetailslongitude_1 = $('#companydetailslongitude_1').text();
+			//console.log(companydetailstin_1);
+			
+			var tcsdetailsusername_1 = $('#tcsdetailsusername_1').text();
+			//console.log(tcsdetailsusername_1);
+			
+			var devicedetailsdeviceno_1 = $('#devicedetailsdeviceno_1').text();
+			var devicedetailsdevicemac_1 = $('#devicedetailsdevicemac_1').text();
+			//console.log(devicedetailsdeviceno_1);
+					
+			$(window).load(function(){
+				$('#li-administration-1').addClass('active');//mark the administration link as active
+				$('#' + currenttab).addClass('active');//set the tab to active
+				$('#' + currenttabpane).addClass('active');//set the corresponding tab-pane to active
+								
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}
+				
+				$('#companydetailstin').val(companydetailstin_1);
+				$('#companydetailstaxpayerid').val(companydetailstaxpayerid_1);
+				$('#companydetailslatitude').val(companydetailslatitude_1);
+				$('#companydetailslongitude').val(companydetailslongitude_1);	
+				$('#tcsdetailsusername').val(tcsdetailsusername_1);
+				$('#devicedetailsdeviceno').val(devicedetailsdeviceno_1);
+				$('#devicedetailsdevicemac').val(devicedetailsdevicemac_1);
+				
+				listusers();
+				listroles();
+				listbranches();
+				listtaxtypes();
+			});	
+			
+			//ensure the tab content are refreshed again when user is navigating through the tabs
+			$(document).ready(function(){
+				var anchor;
+				$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+					anchor = $(e.target).attr('href');//Read the a href of the anchor that was clicked
+					anchor = anchor.substr(1, anchor.length);// Trim the leading '#' from the href attribute
+					if(anchor == "tab_1"){// Call the ajax associated with the tab
+						$('#tab_users').addClass('active');
+						$('#tab_1').addClass('active');
+						$('#ctnr-tbl-users').append('<div class="overlay" id="otbl-users"><i class="fa fa-refresh fa-spin"></i></div>');
+						listusers();
+					} else if(anchor == "tab_2"){// Call the ajax associated with the tab					
+						$('#tab_roles').addClass('active');
+						$('#tab_2').addClass('active');
+						$('#ctnr-tbl-roles').append('<div class="overlay" id="otbl-roles"><i class="fa fa-refresh fa-spin"></i></div>');
+						listroles();
+					} else if(anchor == "tab_3"){// Call the ajax associated with the tab					
+						$('#tab_branches').addClass('active');
+						$('#tab_3').addClass('active');
+						$('#ctnr-tbl-branches').append('<div class="overlay" id="otbl-branches"><i class="fa fa-refresh fa-spin"></i></div>');
+						listbranches();
+					} else if(anchor == "tab_4"){// Call the ajax associated with the tab					
+						$('#tab_apikeys').addClass('active');
+						$('#tab_4').addClass('active');
+						$('#ctnr-tbl-apikeys').append('<div class="overlay" id="otbl-apikeys"><i class="fa fa-refresh fa-spin"></i></div>');
+						listapikeys();
+					} else if(anchor == "tab_5"){// Call the ajax associated with the tab					
+						$('#tab_tcsdetails').addClass('active');
+						$('#tab_5').addClass('active');
+					} else if(anchor == "tab_6"){// Call the ajax associated with the tab					
+						$('#tab_companydetails').addClass('active');
+						$('#tab_6').addClass('active');
+					} else if(anchor == "tab_7"){// Call the ajax associated with the tab					
+						$('#tab_devicedetails').addClass('active');
+						$('#tab_7').addClass('active');
+					} else if(anchor == "tab_8"){// Call the ajax associated with the tab					
+						$('#tab_taxtypes').addClass('active');
+						$('#tab_8').addClass('active');
+						listtaxtypes();
+					} else if(anchor == "tab_9"){// Call the ajax associated with the tab					
+						$('#tab_overridelist').addClass('active');
+						$('#tab_9').addClass('active');
+						listtaxtypes();
+					} else if(anchor == "tab_10"){// Call the ajax associated with the tab					
+						$('#tab_enforcetaxexclusionlist').addClass('active');
+						$('#tab_10').addClass('active');
+						listtaxtypes();
+					}
+				});
+			});
+			
+			//onclick event handler for the anchor called refresh-user-list-2
+			$('#refresh-user-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-users').append('<div class="overlay" id="otbl-users"><i class="fa fa-refresh fa-spin"></i></div>');
+				listusers();
+			});		
+			
+			//onclick event handler for the anchor called refresh-role-list-2
+			$('#refresh-role-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-roles').append('<div class="overlay" id="otbl-roles"><i class="fa fa-refresh fa-spin"></i></div>');
+				listroles();
+			});		
+			
+			//onclick event handler for the anchor called refresh-branch-list-2
+			$('#refresh-branch-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-branches').append('<div class="overlay" id="otbl-branches"><i class="fa fa-refresh fa-spin"></i></div>');
+				listbranches();
+			});	
+			
+			//onclick event handler for the anchor called refresh-apikey-list-2
+			$('#refresh-apikey-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-apikeys').append('<div class="overlay" id="otbl-apikeys"><i class="fa fa-refresh fa-spin"></i></div>');
+				listapikeys();
+			});
+			
+			//onclick event handler for the anchor called refresh-taxtypes-list-2
+			$('#refresh-taxtypes-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-taxtypes').append('<div class="overlay" id="otbl-taxtypes"><i class="fa fa-refresh fa-spin"></i></div>');
+				listtaxtypes();
+			});		
+		</script>

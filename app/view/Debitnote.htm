@@ -1,0 +1,166 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-minus-square"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-danger collapsed-box" id="ctnr-sync-efrisdebitnotes-form">
+								<div class="box-header">
+									<h3 class="box-title">Sync/Update Debit Notes</h3>
+									<div class="box-tools pull-right">
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>										
+									</div>
+								</div><!-- ./box-header -->
+								<div class="box-body">
+									<form class="form-horizontal" role="form" action="{{@BASE . '/syncefrisdebitnotes'}}" method="post" enctype="multipart/form-data" id="sync-efrisdebitnotes-form" name="sync-efrisdebitnotes-form">									
+										<div class="box-body">
+											<div class="col-xs-3">											   
+	               							   <label for="" class="">Start Date</label>
+	               							   <input type="text" id="startdate" name="startdate" class="form-control" placeholder="Start Date">
+	                						</div>
+											<div class="col-xs-3">											   
+	               							   <label for="" class="">End Date</label>
+	               							   <input type="text" id="enddate" name="enddate" class="form-control" placeholder="End Date">
+	                						</div>
+											<div class="col-xs-3">
+												<label for="" class="">Invoice Kind</label>
+												<select class="form-control" name="invoicekind" id="invoicekind" required>
+													<option value="" selected disabled hidden>Select Invoice Kind</option>
+													<repeat group="{{@invoicekinds}}" value="{{@invoicekind}}">																		
+														<check if="{{@invoicekind.code == @invoice.invoicekind}}">
+															<true><check if="{{@invoicekind.disabled == 1}}"><true><option value="{{@invoicekind.code}}" selected disabled>{{@invoicekind.code}} - {{@invoicekind.name}}</option></true><false><option value="{{@invoicekind.code}}" selected>{{@invoicekind.code}} - {{@invoicekind.name}}</option></false></check></true>
+															<false><check if="{{@invoicekind.disabled == 1}}"><true><option value="{{@invoicekind.code}}" disabled>{{@invoicekind.code}} - {{@invoicekind.name}}</option></true><false><option value="{{@invoicekind.code}}">{{@invoicekind.code}} - {{@invoicekind.name}}</option></false></check></false>
+														</check>
+													</repeat>
+												</select>
+											</div>	
+											<div class="col-xs-3">
+												<label for="" class="">Operation Type</label>
+												<div class="radio">
+													<label>
+														<input type="radio" name="operationType" id="operationType" value="update"> Update
+													</label>
+													<label>
+														<input type="radio" name="operationType" id="operationType" value="sync"> Synchronize
+													</label>
+												</div><!-- ./radio -->
+											</div><!-- ./col-xs-3 -->														
+										</div><!-- ./box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="button" class="btn btn-info pull-right" id="sync-efrisdebitnotes-button" name="sync-efrisdebitnotes-button">Confirm</button>
+										</div><!-- ./box-footer -->																				
+									</form><!-- ./form -->								
+								</div><!-- ./box-body -->								
+							</div><!-- ./box -->
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-info" id="ctnr-tbl-debitnote-list">
+								<div class="box-header with-border">
+									<h3 class="box-title">Debit Notes</h3>
+									<div class="box-tools pull-right">
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+										<div class="btn-group">
+											<button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown"><i class="fa fa-wrench"></i></button>
+											<ul class="dropdown-menu" role="menu">
+												<li><a href="#" id="refresh-debitnote-list-1"><i class="fa fa-refresh"></i>Refresh List</a></li>
+												<li class="divider"></li>
+												<li><a href="{{@BASE . '/createdebitnote'}}"><i class="fa  fa-plus-circle"></i>Add Debit Note</a></li>
+											</ul>
+										</div>
+									</div>
+								</div><!-- ./box-header -->
+								<div class="box-body">
+									<table id="tbl-debitnote-list" class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>ID</th>
+												<th>Code</th>
+												<th>Name</th>
+												<th>Description</th>
+												<th>Status</th>
+												<th>Modified By</th>
+												<th>Modified Date</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+									</table>
+								</div><!-- ./box-body -->
+								<div class="overlay" id="otbl-debitnote-list">
+									<i class="fa fa-refresh fa-spin"></i>
+								</div>
+								<div class="box-footer clearfix">
+									<a href="#" id="refresh-debitnote-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh List</span></a>
+									<a href="{{@BASE . '/createdebitnote'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> Add Debit Note</span></a>
+								</div><!-- ./box-footer -->
+							</div><!-- ./box -->
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->	
+					
+					<div class="modal fade" id="modal-debitnote-upload"><!-- modal-debitnote-upload -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Upload Debit Note</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/uploaddebitnote'}}" method="post" enctype="multipart/form-data" id="upload-debitnote-form" name="upload-debitnote-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="uploaddebitnoteid_2" class="col-xs-4 control-label">Debit Note ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="uploaddebitnoteid_2" name="uploaddebitnoteid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="uploaddebitnoteid" id="uploaddebitnoteid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-debitnote-upload -->	
+					
+					<div class="modal fade" id="modal-debitnote-download"><!-- modal-debitnote-download -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Debit Note</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/downloaddebitnote'}}" method="post" enctype="multipart/form-data" id="download-debitnote-form" name="download-debitnote-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="downloaddebitnoteid_2" class="col-xs-4 control-label">Debit Note ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="downloaddebitnoteid_2" name="downloaddebitnoteid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="downloaddebitnoteid" id="downloaddebitnoteid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-debitnote-download -->					
+				</section>

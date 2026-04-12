@@ -1,0 +1,20 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Select2 -->
+        <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>			
+		<!-- bootstrap datepicker -->
+		<script src="{{@path . 'plugins/datepicker/bootstrap-datepicker.js'}}"></script>
+				
+		<!-- report JS -->
+		<script src="{{@path . 'js/report.js'}}"></script>
+		<script>		
+			$(window).load(function(){
+				$('#li-reports-1').addClass('active');//mark the reports link as active
+				
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}
+			});					
+		</script>

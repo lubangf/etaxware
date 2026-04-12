@@ -1,0 +1,550 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-briefcase"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
+					<span id="tcsdetailsusername_1" style="color: transparent">{{@tcsdetails.0.username}}</span>
+					<span id="companydetailstin_1" style="color: transparent">{{@companydetails.0.tin}}</span>
+					<span id="companydetailstaxpayerid_1" style="color: transparent">{{@companydetails.0.taxpayerid}}</span>
+					<span id="companydetailslatitude_1" style="color: transparent">{{@companydetails.0.latitude}}</span>
+					<span id="companydetailslongitude_1" style="color: transparent">{{@companydetails.0.longitude}}</span>
+					<span id="devicedetailsdeviceno_1" style="color: transparent">{{@devicedetails.0.deviceno}}</span>
+					<span id="devicedetailsdevicemac_1" style="color: transparent">{{@devicedetails.0.devicemac}}</span>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_users"><a href="#tab_1" data-toggle="tab"><i class="fa fa-users"></i> Users</a></li>
+									<li id="tab_roles"><a href="#tab_2" data-toggle="tab"><i class="fa fa fa-tags"></i> Roles</a></li>
+									<li id="tab_branches"><a href="#tab_3" data-toggle="tab"><i class="fa fa-building"></i> Branches</a></li>
+									<li id="tab_apikeys"><a href="#tab_4" data-toggle="tab"><i class="fa fa-compress"></i> APIs</a></li>
+									<li id="tab_tcsdetails"><a href="#tab_5" data-toggle="tab"><i class="fa fa-cog"></i> TCS Details</a></li>
+									<li id="tab_companydetails"><a href="#tab_6" data-toggle="tab"><i class="fa fa-simplybuilt"></i> Company Details</a></li>
+									<li id="tab_devicedetails"><a href="#tab_7" data-toggle="tab"><i class="fa fa-desktop"></i> Device Details</a></li>
+									<li id="tab_taxtypes"><a href="#tab_8" data-toggle="tab"><i class="fa fa-th-list"></i> Tax Types</a></li>
+									<check if="{{@appsettings.OVERRIDE_TAXRATE_FLAG == '1'}}"><true><li id="tab_overridelist"><a href="#tab_9" data-toggle="tab"><i class="fa fa-stop"></i> Tax Override List</a></li></true></check>
+									<check if="{{@appsettings.ENFORCE_TAX_EXCLUSION_FLAG == '1'}}"><true><li id="tab_enforcetaxexclusionlist"><a href="#tab_10" data-toggle="tab"><i class="fa fa-filter"></i> Enforce Tax Exclusion List</a></li></true></check>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-plane" style="color: red;"></i> <span style="font-weight: bold; color: red;">EFRIS Actions</span> <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/efrislogin'}}" id="efris-login-2"><i class="fa fa-thumbs-up"></i>EFRIS Init/Login</a></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/syncefrisbranches'}}" id="sync-branches-2"><i class="fa fa-refresh"></i>Sync EFRIS Branches</a></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/syncefrisdics'}}" id="sync-dictionary-2"><i class="fa fa-refresh"></i>Sync EFRIS Dictionaries</a></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/synchscodelist'}}" id="sync-hslist-2"><i class="fa fa-refresh"></i>Sync HS Code List</a></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/syncefrisexcisedutylist'}}" id="sync-excisedutylist-2"><i class="fa fa-refresh"></i>Sync EFRIS Excise Duty List</a></li>											
+										</ul>
+									</li>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createuser'}}" id="create-new-user-2"><i class="fa fa-plus-circle"></i>New User</a></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createrole'}}" id="create-new-role-2"><i class="fa fa-plus-circle"></i>New Role</a></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createbranch'}}" id="create-new-branch-2"><i class="fa fa-plus-circle"></i>New Branch</a></li>
+											<li role="presentation" class="divider"></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/recyclelogs'}}" id="recycle-logs-2"><i class="fa fa-refresh"></i>Recycle Logs</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="ctnr-tbl-users">
+													<div class="box-header">
+              											<h3 class="box-title">Users</h3>
+              											<div class="box-tools pull-right">
+															<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+														</div>
+            										</div><!-- /.box-header -->
+													<div class="box-body">
+														<table id="tbl-users" class="table table-bordered table-striped">
+															<thead>
+																<tr>
+																	<th>ID</th>
+																	<th>Name</th>
+																	<th>Status</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<a href="#" id="refresh-user-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh</span></a>
+														<a href="{{@BASE . '/createuser'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> New User</span></a>
+													</div>
+												</div><!-- /.box -->
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_2">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="ctnr-tbl-roles">
+													<div class="box-header">
+              											<h3 class="box-title">Roles</h3>
+              											<div class="box-tools pull-right">
+															<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+														</div>
+            										</div><!-- /.box-header -->
+													<div class="box-body">
+														<table id="tbl-roles" class="table table-bordered table-striped">
+															<thead>
+																<tr>
+																	<th>ID</th>
+																	<th>Name</th>
+																	<th>Status</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<a href="#" id="refresh-role-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh</span></a>
+														<a href="{{@BASE . '/createrole'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> New Role</span></a>
+													</div>
+												</div><!-- /.box -->
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_3">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="ctnr-tbl-branches">
+													<div class="box-header">
+              											<h3 class="box-title">Branches</h3>
+              											<div class="box-tools pull-right">
+															<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+														</div>
+            										</div><!-- /.box-header -->
+													<div class="box-body">
+														<table id="tbl-branches" class="table table-bordered table-striped">
+															<thead>
+																<tr>
+																	<th>ID</th>
+																	<th>Name</th>
+																	<th>Status</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<a href="#" id="refresh-branch-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh</span></a>
+														<a href="{{@BASE . '/createbranch'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> New Branch</span></a>
+													</div>
+												</div><!-- /.box -->
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_4">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="ctnr-tbl-apikeys">
+													<div class="box-header">
+              											<h3 class="box-title">API Keys</h3>
+              											<div class="box-tools pull-right">
+															<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+														</div>
+            										</div><!-- /.box-header -->
+													<div class="box-body">
+														<table id="tbl-apikeys" class="table table-bordered table-striped">
+															<thead>
+																<tr>
+																	<th>ID</th>
+																	<th>Name</th>
+																	<th>Status</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<a href="#" id="refresh-apikey-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh</span></a>
+														<a href="{{@BASE . '/createapikey'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> New APi Key</span></a>
+													</div>
+												</div><!-- /.box -->
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->	
+									<div class="tab-pane" id="tab_5">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="box-tcs-details">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/edittcsdetails'}}" method="post" enctype="multipart/form-data" name="tcs-details-form">
+														<div class="box-body">		
+															<div class="form-group">
+																<label for="tcsdetailsusername" class="col-xs-2 control-label">User Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="tcsdetailsusername" name = "tcsdetailsusername" placeholder="username" required>
+																	<p class="help-block">The name used to log into EFRIS. The default is admin.</p>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="tcsdetailscommodityCategoryVersion" class="col-xs-2 control-label">Commodity Category Version</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="tcsdetailscommodityCategoryVersion" name = "tcsdetailscommodityCategoryVersion" value="{{@tcsdetails.0.commodityCategoryVersion}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="tcsdetailsdictionaryVersion" class="col-xs-2 control-label">Dictionary Version</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="tcsdetailsdictionaryVersion" name = "tcsdetailsdictionaryVersion" value="{{@tcsdetails.0.dictionaryVersion}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="tcsdetailsexciseDutyVersion" class="col-xs-2 control-label">ExciseDuty Version</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="tcsdetailsexciseDutyVersion" name = "tcsdetailsexciseDutyVersion" value="{{@tcsdetails.0.exciseDutyVersion}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="tcsdetailstaxpayerBranchVersion" class="col-xs-2 control-label">Taxpayer Branch Version</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="tcsdetailstaxpayerBranchVersion" name = "tcsdetailstaxpayerBranchVersion" value="{{@tcsdetails.0.taxpayerBranchVersion}}" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="tcsdetailsmodifieddt" class="col-xs-2 control-label">Modified Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="tcsdetailsmodifieddt" name = "tcsdetailsmodifieddt" value="{{@tcsdetails.0.modifieddt}}" disabled>
+																</div>
+															</div><!-- /.form-group -->																				
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->	
+												</div><!-- /.box -->	
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->	
+									<div class="tab-pane" id="tab_6">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="box-company-details">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editcompanydetails'}}" method="post" enctype="multipart/form-data" name="company-details-form">
+														<div class="box-body">		
+															<div class="form-group">
+																<label for="companydetailstin" class="col-xs-2 control-label">TIN</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailstin" name = "companydetailstin" placeholder="TIN" required>
+																	<p class="help-block">This is the company's Tax Identification Number (TIN).</p>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailstaxpayerid" class="col-xs-2 control-label">Taxpayer ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailstaxpayerid" name = "companydetailstaxpayerid" required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailslatitude" class="col-xs-2 control-label">Latitude</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailslatitude" name = "companydetailslatitude" placeholder="Latitude">
+																	<p class="help-block">The number of integer digits does not exceed 20 digits and the number of decimal places does not exceed 8 digits.</p>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailslongitude" class="col-xs-2 control-label">Longitude</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailslongitude" name = "companydetailslongitude" placeholder="Longitude">
+																	<p class="help-block">The number of integer digits does not exceed 20 digits and the number of decimal places does not exceed 8 digits.</p>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsninbrn" class="col-xs-2 control-label">NIN/BRN</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsninbrn" name = "companydetailsninbrn" value="{{@companydetails.0.ninbrn}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailslegalname" class="col-xs-2 control-label">Legal Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailslegalname" name = "companydetailslegalname" value="{{@companydetails.0.legalname}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsbusinessname" class="col-xs-2 control-label">Business Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsbusinessname" name = "companydetailsbusinessname" value="{{@companydetails.0.businessname}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsaddress" class="col-xs-2 control-label">Address</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsaddress" name = "companydetailsaddress" value="{{@companydetails.0.address}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsmobilephone" class="col-xs-2 control-label">Mobile Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsmobilephone" name = "companydetailsmobilephone" value="{{@companydetails.0.mobilephone}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailslinephone" class="col-xs-2 control-label">Line Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailslinephone" name = "companydetailslinephone" value="{{@companydetails.0.linephone}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsemailaddress" class="col-xs-2 control-label">Email</label>
+																<div class="col-xs-10">
+																	<input type="email" class="form-control" id="companydetailsemailaddress" name = "companydetailsemailaddress" value="{{@companydetails.0.emailaddress}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsplaceofbusiness" class="col-xs-2 control-label">Place of Business</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsplaceofbusiness" name = "companydetailsplaceofbusiness" value="{{@companydetails.0.placeofbusiness}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailstaxpayerRegistrationStatusId" class="col-xs-2 control-label">Registration Status</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailstaxpayerRegistrationStatusId" name = "companydetailstaxpayerRegistrationStatusId" value="{{@companydetails.0.taxpayerRegistrationStatusId}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailstaxpayerStatusId" class="col-xs-2 control-label">Status</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailstaxpayerStatusId" name = "companydetailstaxpayerStatusId" value="{{@companydetails.0.taxpayerStatusId}}" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="companydetailstaxpayerType" class="col-xs-2 control-label">Taxpayer Type</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailstaxpayerType" name = "companydetailstaxpayerType" value="{{@companydetails.0.taxpayerType}}" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="companydetailsbusinessType" class="col-xs-2 control-label">Business Type</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsbusinessType" name = "companydetailsbusinessType" value="{{@companydetails.0.businessType}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsmaxGrossAmount" class="col-xs-2 control-label">Maximum Gross Amount</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsmaxGrossAmount" name = "companydetailsmaxGrossAmount" value="{{@companydetails.0.maxGrossAmount}}" disabled>
+																	<p class="help-block">Max Gross Amount for Invoice(UGX).</p>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsgoodsStockLimit" class="col-xs-2 control-label">Good Stock Limit</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsgoodsStockLimit" name = "companydetailsgoodsStockLimit" value="{{@companydetails.0.goodsStockLimit}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailshsCodeVersion" class="col-xs-2 control-label">HS Code Version</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailshsCodeVersion" name = "companydetailshsCodeVersion" value="{{@companydetails.0.hsCodeVersion}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsissueDebitNote" class="col-xs-2 control-label">Issue Debit Note</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsissueDebitNote" name = "companydetailsissueDebitNote" value="{{@companydetails.0.issueDebitNote}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="companydetailsqrCodeURL" class="col-xs-2 control-label">QR Code URL</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsqrCodeURL" name = "companydetailsqrCodeURL" value="{{@companydetails.0.qrCodeURL}}" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="companydetailsmodifieddt" class="col-xs-2 control-label">Modified Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="companydetailsmodifieddt" name = "companydetailsmodifieddt" value="{{@companydetails.0.modifieddt}}" disabled>
+																</div>
+															</div><!-- /.form-group -->																			
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->	
+												</div><!-- /.box -->	
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_7">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="box-device-details">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editdevicedetails'}}" method="post" enctype="multipart/form-data" name="device-details-form">
+														<div class="box-body">		
+															<div class="form-group">
+																<label for="devicedetailsdeviceno" class="col-xs-2 control-label">Device No.</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="devicedetailsdeviceno" name = "devicedetailsdeviceno" placeholder="Device No." required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="devicedetailsdevicemac" class="col-xs-2 control-label">Device Mac</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="devicedetailsdevicemac" name = "devicedetailsdevicemac" placeholder="Device Mac." required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="devicedetailsdevicemodel" class="col-xs-2 control-label">Device Model</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="devicedetailsdevicemodel" name = "devicedetailsdevicemodel" value="{{@devicedetails.0.devicemodel}}" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="devicedetailsdevicestatus" class="col-xs-2 control-label">Device Status</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="devicedetailsdevicestatus" name = "devicedetailsdevicestatus" value="{{@devicedetails.0.devicestatus}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="devicedetailsofflineamount" class="col-xs-2 control-label">Offline Amount</label>
+																<div class="col-xs-10">
+																	<input type="number" class="form-control" id="devicedetailsofflineamount" name = "devicedetailsofflineamount" value="{{@devicedetails.0.offlineamount}}" disabled>
+																	<p class="help-block">The maximum number of invoices that can be issued.</p>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="devicedetailsofflinedays" class="col-xs-2 control-label">Offline Days</label>
+																<div class="col-xs-10">
+																	<input type="number" class="form-control" id="devicedetailsofflinedays" name = "devicedetailsofflinedays" value="{{@devicedetails.0.offlinedays}}" disabled>
+																	<p class="help-block">Offline limit days.</p>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="devicedetailsofflinevalue" class="col-xs-2 control-label">Offline Value</label>
+																<div class="col-xs-10">
+																	<input type="number" class="form-control" id="devicedetailsofflinevalue" name = "devicedetailsofflinevalue" value="{{@devicedetails.0.offlinevalue}}" disabled>
+																	<p class="help-block">The maximum invoice amount that can be issued.</p>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="devicedetailsdeviceType" class="col-xs-2 control-label">Device Type</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="devicedetailsdeviceType" name = "devicedetailsdeviceType" value="{{@devicedetails.0.deviceType}}" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="devicedetailsvalidPeriod" class="col-xs-2 control-label">Valid Period</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="devicedetailsvalidPeriod" name = "devicedetailsvalidPeriod" value="{{@devicedetails.0.validPeriod}}" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="devicedetailsmodifieddt" class="col-xs-2 control-label">Modified Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" id="devicedetailsmodifieddt" name = "devicedetailsmodifieddt" value="{{@devicedetails.0.modifieddt}}" disabled>
+																</div>
+															</div><!-- /.form-group -->																		
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->	
+												</div><!-- /.box -->	
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_8">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="ctnr-tbl-taxtypes">
+													<div class="box-header">
+              											<h3 class="box-title">Tax Types</h3>
+              											<div class="box-tools pull-right">
+															<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+														</div>
+            										</div><!-- /.box-header -->
+													<div class="box-body">
+														<table id="tbl-taxtypes" class="table table-bordered table-striped">
+															<thead>
+																<tr>
+																	<th>ID</th>
+																	<th>Name</th>
+																	<th>Registration Date</th>
+																	<th>Cancellation Date</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<a href="#" id="refresh-taxtypes-list-2" class="btn btn-sm btn-info btn-flat pull-right"><i class="fa fa-refresh"></i><span> Refresh</span></a>
+													</div>
+												</div><!-- /.box -->
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_9">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editproductoverridelist'}}" method="post" enctype="multipart/form-data" name="user-overridelist-form">
+														<div class="box-body">
+															<div class="form-group">
+																<div class="col-xs-12">
+																	<select class="form-control" multiple="multiple" size="10" name="editoverridelists[]" id="editoverridelists">
+																		<repeat group="{{@polsts}}" value="{{@polst}}">
+																			{{@polst}}
+																		</repeat>
+																	</select>
+																</div>
+															</div><!-- /.form-group -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="overridelistcurrenttab" id="overridelistcurrenttab" value="tab_overridelist" />
+															<input type="hidden" name="overridelistcurrenttabpane" id="overridelistcurrenttabpane"  value="tab_9" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->	
+									<div class="tab-pane" id="tab_10">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editenforcetaxexclusionlist'}}" method="post" enctype="multipart/form-data" name="user-enforcetaxexclusionlist-form">
+														<div class="box-body">
+															<div class="form-group">
+																<div class="col-xs-12">
+																	<select class="form-control" multiple="multiple" size="10" name="editenforcetaxexclusionlists[]" id="editenforcetaxexclusionlists">
+																		<repeat group="{{@pelsts}}" value="{{@pelst}}">
+																			{{@pelst}}
+																		</repeat>
+																	</select>
+																</div>
+															</div><!-- /.form-group -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="enforcetaxexclusionlistcurrenttab" id="enforcetaxexclusionlistcurrenttab" value="tab_enforcetaxexclusionlist" />
+															<input type="hidden" name="enforcetaxexclusionlistcurrenttabpane" id="enforcetaxexclusionlistcurrenttabpane"  value="tab_10" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->						
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->
+															
+				</section>
+				
+				

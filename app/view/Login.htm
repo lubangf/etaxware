@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+	<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Login Page">
+    <meta name="author" content="frncslubanga@gmail.com">
+    <link rel="icon" href="../etaxware/public/img/fts_logo_2_no_bg.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../etaxware/public/img/favicon-16x16.png">
+
+    <title>{{@applongname}}&trade; | {{@pagetitle}}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../etaxware/public/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="../etaxware/public/css/signin.css" rel="stylesheet">
+	<style>
+		.password-field-row {
+			display: flex;
+			align-items: stretch;
+			gap: 8px;
+			margin-bottom: 10px;
+		}
+		.password-field-row .form-control {
+			flex: 1;
+		}
+		.password-eye {
+			cursor: pointer;
+			background: #fff;
+			min-width: 42px;
+		}
+	</style>
+	</head>
+	<body class="text-center">
+		<form class="form-signin" method="POST" action="{{@BASE . '/authenticate'}}" id="signin-form" name="signin-form">
+			<img class="mb-4" src="../etaxware/public/img/fts_logo_2_no_bg.png" alt="" width="105" height="101">
+			<h1 class="h3 mb-3 font-weight-normal">{{@applongname}}&trade;</h1>
+			<h1 class="h5 mb-3 text-muted" style="font-style: normal;"><strong>Your gateway to <a class="" href="https://efris.efris.go.ug/" target="_blank">EFRIS</a></strong></h1>
+			<label for="username" class="sr-only">username</label>
+			<input type="text" id="username" name="username" class="form-control" placeholder="username" required autofocus>
+			<label for="password" class="sr-only">password</label>
+			<p class="text-center"></p>
+			<div class="password-field-row">
+				<input type="password" id="password" name="password" class="form-control" placeholder="password" required>
+				<button type="button" class="btn btn-default password-eye" id="toggle-login-password" title="Show password" aria-label="Show password">
+					<span class="glyphicon glyphicon-eye-open"></span>
+				</button>
+			</div>
+			<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+			<a href="#" data-toggle="modal" data-target="#modal-resetpassword" class="btn btn-link">Forgot Your Password? </a> | <a href="#" data-toggle="modal" data-target="#modal-resetaccount" class="btn btn-link">Reset Account </a>
+			<p class="mt-5 mb-3 text-muted"><strong>Copyright &copy; {{@currentyear}} <a class="" href="http://e-taxware.tech" target="_blank">{{@appdevorg}}</a></strong></p>			
+			<!-- print feedback from authentication process -->
+			<p class="text-danger text-center">{{@feedback}}</p>
+		</form>
+		
+		<div id="modal-resetaccount" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+			    <div class="modal-content">
+			    	<div class="modal-header">
+			        	<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			        	<h4 class="modal-title">Reset Account</h4>
+			      	</div>
+			      	<form class="form-horizontal" role="form" action="{{@BASE . '/resetaccount'}}" method="post" enctype="multipart/form-data" name="reset-account-form">
+				      	<div class="modal-body">
+				        	<div class="form-group">
+				        		<label for="resetusername" class="col-xs-4 control-label">User Name</label>
+				        		<div class="col-xs-8">
+									<input type="text" class="form-control" id="resetusername" name="resetusername" placeholder="username" required autofocus>
+								</div>
+				        	</div><!-- /.form-group -->
+				        	<div class="form-group">
+				        		<label for="resetpassword" class="col-xs-4 control-label">Password</label>
+				        		<div class="col-xs-8">
+								<div class="password-field-row" style="margin-bottom: 0;">
+									<input type="password" class="form-control" id="resetpassword" name="resetpassword" placeholder="password" required>
+									<button type="button" class="btn btn-default password-eye" id="toggle-reset-password" title="Show password" aria-label="Show password">
+										<span class="glyphicon glyphicon-eye-open"></span>
+									</button>
+								</div>
+								</div>
+				        	</div><!-- /.form-group -->
+				      	</div>
+				      	<div class="modal-footer">
+				        	<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+				        	<button type="submit" class="btn btn-primary pull-right">Confirm</button>
+				      	</div>
+					</form> 	
+			    </div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal-resetaccount -->
+		
+		<div id="modal-resetpassword" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+			    <div class="modal-content">
+			    	<div class="modal-header">
+			        	<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			        	<h4 class="modal-title">Reset Password</h4>
+			      	</div>
+			      	<form class="form-horizontal" role="form" action="{{@BASE . '/resetpassword'}}" method="post" enctype="multipart/form-data" name="reset-password-form">
+				      	<div class="modal-body">
+				        	<div class="form-group">
+				        		<label for="forgotusername" class="col-xs-4 control-label">User Name</label>
+				        		<div class="col-xs-8">
+									<input type="text" class="form-control" id="forgotusername" name="forgotusername" placeholder="username" required autofocus>
+								</div>
+				        	</div><!-- /.form-group -->	
+				        	<div class="form-group">
+				        		<label for="forgotemail" class="col-xs-4 control-label">Registered Email</label>
+				        		<div class="col-xs-8">
+									<input type="email" class="form-control" id="forgotemail" name="forgotemail" placeholder="registered email" required autofocus>									
+								</div>
+				        	</div><!-- /.form-group -->	
+				        	<div class="form-group">
+								<p class="text-danger text-center">A new/temporary password will be created and sent to your registered email.</p>
+				        	</div><!-- /.form-group -->	
+				      	</div>
+				      	<div class="modal-footer">
+				        	<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+				        	<button type="submit" class="btn btn-primary pull-right">Confirm</button>
+				      	</div>
+					</form> 	
+			    </div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal-resetpassword -->
+  	</body>
+  	<!-- jQuery 2.2.3 -->
+	<script src="../etaxware/public/plugins/jQuery/jquery-2.2.3.min.js"></script>
+	<!-- Bootstrap 3.3.6 -->
+	<script src="../etaxware/public/bootstrap/js/bootstrap.min.js"></script>
+	<script>
+		var setPasswordVisibility = function(inputSelector, toggleSelector) {
+			var $input = $(inputSelector);
+			var $toggle = $(toggleSelector);
+			var showing = $input.attr('type') === 'text';
+			$input.attr('type', showing ? 'password' : 'text');
+			$toggle.attr('title', showing ? 'Show password' : 'Hide password');
+			$toggle.attr('aria-label', showing ? 'Show password' : 'Hide password');
+			$toggle.find('.glyphicon')
+				.removeClass(showing ? 'glyphicon-eye-close' : 'glyphicon-eye-open')
+				.addClass(showing ? 'glyphicon-eye-open' : 'glyphicon-eye-close');
+		};
+
+		$('#toggle-login-password').on('click', function() {
+			setPasswordVisibility('#password', '#toggle-login-password');
+		});
+
+		$('#toggle-reset-password').on('click', function() {
+			setPasswordVisibility('#resetpassword', '#toggle-reset-password');
+		});
+	</script>
+</html>

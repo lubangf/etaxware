@@ -1,0 +1,35 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Validation JS -->
+		<script src="{{@path . 'js/currency.js'}}"></script>
+		<script>
+			$(window).load(function(){
+				$('#li-currencies-1').addClass('active');//mark the currency link as active
+				listcurrencies();//load the currency list table on load
+			});		
+			
+			//onclick event handler for the anchor called refresh-currency-list-1
+			$('#refresh-currency-list-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-currency-list').append('<div class="overlay" id="otbl-currency-list"><i class="fa fa-refresh fa-spin"></i></div>');
+				listcurrencies();
+			});
+			
+			//onclick event handler for the anchor called refresh-currency-list-2
+			$('#refresh-currency-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-currency-list').append('<div class="overlay" id="otbl-currency-list"><i class="fa fa-refresh fa-spin"></i></div>');
+				listcurrencies();
+			});	
+			
+			//onclick event handler for the anchor called fetch-currency-rates-2
+			$('#fetch-currency-rates-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-currency-list').append('<div class="overlay" id="otbl-currency-list"><i class="fa fa-refresh fa-spin"></i></div>');
+				fetchcurrencyrates();
+				//location.reload(true)
+				//listcurrencies();
+				//location.reload(true)
+			});
+		</script>

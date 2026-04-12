@@ -1,0 +1,170 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-shopping-cart"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li><a href="{{@BASE . '/product'}}"><i class="fa fa-product-hunt"></i> Products</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li class="active"><a href="#tab_1" data-toggle="tab"><i class="fa fa-file-excel-o"></i> Files</a></li>
+									<li><a href="#tab_2" data-toggle="tab"><i class="fa fa-eye"></i> Processing Run</a></li>
+									<li><a href="#tab_3" data-toggle="tab"><i class="fa fa-file-video-o"></i> Logs</a></li>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="upload-new-file-2" data-toggle="modal" data-target="#modal-upload-new-file"><i class="fa fa-plus-circle"></i>New File</a></li>
+											<li role="presentation" class="divider"></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="refresh-file-list-2"><i class="fa fa-refresh"></i>Refresh File List</a></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="refresh-status-2"><i class="fa fa-refresh"></i>Refresh Processing Status</a></li>
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="refresh-log-2"><i class="fa fa-refresh"></i>Refresh Log</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+										<strong><a href="" id="upload-new-file-1" data-toggle="modal" data-target="#modal-upload-new-file"><i class="fa fa-plus-circle"></i> <span> New File</span></a></strong> |
+										<strong><a href="" id="refresh-file-list-1"><i class="fa fa-refresh"></i> <span> Refresh List</span></a></strong> 
+										<p class="text-center">
+											<check if="{{@fileuploadstatus == 1}}">
+												<true>
+													<span style="font-size: 12pt;" class="label label-success" id="fileuploadfeedback">{{@fileuploadfeedback}}</span>
+												</true>
+												<false>
+													<span style="font-size: 12pt;" class="label label-danger" id="fileuploadfeedback">{{@fileuploadfeedback}}</span>
+												</false>
+											</check>
+										</p>
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box" id="ctnr-tbl-file-openingstock">
+													<div class="box-body">
+														<table id="tbl-file-openingstock" class="table table-bordered table-striped">
+															<thead>
+																<tr>	
+																	<th>ID</th>
+																	<th>File Name</th>
+																	<th>Folder</th>
+																	<th>Uploaded By</th>
+																	<th>Upload Date</th>
+																	<th>Processing Date</th>
+																	<th>Status</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="overlay" id="otbl-file-openingstock">
+														<i class="fa fa-refresh fa-spin"></i>
+													</div>
+												</div><!-- /.box -->
+											</div>
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_2">
+										<strong><a href="" id="refresh-status-1"><i class="fa fa-refresh"></i> <span> Refresh Status</span></a></strong>
+										<p class="text-danger text-center"></p>
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box" id="ctnr-tbl-openingstock-status">
+													<div class="box-body">
+														<table id="tbl-openingstock-status" class="table table-bordered table-striped">
+															<thead>
+																<tr>	
+																	<th>Run Id</th>
+																	<th>File Id</th>
+																	<th>File Name</th>
+																	<th>Started By</th>
+																	<th>Start Date</th>
+																	<th>End Date</th>
+																	<th>Errors</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+												</div><!-- /.box -->
+											</div>
+										</div><!-- ./row -->										
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_3">
+										<strong><a href="" id="refresh-log-1"><i class="fa fa-refresh"></i> <span> Refresh log</span></a></strong>
+										<p class="text-danger text-center"></p>
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box" id="ctnr-tbl-openingstock-log">
+													<div class="box-body">
+														<table id="tbl-openingstock-log" class="table table-bordered table-striped">
+															<thead>
+																<tr>	
+																	<th>Date</th>
+																	<th>Run Id</th>
+																	<th>Run By</th>
+																	<th>File Id</th>
+																	<th>File Name</th>																
+																	<th>Activity</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+												</div><!-- /.box -->
+											</div>
+										</div><!-- ./row -->									
+									</div><!-- /.tab-pane -->
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->
+					
+					<div class="modal fade" id="modal-upload-new-file"><!-- Upload New File Modal -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Upload File</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/uploadfiletofilesystem'}}" method="post" enctype="multipart/form-data" name="upload-new-file-form">
+										<div class="box-body">									
+											<div class="form-group">
+												<label for="uploadfile" class="col-sm-4 control-label">Choose file</label>
+												<div class="col-sm-8">
+													<input type="file" class="form-control" id="uploadfile" name="uploadfile" accept=".csv, .txt, .xls, .xlsx" required>
+												</div>
+											</div>	
+											<div class="form-group">
+												<label for="existsubfoldername" class="col-sm-4 control-label">Upload To Existing Folder</label>
+												<div class="col-sm-8">
+													<select class="form-control select2" style="width: 100%;" id="existsubfoldername" name="existsubfoldername"></select>
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="newsubfoldername" class="col-sm-4 control-label">Upload To New Folder</label>
+												<div class="col-sm-8">
+													<input type="text" class="form-control" id="newsubfoldername" name="newsubfoldername" placeholder="Type new folder name here">
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="description" class="col-sm-4 control-label">Description</label>
+												<div class="col-sm-8">
+													<input type="text" class="form-control" id="description" name="description" placeholder="Description">
+												</div>
+											</div>
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-upload-new-file -->					
+				</section>

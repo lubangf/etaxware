@@ -1,0 +1,229 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-customer-hunt"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li><a href="{{@BASE . '/customer'}}"><i class="fa fa-users"></i> Customers</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>				
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_general"><a href="#tab_1" data-toggle="tab"><i class="fa fa-gear"></i> General</a></li>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createcustomer'}}" id="create-new-customer-2"><i class="fa fa-plus-circle"></i>Add Customer</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editcustomer'}}" method="post" enctype="multipart/form-data" name="customer-form">
+														<div class="box-body">
+															<div class="form-group">
+																<label for="customer" class="col-xs-2 control-label">ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.id}}" id="customer" name="customer" placeholder="ID" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="customertype" class="col-xs-2 control-label">Type</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="customertype" id="customertype" required>
+																		<option value="" selected disabled hidden>Select Type</option>
+																		<repeat group="{{@buyertypes}}" value="{{@buyertype}}">																		
+																			<check if="{{@buyertype.code == @customer.type}}">
+																				<true><check if="{{@buyertype.disabled == 1}}"><true><option value="{{@buyertype.code}}" selected disabled>{{@buyertype.code}} - {{@buyertype.name}}</option></true><false><option value="{{@buyertype.code}}" selected>{{@buyertype.code}} - {{@buyertype.name}}</option></false></check></true>
+																				<false><check if="{{@buyertype.disabled == 1}}"><true><option value="{{@buyertype.code}}" disabled>{{@buyertype.code}} - {{@buyertype.name}}</option></true><false><option value="{{@buyertype.code}}">{{@buyertype.code}} - {{@buyertype.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="customerstatus" class="col-xs-2 control-label">Status</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="customerstatus" id="customerstatus" required>
+																		<option value="" selected disabled hidden>Select Status</option>
+																		<repeat group="{{@customerstatuscodes}}" value="{{@customerstatuscode}}">																		
+																			<check if="{{@customerstatuscode.id == @customer.status}}">
+																				<true><check if="{{@customerstatuscode.disabled == 1}}"><true><option value="{{@customerstatuscode.id}}" selected disabled>{{@customerstatuscode.id}} - {{@customerstatuscode.name}}</option></true><false><option value="{{@customerstatuscode.id}}" selected>{{@customerstatuscode.id}} - {{@customerstatuscode.name}}</option></false></check></true>
+																				<false><check if="{{@customerstatuscode.disabled == 1}}"><true><option value="{{@customerstatuscode.id}}" disabled>{{@customerstatuscode.id}} - {{@customerstatuscode.name}}</option></true><false><option value="{{@customerstatuscode.id}}">{{@customerstatuscode.id}} - {{@customerstatuscode.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="customercountrycode" class="col-xs-2 control-label">Country</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="customercountrycode" id="customercountrycode">
+																		<option value="" selected disabled hidden>Select Country</option>
+																		<repeat group="{{@countries}}" value="{{@country}}">																		
+																			<check if="{{@country.code == @customer.countryCode}}">
+																				<true><check if="{{@country.disabled == 1}}"><true><option value="{{@country.code}}" selected disabled>{{@country.code}} - {{@country.name}}</option></true><false><option value="{{@country.code}}" selected>{{@country.code}} - {{@country.name}}</option></false></check></true>
+																				<false><check if="{{@country.disabled == 1}}"><true><option value="{{@country.code}}" disabled>{{@country.code}} - {{@country.name}}</option></true><false><option value="{{@country.code}}">{{@country.code}} - {{@country.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="customersector" class="col-xs-2 control-label">Sector</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="customersector" id="customersector">
+																		<option value="" selected disabled hidden>Select Sector</option>
+																		<repeat group="{{@sectors}}" value="{{@sector}}">																		
+																			<check if="{{@sector.code == @customer.sectorCode}}">
+																				<true><check if="{{@sector.disabled == 1}}"><true><option value="{{@sector.code}}" selected disabled>{{@sector.code}} - {{@sector.name}}</option></true><false><option value="{{@sector.code}}" selected>{{@sector.code}} - {{@sector.name}}</option></false></check></true>
+																				<false><check if="{{@sector.disabled == 1}}"><true><option value="{{@sector.code}}" disabled>{{@sector.code}} - {{@sector.name}}</option></true><false><option value="{{@sector.code}}">{{@sector.code}} - {{@sector.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="customertin" class="col-xs-2 control-label">TIN</label>
+																<div class="col-xs-10">
+																	<input type="text" pattern=".{10,10}"  title="10 characters required" class="form-control" value="{{@customer.tin}}" id="customertin" name="customertin" placeholder="TIN">
+																	<p id="tin-val-text"></p>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="customerninbrn" class="col-xs-2 control-label">NIN/BRN</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.ninbrn}}" id="customerninbrn" name="customerninbrn" placeholder="NIN/BRN">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="customerlegalname" class="col-xs-2 control-label">Legal Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.legalname}}" id="customerlegalname" name="customerlegalname" placeholder="Legal Name" required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="customerbusinessname" class="col-xs-2 control-label">Business Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.businessname}}" id="customerbusinessname" name="customerbusinessname" placeholder="Business Name">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="customeraddress" class="col-xs-2 control-label">Address</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.address}}" id="customeraddress" name="customeraddress" placeholder="Address">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="customermobilephone" class="col-xs-2 control-label">Mobile Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.mobilephone}}" id="customermobilephone" name="customermobilephone" placeholder="Mobile Phone">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="customerlinephone" class="col-xs-2 control-label">Line Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.linephone}}" id="customerlinephone" name="customerlinephone" placeholder="Line Phone">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="customeremailaddress" class="col-xs-2 control-label">Email</label>
+																<div class="col-xs-10">
+																	<input type="email" class="form-control" value="{{@customer.emailaddress}}" id="customeremailaddress" name="customeremailaddress" placeholder="Email">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="customerplaceofbusiness" class="col-xs-2 control-label">Place Of Business</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.placeofbusiness}}" id="customerplaceofbusiness" name="customerplaceofbusiness" placeholder="Place Of Business">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="customerpassportnum" class="col-xs-2 control-label">Passport</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.PassportNum}}" id="customerpassportnum" name="customerpassportnum" placeholder="Passport">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+															<div class="checkbox">
+																<label for="" class="col-xs-2 control-label"></label>
+																<div class="col-xs-10">
+																	<label>
+																		<check if="{{@customer.nonResidentFlag == '1'}}">
+																			<true><input type="checkbox" class="" id="nonResidentFlag" name="nonResidentFlag" checked></true> 
+																			<false><input type="checkbox" class="" id="nonResidentFlag" name="nonResidentFlag"></false> 
+																		</check>
+																		Non Resident Flag? 
+																	</label>
+																</div>
+															</div>
+															</div><!-- ./form-group -->	
+															<div class="form-group">
+																<label for="vatProjectId" class="col-xs-2 control-label">VAT Project Id</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.vatProjectId}}" id="vatProjectId" name="vatProjectId" placeholder="VAT Project Id">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="vatProjectName" class="col-xs-2 control-label">VAT Project Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@customer.vatProjectName}}" id="vatProjectName" name="vatProjectName" placeholder="VAT Project Name">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="deliveryTermsCode" class="col-xs-2 control-label">Delivery Terms</label>
+																<div class="col-xs-10">
+																	<select class="form-control" name="deliveryTermsCode" id="deliveryTermsCode">
+																		<option value="" selected disabled hidden>Select Delivery Terms</option>
+																		<repeat group="{{@deliveryterms}}" value="{{@deliveryterm}}">																		
+																			<check if="{{@deliveryterm.code == @customer.deliveryTermsCode}}">
+																				<true><check if="{{@deliveryterm.disabled == 1}}"><true><option value="{{@deliveryterm.code}}" selected disabled>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></true><false><option value="{{@deliveryterm.code}}" selected>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></false></check></true>
+																				<false><check if="{{@deliveryterm.disabled == 1}}"><true><option value="{{@deliveryterm.code}}" disabled>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></true><false><option value="{{@deliveryterm.code}}">{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->																		
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="button" class="btn btn-default" onclick="window.location='../../etaxware/customer';return false;">Cancel</button>
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="customerid" id="customerid" value="{{@customer.id}}" />
+															<input type="hidden" name="currenttab" id="currenttab" value="tab_general" />
+															<input type="hidden" name="currenttabpane" id="currenttabpane"  value="tab_1" />
+														</div><!-- /.box-footer -->														
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->									
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->	
+					
+					<div class="modal fade" id="modal-validate-customertin"><!-- modal-validate-customertin -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Validating TIN</h4>
+								</div>
+								<div class="modal-body">									
+									<p class="help-block text-aqua"><i class="fa fa-bell-o"></i> Please wait...</p>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-validate-customertin -->				
+				</section>

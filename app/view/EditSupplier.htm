@@ -1,0 +1,189 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-supplier-hunt"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li><a href="{{@BASE . '/supplier'}}"><i class="fa fa-users"></i> Suppliers</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>				
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_general"><a href="#tab_1" data-toggle="tab"><i class="fa fa-gear"></i> General</a></li>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createsupplier'}}" id="create-new-supplier-2"><i class="fa fa-plus-circle"></i>Add Supplier</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editsupplier'}}" method="post" enctype="multipart/form-data" name="supplier-form">
+														<div class="box-body">
+															<div class="form-group">
+																<label for="supplier" class="col-xs-2 control-label">ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.id}}" id="supplier" name="supplier" placeholder="ID" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="suppliertype" class="col-xs-2 control-label">Type</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="suppliertype" id="suppliertype" required>
+																		<option value="" selected disabled hidden>Select Type</option>
+																		<repeat group="{{@buyertypes}}" value="{{@buyertype}}">																		
+																			<check if="{{@buyertype.code == @supplier.type}}">
+																				<true><check if="{{@buyertype.disabled == 1}}"><true><option value="{{@buyertype.code}}" selected disabled>{{@buyertype.code}} - {{@buyertype.name}}</option></true><false><option value="{{@buyertype.code}}" selected>{{@buyertype.code}} - {{@buyertype.name}}</option></false></check></true>
+																				<false><check if="{{@buyertype.disabled == 1}}"><true><option value="{{@buyertype.code}}" disabled>{{@buyertype.code}} - {{@buyertype.name}}</option></true><false><option value="{{@buyertype.code}}">{{@buyertype.code}} - {{@buyertype.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="supplierstatus" class="col-xs-2 control-label">Status</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="supplierstatus" id="supplierstatus" required>
+																		<option value="" selected disabled hidden>Select Status</option>
+																		<repeat group="{{@supplierstatuscodes}}" value="{{@supplierstatuscode}}">																		
+																			<check if="{{@supplierstatuscode.id == @supplier.status}}">
+																				<true><check if="{{@supplierstatuscode.disabled == 1}}"><true><option value="{{@supplierstatuscode.id}}" selected disabled>{{@supplierstatuscode.id}} - {{@supplierstatuscode.name}}</option></true><false><option value="{{@supplierstatuscode.id}}" selected>{{@supplierstatuscode.id}} - {{@supplierstatuscode.name}}</option></false></check></true>
+																				<false><check if="{{@supplierstatuscode.disabled == 1}}"><true><option value="{{@supplierstatuscode.id}}" disabled>{{@supplierstatuscode.id}} - {{@supplierstatuscode.name}}</option></true><false><option value="{{@supplierstatuscode.id}}">{{@supplierstatuscode.id}} - {{@supplierstatuscode.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="suppliercountrycode" class="col-xs-2 control-label">Country</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="suppliercountrycode" id="suppliercountrycode" required>
+																		<option value="" selected disabled hidden>Select Country</option>
+																		<repeat group="{{@countries}}" value="{{@country}}">																		
+																			<check if="{{@country.code == @supplier.countryCode}}">
+																				<true><check if="{{@country.disabled == 1}}"><true><option value="{{@country.code}}" selected disabled>{{@country.code}} - {{@country.name}}</option></true><false><option value="{{@country.code}}" selected>{{@country.code}} - {{@country.name}}</option></false></check></true>
+																				<false><check if="{{@country.disabled == 1}}"><true><option value="{{@country.code}}" disabled>{{@country.code}} - {{@country.name}}</option></true><false><option value="{{@country.code}}">{{@country.code}} - {{@country.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="suppliersector" class="col-xs-2 control-label">Sector</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="suppliersector" id="suppliersector" required>
+																		<option value="" selected disabled hidden>Select Sector</option>
+																		<repeat group="{{@sectors}}" value="{{@sector}}">																		
+																			<check if="{{@sector.code == @supplier.sectorCode}}">
+																				<true><check if="{{@sector.disabled == 1}}"><true><option value="{{@sector.code}}" selected disabled>{{@sector.code}} - {{@sector.name}}</option></true><false><option value="{{@sector.code}}" selected>{{@sector.code}} - {{@sector.name}}</option></false></check></true>
+																				<false><check if="{{@sector.disabled == 1}}"><true><option value="{{@sector.code}}" disabled>{{@sector.code}} - {{@sector.name}}</option></true><false><option value="{{@sector.code}}">{{@sector.code}} - {{@sector.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="suppliertin" class="col-xs-2 control-label">TIN</label>
+																<div class="col-xs-10">
+																	<input type="text" pattern=".{10,10}"  title="10 characters required" class="form-control" value="{{@supplier.tin}}" id="suppliertin" name="suppliertin" placeholder="TIN">
+																	<p id="tin-val-text"></p>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="supplierninbrn" class="col-xs-2 control-label">NIN/BRN</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.ninbrn}}" id="supplierninbrn" name="supplierninbrn" placeholder="NIN/BRN">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="supplierlegalname" class="col-xs-2 control-label">Legal Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.legalname}}" id="supplierlegalname" name="supplierlegalname" placeholder="Legal Name" required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="supplierbusinessname" class="col-xs-2 control-label">Business Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.businessname}}" id="supplierbusinessname" name="supplierbusinessname" placeholder="Business Name">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="supplieraddress" class="col-xs-2 control-label">Address</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.address}}" id="supplieraddress" name="supplieraddress" placeholder="Address">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="suppliermobilephone" class="col-xs-2 control-label">Mobile Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.mobilephone}}" id="suppliermobilephone" name="suppliermobilephone" placeholder="Mobile Phone">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="supplierlinephone" class="col-xs-2 control-label">Line Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.linephone}}" id="supplierlinephone" name="supplierlinephone" placeholder="Line Phone">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="supplieremailaddress" class="col-xs-2 control-label">Email</label>
+																<div class="col-xs-10">
+																	<input type="email" class="form-control" value="{{@supplier.emailaddress}}" id="supplieremailaddress" name="supplieremailaddress" placeholder="Email">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="supplierplaceofbusiness" class="col-xs-2 control-label">Place Of Business</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.placeofbusiness}}" id="supplierplaceofbusiness" name="supplierplaceofbusiness" placeholder="NPlace Of Business">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="supplierpassportnum" class="col-xs-2 control-label">Passport</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@supplier.PassportNum}}" id="supplierpassportnum" name="supplierpassportnum" placeholder="Passport">
+																</div>
+															</div><!-- /.form-group -->					
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="button" class="btn btn-default" onclick="window.location='../../etaxware/supplier';return false;">Cancel</button>
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="supplierid" id="supplierid" value="{{@supplier.id}}" />
+															<input type="hidden" name="currenttab" id="currenttab" value="tab_general" />
+															<input type="hidden" name="currenttabpane" id="currenttabpane"  value="tab_1" />
+														</div><!-- /.box-footer -->														
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->									
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->	
+					
+					<div class="modal fade" id="modal-validate-suppliertin"><!-- modal-validate-suppliertin -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Validating TIN</h4>
+								</div>
+								<div class="modal-body">									
+									<p class="help-block text-aqua"><i class="fa fa-bell-o"></i> Please wait...</p>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-validate-suppliertin -->				
+				</section>

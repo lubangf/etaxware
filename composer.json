@@ -1,0 +1,14 @@
+{
+	"require" : {
+		"phpoffice/phpspreadsheet" : "^1.6",
+		"bcosca/fatfree-core" : "^3.6",
+		"ikkez/f3-fal" : "^0.7.2",
+		"phpmailer/phpmailer" : "^6.1",
+		"ikkez/f3-sheet" : "^0.4.1",
+		"mpdf/mpdf" : "^8.0.7",
+		"quickbooks/v3-php-sdk": "^6.0"
+	},
+	"require-dev": {
+		"friendsofphp/php-cs-fixer": "^3.86"
+	}
+}

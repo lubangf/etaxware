@@ -1,0 +1,170 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-file-text"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="invoice">
+					<div class="row">
+						<div class="col-xs-2" style="text-align: center">
+							<img src="../../etaxware/public/img/efris-logo.png" alt="EFRIS Logo">
+						</div>
+						<div class="col-xs-8" style="text-align: center">
+							<h2 class="page-header"> <strong>CREDIT NOTE</strong></h2>
+						</div>
+						<div class="col-xs-2" style="text-align: center">
+							<img src="" alt="Client Logo">
+						</div>
+					</div><!-- ./row -->	
+					<div class="row invoice-info">
+						<div class="col-sm-4 invoice-col">
+							<h3 class="page-header"><strong>Seller's Details</strong></h3>
+							<address>
+								BRN: {{@seller.ninbrn}}<br>
+								TIN: {{@seller.tin}}<br>
+								Trade Name: {{@seller.legalname}}<br>
+								Address: {{@seller.address}}<br>
+								Seller's Reference Number: <check if="{{@creditnote.erpcreditnoteno !== ''}}"><true>{{@creditnote.erpcreditnoteno}}</true><false>{{@creditnote.id}}</false></check><br>
+								Served By: {{@creditnote.operator}}<br>
+							</address>
+						</div>
+						<div class="col-sm-4 invoice-col">
+							<h3 class="page-header"><strong>Buyer's Details</strong></h3>
+							<address>
+								BRN: {{@buyer.ninbrn}}<br>
+								TIN: {{@buyer.tin}}<br>
+								Trade Name: {{@buyer.legalname}}<br>
+								Address: {{@buyer.address}}<br>
+								Email: {{@buyer.emailaddress}}<br>
+							</address>
+						</div>
+						<div class="col-sm-4 invoice-col">
+							<h3 class="page-header"><strong>EFRIS Information</strong></h3>
+							<address>
+								Document Type: Orignal<br>
+								Issued Date: {{@creditnote.issueddate}}<br>
+								Issue Time: {{@creditnote.issuedtime}}<br>
+								Device Number: {{@creditnote.deviceno}}<br>
+								Fiscal Document Number: {{@creditnote.oriinvoiceno}}<br>
+								Verification Code: {{@creditnote.antifakecode}}<br>
+								Credit Note No.: {{@creditnote.refundinvoiceno}}<br>
+							</address>
+						</div>
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12 table-responsive">
+							<table class="table table-striped">
+								<caption class="page-header"><strong>Goods/Service's Details</strong></caption>
+								<thead>
+									<tr>
+										<th>Item</th>
+										<th>Qty</th>
+										<th>Unit Measure</th>
+										<th>Unit Price</th>
+										<th>Total</th>
+										<th>Tax Category</th>
+									</tr>
+								</thead>
+								<tbody>
+									<repeat group="{{@goods}}" value="{{@good}}">
+										<tr>
+											<td>{{@good.item}}</td>
+											<td>{{'-' . @good.qty}}</td>
+											<td>{{@good.unitofmeasurename}}</td>
+											<td>{{@good.unitprice}}</td>
+											<td>{{'-' . @good.total}}</td>
+											<td>{{@good.taxcategory}}</td>
+										</tr>
+									</repeat>
+								</tbody>
+							</table>
+						</div><!-- /.col -->
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12 table-responsive">
+							<table class="table table-striped">
+								<caption class="page-header"><strong>Tax Details</strong></caption>
+								<thead>
+									<tr>
+										<th>Tax Category</th>
+										<th>Net Amount</th>
+										<th>Tax Amount</th>
+										<th>Gross Amount</th>
+									</tr>
+								</thead>
+								<tbody>
+									<repeat group="{{@taxes}}" value="{{@tax}}">
+										<tr>
+											<td>{{@tax.taxdescription}}</td>
+											<td>{{@tax.netamount}}</td>
+											<td>{{@tax.taxamount}}</td>
+											<td>{{@tax.grossamount}}</td>
+										</tr>
+									</repeat>
+								</tbody>
+							</table>
+						</div><!-- /.col -->
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12 table-responsive">
+							<table class="table table-striped">
+								<caption class="page-header"><strong>Summary</strong></caption>
+								<thead>
+									<tr>
+										<th></th>
+										<th>Previous Invoice Amount</th>
+										<th>Credit Note Amount</th>
+										<th>Current Invoice Amount</th>
+									</tr>
+								</thead>
+									<tr>
+										<td>Net Amount</td>
+										<td>{{@invoice.netamount2}}</td>
+										<td>{{@creditnote.netamount2}}</td>
+										<td>{{@invoice.netamount + @creditnote.netamount}}</td>
+									</tr>
+									<tr>
+										<td>Tax Amount</td>
+										<td>{{@invoice.taxamount2}}</td>
+										<td>{{@creditnote.taxamount2}}</td>
+										<td>{{@invoice.taxamount + @creditnote.taxamount}}</td>
+									</tr>
+									<tr>
+										<td>Gross Amount</td>
+										<td>{{@invoice.grossamount2}}</td>
+										<td>{{@creditnote.grossamount2}}</td>
+										<td>{{@invoice.grossamount + @creditnote.grossamount}}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div><!-- /.col -->
+					</div><!-- ./row -->					
+					<div class="row invoice-info">
+						<div class="col-sm-12 invoice-col">							
+							<address>
+								Currency: {{@creditnote.currency}}<br>
+								Mode: {{@creditnote.modename}}<br>
+								Remarks: {{@creditnote.remarks}}<br>
+							</address>
+						</div>
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12" style="text-align: center">
+							<canvas id="datamatrix" style="height:150px"></canvas>
+						</div>
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12" style="text-align: center">
+							<h2 class="page-header"> <strong>*** END OF CREDIT NOTE ***</strong></h2>
+						</div>
+					</div><!-- ./row -->
+					<div class="row no-print">
+						<div class="col-xs-12">
+							<a href="{{@BASE . '/printcreditnote/' . @creditnote.id}}" target="_blank" class="btn btn-primary pull-right"><i class="fa fa-print"></i> Print</a>
+						</div>
+					</div>					
+				</section><!-- ./content-creditnote -->
+			

@@ -1,0 +1,157 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-users"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-info" id="ctnr-tbl-customer-list">
+								<div class="box-header with-border">
+									<h3 class="box-title">Customers</h3>
+									<div class="box-tools pull-right">
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+										<div class="btn-group">
+											<button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown"><i class="fa fa-wrench"></i></button>
+											<ul class="dropdown-menu" role="menu">
+												<li><a href="#" id="refresh-customer-list-1"><i class="fa fa-refresh"></i>Refresh List</a></li>
+												<li class="divider"></li>
+												<li><a href="{{@BASE . '/createcustomer'}}"><i class="fa fa-plus-circle"></i>Add Customer</a></li>
+												<li><a href="#" data-toggle="modal" data-target="#modal-download-erp-customers"><i class="fa fa-plus-circle"></i>Download from ERP</a></li>
+											</ul>
+										</div>
+									</div>
+								</div><!-- ./box-header -->
+								<div class="box-body">
+									<table id="tbl-customer-list" class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>ID</th>
+												<th>Name</th>
+												<th>Status</th>
+												<th>Modified By</th>
+												<th>Modified Date</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+									</table>
+								</div><!-- ./box-body -->
+								<div class="overlay" id="otbl-customer-list">
+									<i class="fa fa-refresh fa-spin"></i>
+								</div>
+								<div class="box-footer clearfix">
+									<a href="#" id="refresh-customer-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh List</span></a>
+									<a href="{{@BASE . '/createcustomer'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> Add Customer</span></a>
+								</div><!-- ./box-footer -->
+							</div><!-- ./box -->
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->	
+					
+					<div class="modal fade" id="modal-customer-check"><!-- modal-customer-check -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Check Customer</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/checkcustomer'}}" method="post" enctype="multipart/form-data" id="check-customer-form" name="check-customer-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="checkcustomerid_2" class="col-xs-4 control-label">Customer ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="checkcustomerid_2" name="checkcustomerid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+											<label for="checkcustomercommoditycode" class="col-xs-4 control-label">Commodity</label>
+											<div class="col-xs-8">
+												<select class="form-control select2" style="width: 100%;" id="checkcustomercommoditycode" name="checkcustomercommoditycode"></select>
+											</div>															
+											</div><!-- /.form-group -->																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="checkcustomerid" id="checkcustomerid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-customer-check -->	
+					
+					<div class="modal fade" id="modal-download-erp-customers"><!-- modal-download-erp-customers -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Customers from ERP</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/downloadErpCustomers'}}" method="post" enctype="multipart/form-data" id="download-erp-customers-form" name="download-erp-customers-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="checkcustomerid_2" class="col-xs-4 control-label">Start Date</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="downloaderpcustomersstartdate" name="downloaderpcustomersstartdate">
+                                                </div>
+                                            </div><!-- ./form-group --> 
+                                            <div class="form-group">
+											<label for="checkcustomercommoditycode" class="col-xs-4 control-label">End Date</label>
+											<div class="col-xs-8">
+												<input type="text" class="form-control" id="downloaderpcustomersenddate" name="downloaderpcustomersenddate">
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="checkcustomercommoditycode" class="col-xs-4 control-label">Customer Number</label>
+											<div class="col-xs-8">
+												<input type="text" class="form-control" id="downloaderpcustomernumber" name="downloaderpcustomernumber">
+											</div>															
+											</div><!-- /.form-group -->																																																			
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-download-erp-customers -->
+					
+					
+					<div class="modal fade" id="modal-customer-erp-download"><!-- modal-customer-erp-download -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Download Customer from ERP</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/fetchErpCustomer'}}" method="post" enctype="multipart/form-data" id="download-erp-customer-form" name="download-erp-customer-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="checkcustomerid_2" class="col-xs-4 control-label">Customer ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="erpdownloadcustomerid_2" name="erpdownloadcustomerid_2" placeholder="ID" required disabled>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																		
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+											<input type="hidden" name="erpdownloadcustomerid" id="erpdownloadcustomerid" />
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-customer-erp-download -->
+				</section>

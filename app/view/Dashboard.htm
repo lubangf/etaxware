@@ -1,0 +1,58 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-dashboard"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-lg-3 col-xs-6">
+							<div class="small-box bg-aqua">
+								<div class="inner">
+									<h3>{{@kpis.0.value}}</h3>
+									<p>Running Matchruns</p>
+								</div><!-- ./inner -->
+								<div class="icon">
+									<i class="icon ion-ios-timer"></i>
+								</div><!-- ./icon -->
+							</div><!-- ./small-box -->
+						</div><!-- ./col-lg-3 -->
+						<div class="col-lg-3 col-xs-6">
+							<div class="small-box bg-green">
+								<div class="inner">
+									<h3>{{@kpis.1.value}}</h3>
+									<p>Successful Matchruns</p>
+								</div><!-- ./inner -->
+								<div class="icon">
+									<i class="icon ion-checkmark-circled"></i>
+								</div><!-- ./icon -->
+							</div><!-- ./small-box -->
+						</div><!-- ./col-lg-3 -->
+						<div class="col-lg-3 col-xs-6">
+							<div class="small-box bg-yellow">
+								<div class="inner">
+									<h3>{{@kpis.2.value}}</h3>
+									<p>Queued Matchruns</p>
+								</div><!-- ./inner -->
+								<div class="icon">
+									<i class="icon ion-alert-circled"></i>
+								</div><!-- ./icon -->
+							</div><!-- ./small-box -->
+						</div><!-- ./col-lg-3 -->
+						<div class="col-lg-3 col-xs-6">
+							<div class="small-box bg-red">
+								<div class="inner">
+									<h3>{{@kpis.3.value}}</h3>
+									<p>Failed Matchruns</p>
+								</div><!-- ./inner -->
+								<div class="icon">
+									<i class="icon ion-close-circled"></i>
+								</div><!-- ./icon -->
+							</div><!-- ./small-box -->
+						</div><!-- ./col-lg-3 -->
+					</div><!-- ./row -->
+				</section><!-- ./content -->

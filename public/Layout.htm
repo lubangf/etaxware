@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">		
+		<!-- Tell the browser to be responsive to screen width -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    	<meta name="description" content="This is the layout template">
+    	<meta name="author" content="frncslubanga@gmail.com">
+    	<link rel="icon" href="{{@path . 'img/logo.png'}}">
+    	<link rel="icon" type="image/png" sizes="16x16" href="{{@path . 'img/favicon-16x16.png'}}">
+    		
+		<title>{{@appsettings.APPLONGNAME}}&trade; | {{@pagetitle}}</title>
+		
+		<!-- Bootstrap 3.3.6 -->
+		<link rel="stylesheet" href="{{@path . 'bootstrap/css/bootstrap.min.css'}}">		
+		<!-- Font Awesome -->
+		<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">	 -->
+		<link rel="stylesheet" href="{{@path . 'css/font-awesome.min.css'}}">	
+		<!-- Ionicons -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">		
+		<!-- DataTables -->
+        <link rel="stylesheet" href="{{@path . 'plugins/datatables/dataTables.bootstrap.css'}}">
+		<!-- Select2 -->
+        <link rel="stylesheet" href="{{@path . 'plugins/select2/select2.min.css'}}">        
+		<!-- Theme style -->
+		<link rel="stylesheet" href="{{@path . 'css/AdminLTE.min.css'}}">	
+		<!-- Error style -->
+		<link rel="stylesheet" href="{{@path . 'css/error.css'}}">		
+		<!-- AdminLTE Skins. Choose a skin from the css/skins folder instead of downloading all of them to reduce the load. -->
+		<link rel="stylesheet" href="{{@path . 'css/skins/skin-blue.min.css'}}">
+		
+	    <!-- bootstrap datepicker -->
+	    <link rel="stylesheet" href="{{@path . 'plugins/datepicker/datepicker3.css'}}">
+	  
+	    <!-- Bootstrap time Picker -->
+	    <link rel="stylesheet" href="{{@path . 'plugins/timepicker/bootstrap-timepicker.min.css'}}">	
+	    
+	    <!-- Bootstrap Dual Listbox -->
+	    <link rel="stylesheet" href="{{@path . 'plugins/bootstrap-duallistbox/bootstrap-duallistbox.css'}}">
+	    <!-- Includes headers specific to a page -->
+	    <include href="{{@pageheader}}"></include>	
+		
+		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+		<![endif]-->
+	</head>
+	<body class="hold-transition skin-blue sidebar-mini">
+		<div class="wrapper">
+			<!-- Top row. It contains the logo and header bar -->
+			<header class="main-header">
+				<!-- Logo -->
+				<a href="{{@BASE}}" class="logo">
+					<span class="logo-mini"><b>{{@appsettings.APPSHORTNAME}}</b>&trade;</span><!-- mini logo for sidebar mini 50x50 pixels -->
+					<span class="logo-lg"><b>{{@appsettings.APPLONGNAME}}</b>&trade;</span><!-- logo for regular state and mobile devices -->
+				</a>
+				
+				<!-- Header Navbar: style can be found in header.less -->
+				<nav class="navbar navbar-static-top">
+					<a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button"><!-- Sidebar toggle button-->
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</a>
+					<div class="navbar-custom-menu">
+						<ul class="nav navbar-nav">
+							<li class="dropdown notifications-menu"><!-- Notifications: style can be found in dropdown.less -->
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+									<i class="fa fa-bell"></i>
+									<span class="label label-danger">{{@notificationscount}}</span>
+								</a>
+								<ul class="dropdown-menu">
+									<li class="header">You have {{@notificationscount}} notifications</li>
+									<li>
+										<!-- inner menu: contains the actual data -->
+										<ul class="menu">
+											<repeat group="{{@notifications}}" value="{{@notification}}">
+												<check if="{{@notification.notificationsubtype == @appsettings.INFONOTIFICATION}}"><true><li><a href="" id="read-notification" data-toggle="modal" data-target="#modal-read-notification" data-id="{{@notification.id}}"><i class="fa fa-bell text-aqua"></i> {{@notification.notification}}</a></li></true></check>
+												<check if="{{@notification.notificationsubtype == @appsettings.WARNNOTIFICATION}}"><true><li><a href="" id="read-notification" data-toggle="modal" data-target="#modal-read-notification" data-id="{{@notification.id}}"><i class="fa fa-warning text-yellow"></i> {{@notification.notification}}</a></li></true></check>
+												<check if="{{@notification.notificationsubtype == @appsettings.ERRORNOTIFICATION}}"><true><li><a href="" id="read-notification" data-toggle="modal" data-target="#modal-read-notification" data-id="{{@notification.id}}"><i class="fa fa-warning text-red"></i> {{@notification.notification}}</a></li></true></check>
+												<check if="{{@notification.notificationsubtype == @appsettings.SUCCESSNOTIFICATION}}"><true><li><a href="" id="read-notification" data-toggle="modal" data-target="#modal-read-notification" data-id="{{@notification.id}}"><i class="fa fa-bell text-green"></i> {{@notification.notification}}</a></li></true></check> 
+											</repeat>
+										</ul>
+									</li>
+									<li class="footer"><a href="#" id="refresh-notifications-2"><i class="fa fa-refresh"></i>Refresh</a></li>									
+								</ul>
+							</li><!-- ./notifications -->
+							<li class="dropdown user user-menu"> <!-- User Account: style can be found in dropdown.less -->
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+									<i class="fa fa-user"></i>
+									<span id="usernamespan-1" class="hidden-xs">{{@user.username}}</span>
+								</a>
+								<ul class="dropdown-menu">
+									<li class="user-header"><!-- User image -->
+										<img src="{{@path . 'img/avatar.png'}}" class="img-circle" alt="User Image">
+										<p>{{@user.firstname}} {{@user.lastname}}<small>Last login {{@user.lastlogindt}}</small></p>
+									</li>
+									<li class="user-footer">
+										<div class="pull-left">
+						                	<a href="#" data-toggle="modal" data-target="#modal-viewuser" class="btn btn-default btn-flat">Profile</a>
+						                </div>
+						                <div class="pull-right">
+						                	<a href="#" data-toggle="modal" data-target="#modal-logout" class="btn btn-default btn-flat">Sign out</a>
+						                </div>
+									</li><!-- ./user-footer -->
+								</ul>
+							</li><!-- ./user-account -->
+						</ul>
+					</div><!-- ./navbar-custom-menu -->
+				</nav><!-- ./navbar -->
+			</header><!-- ./main-header -->
+			
+			<!-- Left side column. It contains the user panel, search form and sidebar -->
+			<aside class="main-sidebar">
+				<section class="sidebar"><!-- sidebar: style can be found in sidebar.less -->					
+					<form action="#" method="get" class="sidebar-form"><!-- search form -->
+						<div class="input-group">
+							<input type="text" name="q" class="form-control" placeholder="Quick Search...">
+							<span class="input-group-btn">
+								<button type="submit" name="quick-search" id="quick-search" class="btn btn-flat"><i class="fa fa-search"></i></button>
+							</span>
+						</div>
+					</form>
+					
+					<ul class="sidebar-menu"><!-- sidebar menu: : style can be found in sidebar.less -->
+						<li id="li-home-1"><a href="{{@BASE}}"><i class="fa fa-home"></i> <span>Home</span></a></li>
+						<check if="{{@userpermissions.VIEWDASHBOARD == true}}"><true><li id="li-dashboard-1"><a href="{{@BASE . '/'}}"><i class="fa fa-dashboard"></i> <span>Dashboard</span></a></li></true></check>
+						<check if="{{@userpermissions.VIEWPRODUCTS == true}}">
+							<true>
+								<li id="li-products-1">
+									<a href="">
+										<i class="fa fa-product-hunt"></i> <span>Products</span>
+										<span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+									</a>
+									<ul class="treeview-menu">
+										<check if="{{@userpermissions.VIEWPRODUCTS == true}}"><true><li id="li-products-2"><a href="{{@BASE . '/product'}}"><i class="fa fa-product-hunt"></i> <span>Products</span></a></li></true></check>	
+										<check if="{{@userpermissions.VIEWPURCHASEORDERS == true}}"><true><li id="li-purchaseorders-1"><a href="{{@BASE . '/purchaseorder'}}"><i class="fa fa-plus-square"></i> <span>Purchase Orders</span></a></li></true></check>
+										<check if="{{@userpermissions.VIEWCOMMODITYCODES == true}}"><true><li id="li-commoditycodes-1"><a href="{{@BASE . '/commoditycode'}}"><i class="fa fa-shopping-cart"></i> <span>Commodity Codes</span></a></li></true></check>
+									</ul>
+								</li>
+							</true>
+						</check>
+						<check if="{{@userpermissions.VIEWCUSTOMERS == true}}"><true><li id="li-customers-1"><a href="{{@BASE . '/customer'}}"><i class="fa fa-users"></i> <span>Customers</span></a></li></true></check>	
+						<check if="{{@userpermissions.VIEWSUPPLIERS == true}}"><true><li id="li-supplier-1"><a href="{{@BASE . '/supplier'}}"><i class="fa fa-users"></i> <span>Suppliers</span></a></li></true></check>
+						<check if="{{@userpermissions.VIEWSALES == true}}">
+							<true>
+								<li id="li-sales-1">
+									<a href="">
+										<i class="fa fa-shopping-cart"></i> <span>Sales</span>
+										<span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+									</a>
+									<ul class="treeview-menu">
+										<check if="{{@userpermissions.VIEWINVOICES == true}}"><true><li id="li-invoices-1"><a href="{{@BASE . '/invoice'}}"><i class="fa fa-sticky-note"></i> <span>Invoices</span></a></li></true></check>	
+										<check if="{{@userpermissions.VIEWCREDITNOTES == true}}"><true><li id="li-creditnotes-1"><a href="{{@BASE . '/creditnote'}}"><i class="fa fa-plus-square"></i> <span>Credit Notes</span></a></li></true></check>
+										<check if="{{@userpermissions.VIEWDEBITNOTES == true}}"><true><li id="li-debitnotes-1"><a href="{{@BASE . '/debitnote'}}"><i class="fa fa-minus-square"></i> <span>Debit Notes</span></a></li></true></check>
+									</ul>
+								</li>
+							</true>
+						</check>																
+						<check if="{{@userpermissions.VIEWCURRENCIES == true}}"><true><li id="li-currencies-1"><a href="{{@BASE . '/currency'}}"><i class="fa fa-money"></i> <span>Currencies</span></a></li></true></check>
+						<check if="{{@userpermissions.VIEWADMIN == true}}"><true><li id="li-administration-1"><a href="{{@BASE . '/administration'}}"><i class="fa fa-briefcase"></i> <span>Administration</span></a></li></true></check>
+						<check if="{{@userpermissions.VIEWSETTINGS == true}}"><true><li id="li-settings-1"><a href="{{@BASE . '/setting'}}"><i class="fa fa-cogs"></i> <span>Settings</span></a></li></true></check>
+						<check if="{{@userpermissions.VIEWREPORTS == true}}"><true><li id="li-reports-1"><a href="{{@BASE . '/report'}}"><i class="fa fa-pie-chart"></i> <span>Reports</span></a></li></true></check>
+					</ul>
+				</section><!-- /.sidebar -->
+			</aside><!-- ./main-sidebar -->
+			
+			<!-- Content Wrapper. It contains page content -->
+			<div class="content-wrapper">
+				<include href="{{@pagecontent}}"></include> <!-- Includes content specific to a page -->
+				<section class="content"><!-- Container for modals -->
+					<div class="modal fade" id="modal-logout"><!-- Logout Modal -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Confirm Signout</h4>
+								</div>
+								<div class="modal-body">
+									<p>Are you sure you want to signout?</p>
+								</div>
+								<div class="modal-footer">
+									<a href="javascript:void(0)" class="btn btn-sm btn-info btn-flat pull-left" data-dismiss="modal">Close</a>
+									<a href="{{@BASE . '/logout'}}" class="btn btn-sm btn-default btn-flat pull-right">Signout</a>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-logout -->
+					
+					<div class="modal fade" id="modal-viewuser"><!-- View/Edit Profile Modal -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Edit Profile</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/quickedituser/'. @user.id}}" method="post" name="viewedituser-form">
+										<div class="box-body">									
+											<div class="form-group">
+												<label for="username" class="col-sm-4 control-label">User Name</label>
+												<div class="col-sm-8">
+													<input type="text" value="{{@user.username}}" class="form-control" id="username" name="username" placeholder="User Name" disabled>
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="password" class="col-sm-4 control-label">Password</label>
+												<div class="col-sm-8">
+													<input type="password" class="form-control" id="password" name="password" placeholder="">
+													<p class="help-block text-red"><i class="fa fa-bell-o"></i> Leave the password blank, if you do not wish to edit.</p>
+												</div>
+											</div>	
+											<div class="form-group">
+												<label for="email" class="col-sm-4 control-label">Email</label>
+												<div class="col-sm-8">
+													<input type="email" value="{{@user.email}}" class="form-control" id="email" name="email" placeholder="Email">
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="firstname" class="col-sm-4 control-label">First Name</label>
+												<div class="col-sm-8">
+													<input type="text" value="{{@user.firstname}}" class="form-control" id="firstname" name="firstname" placeholder="First Name">
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="middlename" class="col-sm-4 control-label">Middle Name</label>
+												<div class="col-sm-8">
+													<input type="text" value="{{@user.middlename}}" class="form-control" id="middlename" name="middlename" placeholder="Middle Name">
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="lastname" class="col-sm-4 control-label">Last Name</label>
+												<div class="col-sm-8">
+													<input type="text" value="{{@user.lastname}}" class="form-control" id="lastname" name="lastname" placeholder="Last Name">
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="inserteddt" class="col-sm-4 control-label">Created Date</label>
+												<div class="col-sm-8">
+													<input type="text" value="{{@user.inserteddt}}" class="form-control" id="inserteddt" name="inserteddt" placeholder="Inserted Date" disabled>
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="modifieddt" class="col-sm-4 control-label">Modified Date</label>
+												<div class="col-sm-8">
+													<input type="text" value="{{@user.modifieddt}}" class="form-control" id="modifieddt" name="modifieddt" placeholder="Modified Date" disabled>
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="lastlogindt" class="col-sm-4 control-label">Last Login Date</label>
+												<div class="col-sm-8">
+													<input type="text" value="{{@user.lastlogindt}}" class="form-control" id="lastlogindt" name="lastlogindt" placeholder="Last Login Date" disabled>
+												</div>
+											</div>																																																																																																																									
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="submit" class="btn btn-info pull-right">Save Changes</button>
+											<input type="hidden" name="id" value="{{@user.id}}" />
+											<input type="hidden" name="usernametobeedited" value="{{@user.username}}" />
+										</div><!-- /.box-footer -->
+									</form>									
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-viewuser -->
+					
+					<div class="modal fade" id="modal-read-notification"><!-- Read Notification Modal -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h4 class="modal-title">View Notification</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" method ="post" name="read-notification-form" id="read-notification-form">
+										<div class="box-body">									
+											<div class="form-group">
+												<label for="notinserteddt" class="col-sm-2 control-label">Date</label>
+												<div class="col-sm-10">
+													<input type="text" class="form-control" id="notinserteddt" name="notinserteddt" placeholder="Date" disabled>
+												</div>
+											</div><!-- /.form-group -->
+											<div class="form-group">
+												<label for="notnotification" class="col-sm-2 control-label">Notification</label>
+												<div class="col-sm-10">
+													<textarea class="form-control" rows="3" id="notnotification" name="notnotification" placeholder="Notification" disabled></textarea>
+												</div><!-- /.form-group -->
+											</div>																																																																																																																								
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="submit" class="btn btn-info pull-right">Close</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-read-notification -->
+					
+					<div class="modal modal-info" id="modal-system-alert">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h4 class="modal-title"><i class="fa fa-info-circle"></i> System Alert</h4>
+								</div>
+								<div class="modal-body">
+									<p class=""><span id="text-system-alert">{{@systemalert}}</span></p>
+								</div>
+								<div class="modal-footer">
+									<button type="button" name="system-alert-btn" id="system-alert-btn" class="btn btn-primary">Close</button>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-general-alert -->										
+				</section><!-- /.content -->
+			</div><!-- ./content-wrapper -->
+
+			
+			<!-- Bottom row. It contains the footer -->
+			<footer class="main-footer">
+				<div class="pull-right hidden-xs">
+					<b>{{@appsettings.APPLONGNAME}}</b>&trade; {{@appsettings.APPVERSION}}
+				</div>
+				<strong><a class="" href="https://etaxware.dev" target="_blank">{{@appdevorg}}</a> | Copyright&copy; {{date('Y')}} </strong>
+				| Platform Mode: <span class="text-primary">{{@platformMode}}</span>
+				| EFRIS Mode: <span class="text-danger">{{@efrisMode}}</span>
+				<check if="{{trim(@integratedErp) !== ''}}"><true>| Integrated ERP: <span class="text-success">{{@integratedErp}}</span></true></check>
+			</footer><!-- ./main-footer -->
+		</div><!-- ./wrapper -->
+		
+		<!-- jQuery 2.2.3 -->
+		<script src="{{@path . 'plugins/jQuery/jquery-2.2.3.min.js'}}"></script>
+		<!-- Bootstrap 3.3.6 -->
+		<script src="{{@path . 'bootstrap/js/bootstrap.min.js'}}"></script>
+		<!-- FastClick -->
+		<script src="{{@path . 'plugins/fastclick/fastclick.js'}}"></script>
+		<!-- AdminLTE App -->
+		<script src="{{@path . 'js/app.min.js'}}"></script>
+		<!-- Layout JS -->
+		<script src="{{@path . 'js/layout.js'}}"></script>
+		<script>			
+			var notid;
+			var systemalerttext = $('#text-system-alert').text();
+			console.log("The system feedback is: " + systemalerttext);
+			
+			$("#system-alert-btn").click(function(event){//if the system alert modal is open, and user clicks the close button
+				event.preventDefault();//stop normal behavior
+			    //$(this).off("click");
+				$('#text-system-alert').text('');//clear out the alert
+			    $('#modal-system-alert').modal('hide');//close form
+			});
+			
+			$("#modal-read-notification").on('show.bs.modal', function(e){
+				var lnk = $(e.relatedTarget);
+				notid = lnk.data("id");
+				listnotifications();
+			});
+			
+			$("#read-notification-form").submit(function(event){
+				event.preventDefault();//stop form from submitting normally
+				readnotification();
+				$('#modal-read-notification').modal('hide');//close form
+			});
+			
+			//onclick event handler for the anchor called refresh-notifications-2
+			$('#refresh-notifications-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				//location.reload();/*need to load the main page*/
+				window.location = "{{@BASE}}";
+			});
+		</script>
+		<include href="{{@pagescripts}}"></include>
+	</body>
+</html>

@@ -1,0 +1,136 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-file-text"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="invoice">
+					<div class="row">
+						<div class="col-xs-2" style="text-align: center">
+							<img src="../../etaxware/public/img/efris-logo.png" alt="EFRIS Logo">
+						</div>
+						<div class="col-xs-8" style="text-align: center">
+							<h2 class="page-header"> <strong>DEBIT NOTE</strong></h2>
+						</div>
+						<div class="col-xs-2" style="text-align: center">
+							<img src="" alt="Client Logo">
+						</div>
+					</div><!-- ./row -->	
+					<div class="row invoice-info">
+						<div class="col-sm-4 invoice-col">
+							<h3 class="page-header"><strong>Seller's Details</strong></h3>
+							<address>
+								BRN: {{@seller.ninbrn}}<br>
+								TIN: {{@seller.tin}}<br>
+								Trade Name: {{@seller.legalname}}<br>
+								Address: {{@seller.address}}<br>
+								Seller's Reference Number: <check if="{{@debitnote.erpdebitnoteno !== ''}}"><true>{{@debitnote.erpdebitnoteno}}</true><false>{{@debitnote.id}}</false></check><br>
+								Served By: {{@debitnote.operator}}<br>
+							</address>
+						</div>
+						<div class="col-sm-4 invoice-col">
+							<h3 class="page-header"><strong>Buyer's Details</strong></h3>
+							<address>
+								BRN: {{@buyer.ninbrn}}<br>
+								TIN: {{@buyer.tin}}<br>
+								Trade Name: {{@buyer.legalname}}<br>
+								Address: {{@buyer.address}}<br>
+								Email: {{@buyer.emailaddress}}<br>
+							</address>
+						</div>
+						<div class="col-sm-4 invoice-col">
+							<h3 class="page-header"><strong>EFRIS Information</strong></h3>
+							<address>
+								Document Type: Orignal<br>
+								Issued Date: {{@debitnote.issueddate}}<br>
+								D/No.: {{@debitnote.deviceno}}<br>
+								Debit Note No: {{@debitnote.debitnoteno}}<br>
+								Verification Code: {{@debitnote.antifakecode}}<br>
+							</address>
+						</div>
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12 table-responsive">
+							<table class="table table-striped">
+								<caption class="page-header"><strong>Goods/Service's Details</strong></caption>
+								<thead>
+									<tr>
+										<th>Item</th>
+										<th>Qty</th>
+										<th>Unit Measure</th>
+										<th>Unit Price</th>
+										<th>Total</th>
+										<th>Tax Category</th>
+									</tr>
+								</thead>
+								<tbody>
+									<repeat group="{{@goods}}" value="{{@good}}">
+										<tr>
+											<td>{{@good.item}}</td>
+											<td>{{@good.qty}}</td>
+											<td>{{@good.unitofmeasurename}}</td>
+											<td>{{@good.unitprice}}</td>
+											<td>{{@good.total}}</td>
+											<td>{{@good.taxcategory}}</td>
+										</tr>
+									</repeat>
+								</tbody>
+							</table>
+						</div><!-- /.col -->
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12 table-responsive">
+							<table class="table table-striped">
+								<caption class="page-header"><strong>Tax Details</strong></caption>
+								<thead>
+									<tr>
+										<th>Tax Category</th>
+										<th>Net Amount</th>
+										<th>Tax Amount</th>
+										<th>Gross Amount</th>
+									</tr>
+								</thead>
+								<tbody>
+									<repeat group="{{@taxes}}" value="{{@tax}}">
+										<tr>
+											<td>{{@tax.taxdescription}}</td>
+											<td>{{@tax.netamount}}</td>
+											<td>{{@tax.taxamount}}</td>
+											<td>{{@tax.grossamount}}</td>
+										</tr>
+									</repeat>
+								</tbody>
+							</table>
+						</div><!-- /.col -->
+					</div><!-- ./row -->					
+					<div class="row invoice-info">
+						<div class="col-sm-12 invoice-col">							
+							<h3 class="page-header">Summary</h3>
+							<address>
+								Gross Amount: {{@debitnote.grossamount2}} [{{@debitnote.grossamountword}}]<br>
+								Currency: {{@debitnote.currency}}<br>
+								Mode: {{@debitnote.modename}}<br>
+								Remarks: {{@debitnote.remarks}}<br>
+							</address>
+						</div>
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12" style="text-align: center">
+							<canvas id="datamatrix" style="height:150px"></canvas>
+						</div>
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12" style="text-align: center">
+							<h2 class="page-header"> <strong>*** END OF DEBIT NOTE ***</strong></h2>
+						</div>
+					</div><!-- ./row -->
+					<div class="row no-print">
+						<div class="col-xs-12">
+							<a href="{{@BASE . '/printdebitnote/' . @debitnote.id}}" target="_blank" class="btn btn-primary pull-right"><i class="fa fa-print"></i> Print</a>
+						</div>
+					</div>					
+				</section><!-- ./content-debitnote -->
+			

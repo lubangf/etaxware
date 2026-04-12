@@ -1,0 +1,48 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Bootstrap Dual Listbox -->
+        <script src="{{@path . 'plugins/bootstrap-duallistbox/jquery.bootstrap-duallistbox.js'}}"></script>
+		<!-- administration JS -->
+		<script src="{{@path . 'js/administration.js'}}"></script>
+		<script>
+			var currenttab = $('#currenttab').text();
+			//console.log(currenttab);
+			
+			var currenttabpane = $('#currenttabpane').text();
+			//console.log(currenttabpane);
+			
+			var roleid_2 = $('#roleid').val();
+			//console.log(roleid_2);
+			
+			var varpermissions = $('[id=rolepermissions]').bootstrapDualListbox();
+					
+			$(window).load(function(){
+				$('#li-administration-1').addClass('active');//mark the datasource link as active
+				$('#' + currenttab).addClass('active');//set the tab to active
+				$('#' + currenttabpane).addClass('active');//set the corresponding tab-pane to active
+				
+				//console.log('Status is ' + {{@role.status}});
+				
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}				
+			});	
+			
+			//ensure the tab content are refreshed again when user is navigating through the tabs
+			$(document).ready(function(){
+				var anchor;
+				$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+					anchor = $(e.target).attr('href');//Read the a href of the anchor that was clicked
+					anchor = anchor.substr(1, anchor.length);// Trim the leading '#' from the href attribute
+					if(anchor == "tab_1"){// Call the ajax associated with the tab
+						$('#tab_general').addClass('active');
+						$('#tab_1').addClass('active');
+					}else if(anchor == "tab_2"){// Call the ajax associated with the tab					
+						$('#tab_permissions').addClass('active');
+						$('#tab_2').addClass('active');
+					}
+				});
+			});
+		</script>

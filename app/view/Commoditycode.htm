@@ -1,0 +1,132 @@
+<section class="content-header">
+	<!-- Content Header (Page header) -->
+	<h1>
+		<i class="fa fa-shopping-cart"></i>
+		<span>{{@pagetitle}}</span>
+	</h1>
+	<ol class="breadcrumb">
+		<li>
+			<a href="{{@BASE}}">
+				<i class="fa fa-home"></i> Home
+			
+			
+			</a>
+		</li>
+		<li class="active">{{@pagetitle}}</li>
+	</ol>
+</section>
+<!-- ./content-header -->
+<section class="content">
+	<!-- Main content -->
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="box box-info" id="ctnr-tbl-commoditycode-list">
+				<div class="box-header with-border">
+					<h3 class="box-title">Commodity Codes</h3>
+					<div class="box-tools pull-right">
+						<button type="button" class="btn btn-box-tool" data-widget="collapse">
+							<i class="fa fa-minus"></i>
+						</button>
+						<div class="btn-group">
+							<button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown">
+								<i class="fa fa-wrench"></i>
+							</button>
+							<ul class="dropdown-menu" role="menu">
+								<li>
+									<a href="#" id="fetch-commoditycode-1">
+										<i class="fa fa-refresh"></i>Fetch EFRIS Codes
+									
+									
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<!-- ./box-header -->
+				<div class="box-body">
+					<!-- Place the search form here. -->
+					<form class="form-horizontal" role="form" action="{" method="post" enctype="multipart/form-data" name="commoditycode-form">
+						<div class="form-group">
+							<label for="productcommoditycategory" class="col-xs-2 control-label">Commodity Category</label>
+							<div class="col-xs-6">
+								<select class="form-control select2" style="width: 100%;" id="productcommoditycategory" name="productcommoditycategory"></select>
+								<p id="code-val-text"></p>
+							</div>
+						</div>
+						<!-- /.form-group -->
+						<div class="form-group">
+							<label for="producttaxrate" class="col-xs-2 control-label">Tax Rate</label>
+							<div class="col-xs-5">
+								<input type="number" class="form-control" value="{{@commoditycategory.rate}}" id="producttaxrate" name="producttaxrate" placeholder="" disabled>
+								</div>
+							</div>
+							<!-- /.form-group -->
+							<div class="form-group">
+								<label for="productisexempt" class="col-xs-2 control-label">Is Exempt?</label>
+								<div class="col-xs-6">
+									<input type="text" class="form-control" value="{{@commoditycategory.isExempt}}" id="productisexempt" name="productisexempt" placeholder="" disabled>
+									</div>
+								</div>
+								<!-- /.form-group -->
+								<div class="form-group">
+									<label for="productiszerorated" class="col-xs-2 control-label">Is Zero Rated?</label>
+									<div class="col-xs-6">
+										<input type="text" class="form-control" value="{{@commoditycategory.isZeroRate}}" id="productiszerorated" name="productiszerorated" placeholder="" disabled>
+										</div>
+									</div>
+									<!-- /.form-group -->
+									<div class="form-group">
+										<label for="productservicemark" class="col-xs-2 control-label">Service Mark</label>
+										<div class="col-xs-6">
+											<input type="text" class="form-control" value="{{@commoditycategory.serviceMark}}" id="productservicemark" name="productservicemark" placeholder="" disabled>
+											</div>
+										</div>
+										<!-- /.form-group -->
+										<div class="form-group">
+											<label for="productexclusion" class="col-xs-2 control-label">Exclusion</label>
+											<div class="col-xs-6">
+												<input type="text" class="form-control" value="{{@commoditycategory.exclusion}}" id="productexclusion" name="productexclusion" placeholder="" disabled>
+												</div>
+											</div>
+											<!-- /.form-group -->
+										</form>
+									</div>
+									<!-- ./box-body -->
+									<div class="box-footer clearfix">
+										<a href="#" id="fetch-commoditycode-2" class="btn btn-sm btn-warning btn-flat pull-left">
+											<i class="fa fa-cloud-download"></i>
+											<span> Fetch EFRIS Codes</span>
+										</a>
+									</div>
+									<!-- ./box-footer -->
+								</div>
+								<!-- ./box -->
+							</div>
+							<!-- ./col-xs-12 -->
+						</div>
+						<!-- ./row -->
+						<div class="modal fade" id="modal-get-commoditycode">
+							<!-- modal-get-commoditycode -->
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+										<h4 class="modal-title">Checking Commodity Code</h4>
+									</div>
+									<div class="modal-body">
+										<p class="help-block text-aqua">
+											<i class="fa fa-bell-o"></i> Please wait...
+						
+										</p>
+									</div>
+									<!-- /.modal-body -->
+								</div>
+								<!-- /.modal-content -->
+							</div>
+							<!-- /.modal-dialog -->
+						</div>
+						<!-- /.modal-get-commoditycode -->
+					</section>

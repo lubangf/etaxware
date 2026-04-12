@@ -1,0 +1,39 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- administration JS -->
+		<script src="{{@path . 'js/currency.js'}}"></script>
+		<script>
+			var currenttab = $('#currenttab').text();
+			//console.log(currenttab);
+			
+			var currenttabpane = $('#currenttabpane').text();
+			//console.log(currenttabpane);
+			
+			var currencyid_2 = $('#currencyid').val();
+			//console.log(currencyid_2);
+								
+			$(window).load(function(){
+				$('#li-currencies-1').addClass('active');//mark the currencies link as active
+				$('#' + currenttab).addClass('active');//set the tab to active
+				$('#' + currenttabpane).addClass('active');//set the corresponding tab-pane to active
+								
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}				
+			});	
+			
+			//ensure the tab content are refreshed again when user is navigating through the tabs
+			$(document).ready(function(){
+				var anchor;
+				$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+					anchor = $(e.target).attr('href');//Read the a href of the anchor that was clicked
+					anchor = anchor.substr(1, anchor.length);// Trim the leading '#' from the href attribute
+					if(anchor == "tab_1"){// Call the ajax associated with the tab
+						$('#tab_general').addClass('active');
+						$('#tab_1').addClass('active');
+					}
+				});
+			});
+		</script>

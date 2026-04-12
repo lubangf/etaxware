@@ -1,0 +1,33 @@
+		<!-- Select2 -->
+        <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>		
+		<!-- Validation JS -->
+		<script src="{{@path . 'js/commoditycode.js'}}"></script> 
+		<script>
+			var commoditycategorycode_2 = $('#commoditycategorycode').text();
+			var commoditycategoryName = $('#commoditycategoryName').text();
+			
+			$(window).load(function(){
+				$('#li-products-1').addClass('active');//mark the commoditycode link as active
+				
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}				
+			});	
+			
+			//onclick event handler for the anchor called fetch-commoditycode-1
+			$('#fetch-commoditycode-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#fetch-commoditycode-1 span').text('Processing...');
+			    fetchcommoditycode();
+			    //$('#fetch-commoditycode-1 span').text('Fetch EFRIS Codes');
+			});
+			
+			//onclick event handler for the anchor called fetch-commoditycode-2
+			$('#fetch-commoditycode-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#fetch-commoditycode-2 span').text('Processing...');
+			    fetchcommoditycode();
+			    //$('#fetch-commoditycode-2 span').text('Fetch EFRIS Codes');
+			});			
+		</script>

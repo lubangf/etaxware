@@ -1,0 +1,314 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-plus-square"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-danger collapsed-box" id="ctnr-sync-efriscreditnotes-form">
+								<div class="box-header">
+									<h3 class="box-title">Sync/Update Credit Notes</h3>
+									<div class="box-tools pull-right">
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>										
+									</div>
+								</div><!-- ./box-header -->
+								<div class="box-body">
+									<form class="form-horizontal" role="form" action="{{@BASE . '/syncefriscreditnotes'}}" method="post" enctype="multipart/form-data" id="sync-efriscreditnotes-form" name="sync-efriscreditnotes-form">									
+										<div class="box-body">
+											<div class="col-xs-3">											   
+	               							   <label for="" class="">Start Date</label>
+	               							   <input type="text" id="startdate" name="startdate" class="form-control" placeholder="Start Date">
+	                						</div>
+											<div class="col-xs-3">											   
+	               							   <label for="" class="">End Date</label>
+	               							   <input type="text" id="enddate" name="enddate" class="form-control" placeholder="End Date">
+	                						</div>
+	                						<div class="col-xs-3">
+												<label for="" class="">Operation Type</label>
+												<div class="radio">
+													<label>
+														<input type="radio" name="operationType" id="operationType" value="update"> Update
+													</label>
+													<label>
+														<input type="radio" name="operationType" id="operationType" value="sync"> Synchronize
+													</label>
+												</div><!-- ./radio -->
+											</div><!-- ./col-xs-3 -->																										
+										</div><!-- ./box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<button type="button" class="btn btn-info pull-right" id="sync-efriscreditnotes-button" name="sync-efriscreditnotes-button">Confirm</button>
+										</div><!-- ./box-footer -->																				
+									</form><!-- ./form -->								
+								</div><!-- ./box-body -->								
+							</div><!-- ./box -->
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-info" id="ctnr-tbl-creditnote-list">
+								<div class="box-header with-border">
+									<h3 class="box-title">Credit Note</h3>
+									<div class="box-tools pull-right">
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+										<div class="btn-group">
+											<button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown"><i class="fa fa-wrench"></i></button>
+											<ul class="dropdown-menu" role="menu">
+												<li><a href="#" id="refresh-creditnote-list-1"><i class="fa fa-refresh"></i>Refresh List</a></li>
+												<li class="divider"></li>
+												<li><a href="{{@BASE . '/createcreditnote'}}"><i class="fa  fa-plus-circle"></i>New Credit Note Application</a></li>
+												<li><a href="#" data-toggle="modal" data-target="#modal-download-erp-creditnotes"><i class="fa  fa-download"></i>Download from ERP</a></li>
+											</ul>
+										</div>
+									</div>
+								</div><!-- ./box-header -->
+								<div class="box-body">
+									<table id="tbl-creditnote-list" class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>ID</th>
+												<th>Code</th>
+												<th>Name</th>
+												<th>Description</th>
+												<th>Status</th>
+												<th>Modified By</th>
+												<th>Modified Date</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+									</table>
+								</div><!-- ./box-body -->
+								<div class="overlay" id="otbl-creditnote-list">
+									<i class="fa fa-refresh fa-spin"></i>
+								</div>
+								<div class="box-footer clearfix">
+									<a href="#" id="refresh-creditnote-list-2" class="btn btn-sm btn-info btn-flat pull-left"><i class="fa fa-refresh"></i><span> Refresh List</span></a>
+									<a href="{{@BASE . '/createcreditnote'}}" class="btn btn-sm btn-default btn-flat pull-right"><i class="fa fa-plus-circle"></i><span> New Credit Note Application</span></a>
+								</div><!-- ./box-footer -->
+							</div><!-- ./box -->
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->	
+					
+					<div class="modal fade" id="modal-creditnote-upload"><!-- modal-creditnote-upload -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Upload Credit Note</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/uploadcreditnote'}}" method="post" enctype="multipart/form-data" id="upload-creditnote-form" name="upload-creditnote-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="uploadcreditnoteid_2" class="col-xs-4 control-label">Credit Note ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="uploadcreditnoteid_2" name="uploadcreditnoteid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="uploadcreditnoteid" id="uploadcreditnoteid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-creditnote-upload -->	
+					
+					<div class="modal fade" id="modal-creditnote-download"><!-- modal-creditnote-download -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Query Credit Note</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/downloadcreditnote'}}" method="post" enctype="multipart/form-data" id="download-creditnote-form" name="download-creditnote-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="downloadcreditnoteid_2" class="col-xs-4 control-label">Credit Note ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="downloadcreditnoteid_2" name="downloadcreditnoteid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="downloadcreditnoteid" id="downloadcreditnoteid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-creditnote-download -->	
+					
+					<div class="modal fade" id="modal-creditnote-cancel"><!-- modal-creditnote-cancel -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Cancel/Void Credit Note</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/cancelcreditnote'}}" method="post" enctype="multipart/form-data" id="cancel-creditnote-form" name="cancel-creditnote-form">
+										<div class="box-body">													
+											<div class="form-group">
+                                                <label for="cancelcreditnoteid_2" class="col-xs-4 control-label">Credit Note ID</label>
+                                                <div class="col-xs-8">
+                                                    <input type="text" class="form-control" id="cancelcreditnoteid_2" name="cancelcreditnoteid_2" placeholder="ID" required disabled>
+                                                    <p class="help-block text-red"><i class="fa fa-bell-o"></i> Please, confirm by clicking on the submit button below.</p>
+                                                </div>
+                                            </div><!-- ./form-group --> 																																																				
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<input type="hidden" name="cancelcreditnoteid" id="cancelcreditnoteid" />
+											<button type="submit" class="btn btn-info pull-right">Submit</button>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-creditnote-cancel -->	
+
+				    <div class="modal fade" id="modal-download-erp-creditnotes">
+				        <!-- modal-download-erp-creditnotes -->
+				        <div class="modal-dialog">
+				            <div class="modal-content">
+				                <div class="modal-header">
+				                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				                    <h4 class="modal-title">Download Credit Notes from ERP</h4>
+				                </div>
+				                <div class="modal-body">
+				                    <form class="form-horizontal" role="form" action="{{@BASE . '/downloadErpCreditnotes'}}" method="post" enctype="multipart/form-data" id="download-erp-creditnotes-form" name="download-erp-creditnotes-form">
+				                        <div class="box-body">
+				                            <div class="form-group">
+				                                <label for="downloaderpcreditnoteserpdoctype" class="col-xs-4 control-label">Document Type</label>
+				                                <div class="col-xs-8">
+				                                    <select class="form-control" name="downloaderpcreditnoteserpdoctype" id="downloaderpcreditnoteserpdoctype" required>
+				                                        <option value="" selected disabled hidden>Select Document Type</option>
+				                                        <repeat group="{{@erpdoctypes}}" value="{{@erpdoctype}}">
+				                                            <check if="{{@erpdoctype.code == @creditnote.erpdoctype}}">
+				                                                <true>
+				                                                    <check if="{{@erpdoctype.disabled == 1}}">
+				                                                        <true>
+				                                                            <option value="{{@erpdoctype.code}}" selected disabled>{{@erpdoctype.code}} - {{@erpdoctype.name}}</option>
+				                                                        </true>
+				                                                        <false>
+				                                                            <option value="{{@erpdoctype.code}}" selected>{{@erpdoctype.code}} - {{@erpdoctype.name}}</option>
+				                                                        </false>
+				                                                    </check>
+				                                                </true>
+				                                                <false>
+				                                                    <check if="{{@erpdoctype.disabled == 1}}">
+				                                                        <true>
+				                                                            <option value="{{@erpdoctype.code}}" disabled>{{@erpdoctype.code}} - {{@erpdoctype.name}}</option>
+				                                                        </true>
+				                                                        <false>
+				                                                            <option value="{{@erpdoctype.code}}">{{@erpdoctype.code}} - {{@erpdoctype.name}}</option>
+				                                                        </false>
+				                                                    </check>
+				                                                </false>
+				                                            </check>
+				                                        </repeat>
+				                                    </select>
+				                                </div>
+				                            </div><!-- ./form-group -->
+				                            <div class="form-group">
+				                                <label for="downloaderpcreditnotesstartdate" class="col-xs-4 control-label">Start Date</label>
+				                                <div class="col-xs-8">
+				                                    <input type="text" class="form-control pull-right" id="downloaderpcreditnotesstartdate" name="downloaderpcreditnotesstartdate">
+				                                </div>
+				                            </div><!-- ./form-group -->
+				                            <div class="form-group">
+				                                <label for="downloaderpcreditnotesenddate" class="col-xs-4 control-label">End Date</label>
+				                                <div class="col-xs-8">
+				                                    <input type="text" class="form-control pull-right" id="downloaderpcreditnotesenddate" name="downloaderpcreditnotesenddate">
+				                                </div>
+				                            </div><!-- ./form-group -->
+				                            <div class="form-group">
+				                                <label for="downloaderpcreditnotenumber" class="col-xs-4 control-label">Credit Note Number</label>
+				                                <div class="col-xs-8">
+				                                    <input type="text" class="form-control pull-right" id="downloaderpcreditnotenumber" name="downloaderpcreditnotenumber">
+				                                </div>
+				                            </div><!-- ./form-group -->
+				                        </div><!-- /.box-body -->
+				                        <div class="box-footer">
+				                            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+				                            <button type="submit" class="btn btn-info pull-right">Submit</button>
+				                        </div><!-- /.box-footer -->
+				                    </form>
+				                </div><!-- /.modal-body -->
+				            </div><!-- /.modal-content -->
+				        </div><!-- /.modal-dialog -->
+				    </div><!-- /.modal-download-erp-creditnotes -->
+				    
+				    <div class="modal fade" id="modal-creditnote-erp-download">
+				        <!-- modal-creditnote-erp-download -->
+				        <div class="modal-dialog">
+				            <div class="modal-content">
+				                <div class="modal-header">
+				                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				                    <h4 class="modal-title">Download Credit Note from ERP</h4>
+				                </div>
+				                <div class="modal-body">
+				                    <form class="form-horizontal" role="form" action="{{@BASE . '/fetchErpCreditnote'}}" method="post" enctype="multipart/form-data" id="download-erp-creditnote-form" name="download-erp-creditnote-form">
+				                        <div class="box-body">
+				                            <div class="form-group">
+				                                <label for="erpdownloadcreditnoteid_2" class="col-xs-4 control-label">Credit Note ID</label>
+				                                <div class="col-xs-8">
+				                                    <input type="text" class="form-control" id="erpdownloadcreditnoteid_2" name="erpdownloadcreditnoteid_2" placeholder="ID" required disabled>
+				                                </div>
+				                            </div><!-- ./form-group -->
+				                        </div><!-- /.box-body -->
+				                        <div class="box-footer">
+				                            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+				                            <button type="submit" class="btn btn-info pull-right">Submit</button>
+				                            <input type="hidden" name="erpdownloadcreditnoteid" id="erpdownloadcreditnoteid" />
+				                        </div><!-- /.box-footer -->
+				                    </form>
+				                </div><!-- /.modal-body -->
+				            </div><!-- /.modal-content -->
+				        </div><!-- /.modal-dialog -->
+				    </div><!-- /.modal-creditnote-erp-download -->
+				    
+				    <div class="modal fade" id="modal-creditnote-erp-update">
+				        <!-- modal-creditnote-erp-update -->
+				        <div class="modal-dialog">
+				            <div class="modal-content">
+				                <div class="modal-header">
+				                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				                    <h4 class="modal-title">Update Credit Note in ERP</h4>
+				                </div>
+				                <div class="modal-body">
+				                    <form class="form-horizontal" role="form" action="{{@BASE . '/updateErpCreditnote'}}" method="post" enctype="multipart/form-data" id="update-erp-creditnote-form" name="update-erp-creditnote-form">
+				                        <div class="box-body">
+				                            <div class="form-group">
+				                                <label for="erpupdatecreditnoteid_2" class="col-xs-4 control-label">Credit Note ID</label>
+				                                <div class="col-xs-8">
+				                                    <input type="text" class="form-control" id="erpupdatecreditnoteid_2" name="erpupdatecreditnoteid_2" placeholder="ID" required disabled>
+				                                </div>
+				                            </div><!-- ./form-group -->
+				                        </div><!-- /.box-body -->
+				                        <div class="box-footer">
+				                            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+				                            <button type="submit" class="btn btn-info pull-right">Submit</button>
+				                            <input type="hidden" name="erpupdatecreditnoteid" id="erpupdatecreditnoteid" />
+				                        </div><!-- /.box-footer -->
+				                    </form>
+				                </div><!-- /.modal-body -->
+				            </div><!-- /.modal-content -->
+				        </div><!-- /.modal-dialog -->
+				    </div><!-- /.modal-creditnote-erp-update -->												
+				</section>

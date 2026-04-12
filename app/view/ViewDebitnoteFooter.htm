@@ -1,0 +1,21 @@
+		<!-- JQuery QR -->
+		<script src="{{@path . 'plugins/jquery-qrcode/jquery-qrcode-0.18.0.min.js'}}"></script>
+		<!-- View debitnote javascript -->
+		<script src="{{@path . 'js/viewdebitnote.js'}}"></script>
+		<script>
+			
+			var debitnote_2 = {{@debitnote.id}}
+			//console.log(debitnote_2);
+								
+			$(window).load(function(){
+				$('#li-sales-1').addClass('active');//mark the debitnotes link as active
+				
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}	
+				
+				printqr(debitnote_2.toString());
+											
+			});									
+		</script>

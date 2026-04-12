@@ -1,0 +1,1036 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-sticky-note"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li><a href="{{@BASE . '/invoice'}}"><i class="fa fa-invoice-hunt"></i> Invoices</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
+					<span id="invoicecurrency" style="color: transparent">{{@invoice.currency}}</span>
+					<span id="invoiceinvoicetype" style="color: transparent">{{@invoice.invoicetype}}</span>
+					<span id="invoiceinvoicekind" style="color: transparent">{{@invoice.invoicekind}}</span>
+					<span id="invoicedatasource" style="color: transparent">{{@invoice.datasource}}</span>
+					<span id="invoiceindustrycode" style="color: transparent">{{@invoice.invoiceindustrycode}}</span>
+					<span id="gooddetailgroupid" style="color: transparent">{{@invoice.gooddetailgroupid}}</span>
+					<span id="paymentdetailgroupid" style="color: transparent">{{@invoice.paymentdetailgroupid}}</span>
+					<span id="taxdetailgroupid" style="color: transparent">{{@invoice.taxdetailgroupid}}</span>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_general"><a href="#tab_1" data-toggle="tab"><i class="fa fa-gear"></i> General</a></li>
+									<check if="{{@invoice.id !== null}}"><true><li id="tab_seller"><a href="#tab_2" data-toggle="tab"><i class="fa fa-user-secret"></i> Seller Info.</a></li></true></check>
+									<check if="{{@invoice.id !== null}}"><true><li id="tab_buyer"><a href="#tab_3" data-toggle="tab"><i class="fa fa-user"></i> Buyer Info.</a></li></true></check>
+									<check if="{{@invoice.id !== null && @invoice.buyerid !== null}}"><true><li id="tab_good"><a href="#tab_4" data-toggle="tab"><i class="fa fa-shopping-cart"></i> Goods Details</a></li></true></check>
+									<check if="{{@invoice.id !== null && @invoice.buyerid !== null}}"><true><li id="tab_tax"><a href="#tab_5" data-toggle="tab"><i class="fa fa-list-alt"></i> Tax Details</a></li></true></check>
+									<!-- <check if="{{@invoice.id !== null && @invoice.buyerid !== null}}"><true><li id="tab_payment"><a href="#tab_6" data-toggle="tab"><i class="fa fa-money"></i> Payment Details</a></li></true></check> -->
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createinvoice'}}" id="create-new-invoice-2"><i class="fa fa-plus-circle"></i>Add Invoice</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="invoice-form">
+														<div class="box-body">
+															<fieldset>
+																<legend>ERP Details:</legend>
+																<div class="form-group">
+																	<label for="erpinvoiceid" class="col-xs-2 control-label">ERP Invoice ID</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.erpinvoiceid}}" id="erpinvoiceid" name="erpinvoiceid" placeholder="ERP Invoice ID">
+																	</div>
+																</div><!-- /.form-group -->		
+																<div class="form-group">
+																	<label for="erpinvoiceno" class="col-xs-2 control-label">ERP Invoice Code</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.erpinvoiceno}}" id="erpinvoiceno" name="erpinvoiceno" placeholder="ERP Invoice No">
+																	</div>
+																</div><!-- /.form-group -->																
+															</fieldset>
+															<fieldset>
+																<legend>EFRIS Details:</legend>
+																<div class="form-group">
+																	<label for="antifakecode" class="col-xs-2 control-label">Anti Fake Code</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.antifakecode}}" id="antifakecode" name="antifakecode" placeholder="Anti Fake Code" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="issueddate" class="col-xs-2 control-label">Issue Date</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.issueddate}}" id="issueddate" name="issueddate" placeholder="Issue Date" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="einvoiceid" class="col-xs-2 control-label">Invoice ID</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.einvoiceid}}" id="einvoiceid" name="einvoiceid" placeholder="Invoice ID" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="einvoicenumber" class="col-xs-2 control-label">Invoice No</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.einvoicenumber}}" id="einvoicenumber" name="einvoicenumber" placeholder="Invoice No" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="einvoicedatamatrixcode" class="col-xs-2 control-label">QR Code</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.einvoicedatamatrixcode}}" id="einvoicedatamatrixcode" name="einvoicedatamatrixcode" placeholder="QR Code" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+															</fieldset>
+															<fieldset>
+																<legend>Other Details:</legend>
+																<div class="form-group">
+																	<label for="deviceno" class="col-xs-2 control-label">Device Number</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.deviceno}}" id="deviceno" name="deviceno" placeholder="Device Number" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="operator" class="col-xs-2 control-label">Operator</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.operator}}" id="operator" name="operator" placeholder="Operator" disabled>
+																	</div>
+																</div><!-- /.form-group -->																
+																<div class="form-group">
+																	<label for="currency" class="col-xs-2 control-label">Currency</label>
+																	<div class="col-xs-6">
+																		<select class="form-control select2" style="width: 100%;" name="currency" id="currency" required></select>
+																	</div>															
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="oriinvoiceid" class="col-xs-2 control-label">Original Invoice ID</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.oriinvoiceid}}" id="oriinvoiceid" name="oriinvoiceid" placeholder="Original Invoice ID" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="invoicetype" class="col-xs-2 control-label">Invoice Type</label>
+																	<div class="col-xs-6">
+																		<select class="form-control select2" style="width: 100%;" name="invoicetype" id="invoicetype" required></select>
+																	</div>															
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="invoicekind" class="col-xs-2 control-label">Invoice Kind</label>
+																	<div class="col-xs-6">
+																		<select class="form-control select2" style="width: 100%;" name="invoicekind" id="invoicekind" required></select>
+																	</div>															
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="datasource" class="col-xs-2 control-label">Data Source</label>
+																	<div class="col-xs-6">
+																		<select class="form-control select2" style="width: 100%;" name="datasource" id="datasource" required></select>
+																	</div>															
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="invoiceindustrycode" class="col-xs-2 control-label">Industry</label>
+																	<div class="col-xs-6">
+																		<select class="form-control select2" style="width: 100%;" name="invoiceindustrycode" id="industri" required></select>
+																	</div>															
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="remarks" class="col-xs-2 control-label">Remarks</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.remarks}}" id="remarks" name="remarks" placeholder="Remarks">
+																	</div>
+																</div><!-- /.form-group -->
+																<!-- 
+																<div class="form-group">
+																	<label for="invoicedeliveryTermsCode" class="col-xs-2 control-label">Delivery Terms</label>
+																	<div class="col-xs-6">
+																		<select class="form-control" name="invoicedeliveryTermsCode" id="invoicedeliveryTermsCode">
+																			<option value="" selected disabled hidden>Select Delivery Terms</option>
+																			<repeat group="{{@deliveryterms}}" value="{{@deliveryterm}}">																		
+																				<check if="{{@deliveryterm.code == @invoice.deliveryTermsCode}}">
+																					<true><check if="{{@deliveryterm.disabled == 1}}"><true><option value="{{@deliveryterm.code}}" selected disabled>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></true><false><option value="{{@deliveryterm.code}}" selected>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></false></check></true>
+																					<false><check if="{{@deliveryterm.disabled == 1}}"><true><option value="{{@deliveryterm.code}}" disabled>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></true><false><option value="{{@deliveryterm.code}}">{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></false></check></false>
+																				</check>
+																			</repeat>
+																		</select>
+																	</div>															
+																</div>
+																-->
+																<div class="form-group">
+																	<label for="invoicemodifieddt" class="col-xs-2 control-label">Modified Date</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.modifieddt}}" id="invoicemodifieddt" name="invoicemodifieddt" placeholder="Modified Date" disabled>
+																	</div>
+																</div><!-- /.form-group -->	
+															</fieldset>
+															<fieldset>
+																<legend>Summary:</legend>
+																<div class="form-group">
+																	<label for="invoicenetamount" class="col-xs-2 control-label">Net Amount</label>
+																	<div class="col-xs-10">
+																		<input type="number" class="form-control" value="{{@invoice.netamount}}" id="invoicenetamount" name="invoicenetamount" placeholder="Net Amount" disabled>
+																	</div>
+																</div><!-- /.form-group -->	
+																<div class="form-group">
+																	<label for="invoicetaxamount" class="col-xs-2 control-label">Tax Amount</label>
+																	<div class="col-xs-10">
+																		<input type="number" class="form-control" value="{{@invoice.taxamount}}" id="invoicetaxamount" name="invoicetaxamount" placeholder="Tax Amount" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="invoicegrossamount" class="col-xs-2 control-label">Gross Amount</label>
+																	<div class="col-xs-10">
+																		<input type="number" class="form-control" value="{{@invoice.grossamount}}" id="invoicegrossamount" name="invoicegrossamount" placeholder="Gross Amount" disabled>
+																	</div>
+																</div><!-- /.form-group -->	
+																<div class="form-group">
+																	<label for="invoiceitemcount" class="col-xs-2 control-label">Item Count</label>
+																	<div class="col-xs-10">
+																		<input type="number" class="form-control" value="{{@invoice.itemcount}}" id="invoiceitemcount" name="invoiceitemcount" placeholder="Item Count" disabled>
+																	</div>
+																</div><!-- /.form-group -->	
+																<div class="form-group">
+																	<label for="invoicemode" class="col-xs-2 control-label">Mode</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.modename}}" id="invoicemode" name="invoicemode" placeholder="Mode" disabled>
+																	</div>
+																</div><!-- /.form-group -->	
+																<div class="form-group">
+																	<label for="invoicepreGrossAmount" class="col-xs-2 control-label">Pre Gross Amount</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.preGrossAmount}}" id="invoicepreGrossAmount" name="invoicepreGrossAmount" placeholder="Pre Gross Amount" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="invoicepreTaxAmount" class="col-xs-2 control-label">Pre Tax Amount</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.preTaxAmount}}" id="invoicepreTaxAmount" name="invoicepreTaxAmount" placeholder="Pre Tax Amount" disabled>
+																	</div>
+																</div><!-- /.form-group -->
+																<div class="form-group">
+																	<label for="invoicepreNetAmount" class="col-xs-2 control-label">Pre Net Amount</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.preNetAmount}}" id="invoicepreNetAmount" name="invoicepreNetAmount" placeholder="Pre Net Amount" disabled>
+																	</div>
+																</div><!-- /.form-group -->	
+																<div class="form-group">
+																	<label for="invoicetotalWeight" class="col-xs-2 control-label">Total Weight</label>
+																	<div class="col-xs-10">
+																		<input type="text" class="form-control" value="{{@invoice.totalWeight}}" id="invoicetotalWeight" name="invoicetotalWeight" placeholder="Total Weight" disabled>
+																	</div>
+																</div><!-- /.form-group -->													
+															</fieldset>								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="button" class="btn btn-default" onclick="window.location='../../etaxware/invoice';return false;">Cancel</button>
+															<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Save</button></true></check>
+															<input type="hidden" name="currenttab" id="currenttab" value="tab_general" />
+															<input type="hidden" name="currenttabpane" id="currenttabpane"  value="tab_1" />
+															<input type="hidden" name="invoiceid" id="invoiceid" value="{{@invoice.id}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_2">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="edit-invoice-seller-form">
+														<div class="box-body">
+															<div class="form-group">
+																<label for="sellertin" class="col-xs-2 control-label">TIN</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.tin}}" id="sellertin" name="sellertin" placeholder="TIN" required disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="sellerninbrn" class="col-xs-2 control-label">NIN/BRN</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.ninbrn}}" id="sellerninbrn" name="sellerninbrn" placeholder="NIN/BRN" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="sellerlegalname" class="col-xs-2 control-label">Legal Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.legalname}}" id="sellerlegalname" name="sellerlegalname" placeholder="Legal Name" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="sellerbusinessname" class="col-xs-2 control-label">Business Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.businessname}}" id="sellerbusinessname" name="sellerbusinessname" placeholder="Business Name" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="selleraddress" class="col-xs-2 control-label">Address</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.address}}" id="selleraddress" name="selleraddress" placeholder="Address" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="sellermobilephone" class="col-xs-2 control-label">Mobile Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.mobilephone}}" id="sellermobilephone" name="sellermobilephone" placeholder="Mobile Phone" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="sellerlinephone" class="col-xs-2 control-label">Line Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.linephone}}" id="sellerlinephone" name=sellerlinephone placeholder="Line Phone" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="selleremailaddress" class="col-xs-2 control-label">Email</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.emailaddress}}" id="selleremailaddress" name="selleremailaddress" placeholder="Email" disabled>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="sellerplaceofbusiness" class="col-xs-2 control-label">Place Of Business</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@seller.placeofbusiness}}" id="sellerplaceofbusiness" name="sellerplaceofbusiness" placeholder="NPlace Of Business" disabled>
+																</div>
+															</div><!-- /.form-group -->						
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="button" class="btn btn-default" onclick="window.location='../../etaxware/invoice';return false;">Cancel</button>
+															<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Save</button></true></check>
+															<input type="hidden" name="sellercurrenttab" id="sellercurrenttab" value="tab_seller" />
+															<input type="hidden" name="sellercurrenttabpane" id="sellercurrenttabpane"  value="tab_2" />
+															<input type="hidden" name="sellerinvoiceid" id="sellerinvoiceid" value="{{@invoice.id}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->
+											</div>
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_3">
+										<check if="{{@invoice.einvoiceid == null}}"><true><button class="btn btn-primary" type="button" id="pick-buyer-1" data-toggle="modal" data-target="#modal-pick-buyer"><i class="fa fa-truck"></i><span> Pick Buyer</span></button></true></check>
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="edit-invoice-buyer-form">
+														<div class="box-body">
+															<div class="form-group">
+																<label for="buyer" class="col-xs-2 control-label">ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.id}}" id="buyer" name="buyer" placeholder="ID" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="buyertype" class="col-xs-2 control-label">Type</label>
+																<div class="col-xs-6">
+																	<select class="form-control" name="buyertype" id="buyertype" required>
+																		<option value="" selected disabled hidden>Select Type</option>
+																		<repeat group="{{@buyertypes}}" value="{{@buyertype}}">																		
+																			<check if="{{@buyertype.code == @buyer.type}}">
+																				<true><check if="{{@buyertype.disabled == 1}}"><true><option value="{{@buyertype.code}}" selected disabled>{{@buyertype.code}} - {{@buyertype.name}}</option></true><false><option value="{{@buyertype.code}}" selected>{{@buyertype.code}} - {{@buyertype.name}}</option></false></check></true>
+																				<false><check if="{{@buyertype.disabled == 1}}"><true><option value="{{@buyertype.code}}" disabled>{{@buyertype.code}} - {{@buyertype.name}}</option></true><false><option value="{{@buyertype.code}}">{{@buyertype.code}} - {{@buyertype.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="buyertin" class="col-xs-2 control-label">TIN</label>
+																<div class="col-xs-10">
+																	<input type="text" pattern=".{10,10}"  title="10 characters required" class="form-control" value="{{@buyer.tin}}" id="buyertin" name="buyertin" placeholder="TIN">
+																	<p id="tin-val-text"></p>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="buyerninbrn" class="col-xs-2 control-label">NIN/BRN</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.ninbrn}}" id="buyerninbrn" name="buyerninbrn" placeholder="NIN/BRN">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="buyerlegalname" class="col-xs-2 control-label">Legal Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.legalname}}" id="buyerlegalname" name="buyerlegalname" placeholder="Legal Name" required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="buyerbusinessname" class="col-xs-2 control-label">Business Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.businessname}}" id="buyerbusinessname" name="buyerbusinessname" placeholder="Business Name">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="buyeraddress" class="col-xs-2 control-label">Address</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.address}}" id="buyeraddress" name="buyeraddress" placeholder="Address">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="buyermobilephone" class="col-xs-2 control-label">Mobile Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.mobilephone}}" id="buyermobilephone" name="buyermobilephone" placeholder="Mobile Phone">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="buyerlinephone" class="col-xs-2 control-label">Line Phone</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.linephone}}" id="buyerlinephone" name="buyerlinephone" placeholder="Line Phone">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="buyeremailaddress" class="col-xs-2 control-label">Email</label>
+																<div class="col-xs-10">
+																	<input type="email" class="form-control" value="{{@buyer.emailaddress}}" id="buyeremailaddress" name="buyeremailaddress" placeholder="Email">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="buyerplaceofbusiness" class="col-xs-2 control-label">Place Of Business</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.placeofbusiness}}" id="buyerplaceofbusiness" name="buyerplaceofbusiness" placeholder="NPlace Of Business">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="buyerreferenceno" class="col-xs-2 control-label">Reference Number</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.referenceno}}" id="buyerreferenceno" name="buyerreferenceno" placeholder="Reference Number">
+																</div>
+															</div><!-- /.form-group -->															
+															<div class="form-group">
+																<label for="buyercitizineship" class="col-xs-2 control-label">Citizineship</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.citizineship}}" id="buyercitizineship" name="buyercitizineship" placeholder="Citizineship">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="buyersector" class="col-xs-2 control-label">Sector</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.sector}}" id="buyersector" name="buyersector" placeholder="Sector">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="buyerpassportnum" class="col-xs-2 control-label">Passport</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.PassportNum}}" id="buyerpassportnum" name="buyerpassportnum" placeholder="Passport">
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+															<div class="checkbox">
+																<label for="" class="col-xs-2 control-label"></label>
+																<div class="col-xs-10">
+																	<label>
+																		<check if="{{@buyer.nonResidentFlag == '1'}}">
+																			<true><input type="checkbox" class="" id="nonResidentFlag" name="nonResidentFlag" checked></true> 
+																			<false><input type="checkbox" class="" id="nonResidentFlag" name="nonResidentFlag"></false> 
+																		</check>
+																		Non Resident Flag? 
+																	</label>
+																</div>
+															</div>
+															</div><!-- ./form-group -->	
+															<div class="form-group">
+																<label for="vatProjectId" class="col-xs-2 control-label">VAT Project Id</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.vatProjectId}}" id="vatProjectId" name="vatProjectId" placeholder="VAT Project Id">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="vatProjectName" class="col-xs-2 control-label">VAT Project Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@buyer.vatProjectName}}" id="vatProjectName" name="vatProjectName" placeholder="VAT Project Name">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="deliveryTermsCode" class="col-xs-2 control-label">Delivery Terms</label>
+																<div class="col-xs-10">
+																	<select class="form-control" name="deliveryTermsCode" id="deliveryTermsCode">
+																		<option value="" selected disabled hidden>Select Delivery Terms</option>
+																		<repeat group="{{@deliveryterms}}" value="{{@deliveryterm}}">																		
+																			<check if="{{@deliveryterm.code == @buyer.deliveryTermsCode}}">
+																				<true><check if="{{@deliveryterm.disabled == 1}}"><true><option value="{{@deliveryterm.code}}" selected disabled>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></true><false><option value="{{@deliveryterm.code}}" selected>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></false></check></true>
+																				<false><check if="{{@deliveryterm.disabled == 1}}"><true><option value="{{@deliveryterm.code}}" disabled>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></true><false><option value="{{@deliveryterm.code}}">{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></false></check></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>															
+															</div><!-- /.form-group -->																			
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="button" class="btn btn-default" onclick="window.location='../../etaxware/invoice';return false;">Cancel</button>
+															<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Save</button></true></check>
+															<input type="hidden" name="buyercurrenttab" id="buyercurrenttab" value="tab_buyer" />
+															<input type="hidden" name="buyercurrenttabpane" id="buyercurrenttabpane"  value="tab_3" />
+															<input type="hidden" name="buyerinvoiceid" id="buyerinvoiceid" value="{{@invoice.id}}" />
+															<input type="hidden" name="buyerid" id="buyerid" value="{{@invoice.buyerid}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->
+											</div>
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_4">
+										<check if="{{@invoice.einvoiceid == null}}"><true><button class="btn btn-primary" type="button" id="add-good-1" data-toggle="modal" data-target="#modal-add-good"><i class="fa fa-plus-circle"></i><span> Add Good</span></button></true></check>
+										<button class="btn btn-primary" type="button" id="add-good-refresh-1"><i class="fa fa-refresh"></i><span> Refresh</span></button>
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box" id="ctnr-tbl-invoice-goods">
+													<div class="box-body">
+														<table id="tbl-invoice-goods" class="table table-bordered table-striped">
+															<thead>
+																<tr>	
+																	<th>ID</th>
+																	<th>Name</th>
+																	<th>Description</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<button type="button" class="btn btn-default btn-flat pull-right" onclick="window.location='../../etaxware/invoice';return false;">Cancel</button>
+													</div><!-- ./box-footer -->
+												</div><!-- /.box -->
+											</div>
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_5">
+										<button class="btn btn-primary" type="button" id="add-tax-refresh-1"><i class="fa fa-refresh"></i><span> Refresh</span></button>
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box" id="ctnr-tbl-invoice-taxes">
+													<div class="box-body">
+														<table id="tbl-invoice-taxes" class="table table-bordered table-striped">
+															<thead>
+																<tr>	
+																	<th>ID</th>
+																	<th>Name</th>
+																	<th>Description</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<button type="button" class="btn btn-default btn-flat pull-right" onclick="window.location='../../etaxware/invoice';return false;">Cancel</button>
+													</div><!-- ./box-footer -->
+												</div><!-- /.box -->
+											</div>
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_6">
+										<check if="{{@invoice.einvoiceid == null}}"><true><button class="btn btn-primary" type="button" id="add-payment-1" data-toggle="modal" data-target="#modal-add-payment"><i class="fa fa-plus-circle"></i><span> Add Payment</span></button></true></check>
+										<button class="btn btn-primary" type="button" id="add-payment-refresh-1"><i class="fa fa-refresh"></i><span> Refresh</span></button>
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box" id="ctnr-tbl-invoice-payments">
+													<div class="box-body">
+														<table id="tbl-invoice-payments" class="table table-bordered table-striped">
+															<thead>
+																<tr>	
+																	<th>ID</th>
+																	<th>Name</th>
+																	<th>Description</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<button type="button" class="btn btn-default btn-flat pull-right" onclick="window.location='../../etaxware/invoice';return false;">Cancel</button>
+													</div><!-- ./box-footer -->
+												</div><!-- /.box -->
+											</div>
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+								</div><!-- ./tab-content -->							
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->
+					
+					<div class="modal fade" id="modal-add-payment"><!-- modal-add-payment -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Add Payment</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="add-payment-form">
+										<div class="box-body">																							
+											<div class="form-group">
+												<label for="addpaymentamount" class="col-xs-4 control-label">Payment Amount</label>
+												<div class="col-xs-8">
+													<input type="number" step="0.01" min="0" class="form-control" id="addpaymentamount" name="addpaymentamount" placeholder="Payment Amount" required>
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+											<label for="addpaymentmode" class="col-xs-4 control-label">Payment Mode</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="addpaymentmode" id="addpaymentmode" required>
+													<option value="" selected disabled hidden>Select Payment Mode</option>
+													<repeat group="{{@paymentmodes}}" value="{{@paymentmode}}">																		
+														<check if="{{@paymentmode.disabled == 1}}">
+															<true><option value="{{@paymentmode.code}}" disabled>{{@paymentmode.code}} - {{@paymentmode.name}}</option></true>
+															<false><option value="{{@paymentmode.code}}">{{@paymentmode.code}} - {{@paymentmode.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->																																									
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Submit</button></true></check>
+											<input type="hidden" name="addpaymentcurrenttab" value="tab_payment" />
+											<input type="hidden" name="addpaymentcurrenttabpane" value="tab_6" />
+											<input type="hidden" name="addpaymentinvoiceid" value="{{@invoice.id}}" />
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-add-payment -->	
+					
+					<div class="modal fade" id="modal-pick-buyer"><!-- modal-pick-buyer -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Pick Customer</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="pick-buyer-form">
+										<div class="box-body">												
+											<div class="form-group">
+												<label for="pickbuyertemplate" class="col-xs-2 control-label">Customer</label>
+												<div class="col-xs-6">
+													<select class="form-control select2" style="width: 100%;" id="pickbuyertemplate" name="pickbuyertemplate" required></select>													
+												</div>															
+											</div><!-- /.form-group -->																																									
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Submit</button></true></check>
+											<input type="hidden" name="pickbuyercurrenttab" value="tab_buyer" />
+											<input type="hidden" name="pickbuyercurrenttabpane" value="tab_3" />
+											<input type="hidden" name="pickbuyerinvoiceid" value="{{@invoice.id}}" />
+											<input type="hidden" name="pickbuyerid" id="pickbuyerid" value="{{@invoice.buyerid}}" />
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-pick-buyer -->	
+					
+					<div class="modal fade" id="modal-add-good"><!-- add-good-1 -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Add Good</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="add-good-form">
+										<div class="box-body">																								
+											<div class="form-group">
+											<label for="adddiscountflag" class="col-xs-4 control-label">Discount Flag</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="adddiscountflag" id="adddiscountflag" required>
+													<option value="" selected disabled hidden>Select Discount Flag</option>
+													<repeat group="{{@flags}}" value="{{@flag}}">																		
+														<check if="{{@flag.disabled == 1}}">
+															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
+															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="adddeemedflag" class="col-xs-4 control-label">Deemed Flag</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="adddeemedflag" id="adddeemedflag" required>
+													<option value="" selected disabled hidden>Select Deemed Flag</option>
+													<repeat group="{{@flags}}" value="{{@flag}}">																		
+														<check if="{{@flag.disabled == 1}}">
+															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
+															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="addexciseflag" class="col-xs-4 control-label">Excise Excise Flag</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="addexciseflag" id="addexciseflag" required>
+													<option value="" selected disabled hidden>Select Flag</option>
+													<repeat group="{{@flags}}" value="{{@flag}}">																		
+														<check if="{{@flag.disabled == 1}}">
+															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
+															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="additem" class="col-xs-4 control-label">Item</label>
+											<div class="col-xs-8">
+												<select class="form-control select2" style="width: 100%;" name="additem" id="additem" required></select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+												<label for="addqty" class="col-xs-4 control-label">Qty</label>
+												<div class="col-xs-8">
+													<input type="number" class="form-control" id="addqty" name="addqty" placeholder="Qty" required>
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="addunitprice" class="col-xs-4 control-label">Unit Price</label>
+												<div class="col-xs-8">
+													<input type="number" step="0.00000001" min="0" class="form-control" id="addunitprice" name="addunitprice" placeholder="Unit Price." required>
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+											<div class="checkbox">
+												<label for="" class="col-xs-4 control-label"></label>
+												<div class="col-xs-8">
+													<label>
+														<input type="checkbox" class="" id="addtaxinclusive" name="addtaxinclusive" checked disabled> Tax Inclusive? 
+													</label>
+												</div>
+											</div>
+											</div><!-- ./form-group -->
+											<div class="form-group">
+											<label for="addtaxrate" class="col-xs-4 control-label">Tax Rate</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="addtaxrate" id="addtaxrate" required>
+													<option value="" selected disabled hidden>Select Item</option>
+													<repeat group="{{@taxrates}}" value="{{@taxrate}}">																		
+														<check if="{{@taxrate.disabled == 1}}">
+															<true><option value="{{@taxrate.id}}" disabled>{{@taxrate.id}} - {{@taxrate.category}}</option></true>
+															<false><option value="{{@taxrate.id}}">{{@taxrate.id}} - {{@taxrate.category}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+												<label for="adddiscountpercentage" class="col-xs-4 control-label">Discount %</label>
+												<div class="col-xs-8">
+													<input type="number" step="0.01" min="0" class="form-control" id="adddiscountpercentage" name="adddiscountpercentage" placeholder="Discount %">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="addexciserate" class="col-xs-4 control-label">Execise Rate</label>
+												<div class="col-xs-8">
+													<input type="number" step="0.01" min="0" max="100" class="form-control" id="addexciserate" name="addexciserate" placeholder="Execise Rate.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="addexciserule" class="col-xs-4 control-label">Execise Rule</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="addexciserule" name="addexciserule" placeholder="Execise Rule.">
+												</div>
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="addexcisetax" class="col-xs-4 control-label">Execise Tax</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="addexcisetax" name="addexcisetax" placeholder="Execise Tax.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="addpack" class="col-xs-4 control-label">Pack</label>
+												<div class="col-xs-8">
+													<input type="number" class="form-control" id="addpack" name="addpack" placeholder="Pack.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="addstick" class="col-xs-4 control-label">Stick</label>
+												<div class="col-xs-8">
+													<input type="number" class="form-control" id="addstick" name="addstick" placeholder="Stick.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="addexciseunit" class="col-xs-4 control-label">Execise Unit</label>
+												<div class="col-xs-8">
+													<input type="number" class="form-control" id="addexciseunit" name="addexciseunit" placeholder="Execise Unit.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="addexcisecurrency" class="col-xs-4 control-label">Execise Currency</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="addexcisecurrency" name="addexcisecurrency" placeholder="Execise Currency.">
+												</div>
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="addexciseratename" class="col-xs-4 control-label">Execise Rate Name</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="addexciseratename" name="addexciseratename" placeholder="Execise Rate Name.">
+												</div>
+											</div><!-- ./form-group -->																																			
+										</div><!-- /.box-body -->										
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Submit</button></true></check>
+											<input type="hidden" name="goodcurrenttab" value="tab_good" />
+											<input type="hidden" name="goodcurrenttabpane" value="tab_4" />
+											<input type="hidden" name="goodinvoiceid" value="{{@invoice.id}}" />
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-add-good -->	
+					
+					<div class="modal fade" id="modal-delete-good"><!-- modal-delete-good -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Delete Good</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="pick-buyer-form">
+										<div class="box-body">												
+											<div class="form-group">
+												<label for="deleteitemcode" class="col-xs-4 control-label">Item Code.</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="deleteitemcode" name="deleteitemcode" placeholder="Item Code." disabled>
+													<p class="help-block text-red"><i class="fa fa-bell-o"></i> Are you sure you want to delete this item from the invoice?</p>
+												</div>
+											</div><!-- /.form-group -->																																											
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Submit</button></true></check>
+											<input type="hidden" name="deletegoodcurrenttab" value="tab_good" />
+											<input type="hidden" name="deletegoodcurrenttabpane" value="tab_4" />
+											<input type="hidden" name="deletegoodinvoiceid" value="{{@invoice.id}}" />
+											<input type="hidden" name="deletegoodid"  id="deletegoodid"/>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-delete-good -->
+					
+					<div class="modal fade" id="modal-edit-good"><!-- edit-good-1 -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Edit Good</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="edit-good-form">
+										<div class="box-body">												
+											<div class="form-group">
+											<label for="editdiscountflag" class="col-xs-4 control-label">Discount Flag</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="editdiscountflag" id="editdiscountflag" required>
+													<option value="" selected disabled hidden>Select Discount Flag</option>
+													<repeat group="{{@flags}}" value="{{@flag}}">																		
+														<check if="{{@flag.disabled == 1}}">
+															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
+															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="editdeemedflag" class="col-xs-4 control-label">Deemed Flag</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="editdeemedflag" id="editdeemedflag" required>
+													<option value="" selected disabled hidden>Select Deemed Flag</option>
+													<repeat group="{{@flags}}" value="{{@flag}}">																		
+														<check if="{{@flag.disabled == 1}}">
+															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
+															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="editexciseflag" class="col-xs-4 control-label">Excise Excise Flag</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="editexciseflag" id="editexciseflag" required>
+													<option value="" selected disabled hidden>Select Flag</option>
+													<repeat group="{{@flags}}" value="{{@flag}}">																		
+														<check if="{{@flag.disabled == 1}}">
+															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
+															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+											<label for="edititem" class="col-xs-4 control-label">Item</label>
+											<div class="col-xs-8">
+												<select class="form-control select2" style="width: 100%;" name="edititem" id="edititem" required></select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+												<label for="editqty" class="col-xs-4 control-label">Qty</label>
+												<div class="col-xs-8">
+													<input type="number" class="form-control" id="editqty" name="editqty" placeholder="Qty" required>
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="editunitprice" class="col-xs-4 control-label">Unit Price</label>
+												<div class="col-xs-8">
+													<input type="number" step="0.00000001" min="0" class="form-control" id="editunitprice" name="editunitprice" placeholder="Unit Price." required>
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+											<div class="checkbox">
+												<label for="" class="col-xs-4 control-label"></label>
+												<div class="col-xs-8">
+													<label>
+														<input type="checkbox" class="" id="edittaxinclusive" name="edittaxinclusive" checked disabled> Tax Inclusive? 
+													</label>
+												</div>
+											</div>
+											</div><!-- ./form-group -->
+											<div class="form-group">
+											<label for="edittaxrate" class="col-xs-4 control-label">Tax Rate</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="edittaxrate" id="edittaxrate" required>
+													<option value="" selected disabled hidden>Select Item</option>
+													<repeat group="{{@taxrates}}" value="{{@taxrate}}">																		
+														<check if="{{@taxrate.disabled == 1}}">
+															<true><option value="{{@taxrate.id}}" disabled>{{@taxrate.id}} - {{@taxrate.category}}</option></true>
+															<false><option value="{{@taxrate.id}}">{{@taxrate.id}} - {{@taxrate.category}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
+											<div class="form-group">
+												<label for="editdiscountpercentage" class="col-xs-4 control-label">Discount %</label>
+												<div class="col-xs-8">
+													<input type="number" step="0.01" min="0" class="form-control" id="editdiscountpercentage" name="editdiscountpercentage" placeholder="Discount %">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="editexciserate" class="col-xs-4 control-label">Execise Rate</label>
+												<div class="col-xs-8">
+													<input type="number" step="0.01" min="0" max="100" class="form-control" id="editexciserate" name="editexciserate" placeholder="Execise Rate.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="editexciserule" class="col-xs-4 control-label">Execise Rule</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="editexciserule" name="editexciserule" placeholder="Execise Rule.">
+												</div>
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="editexcisetax" class="col-xs-4 control-label">Execise Tax</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="editexcisetax" name="editexcisetax" placeholder="Execise Tax.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="editpack" class="col-xs-4 control-label">Pack</label>
+												<div class="col-xs-8">
+													<input type="number" class="form-control" id="editpack" name="editpack" placeholder="Pack.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="editstick" class="col-xs-4 control-label">Stick</label>
+												<div class="col-xs-8">
+													<input type="number" class="form-control" id="editstick" name="editstick" placeholder="Stick.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="editexciseunit" class="col-xs-4 control-label">Execise Unit</label>
+												<div class="col-xs-8">
+													<input type="number" class="form-control" id="editexciseunit" name="editexciseunit" placeholder="Execise Unit.">
+												</div>
+											</div><!-- ./form-group -->	
+											<div class="form-group">
+												<label for="editexcisecurrency" class="col-xs-4 control-label">Execise Currency</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="editexcisecurrency" name="editexcisecurrency" placeholder="Execise Currency.">
+												</div>
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="editexciseratename" class="col-xs-4 control-label">Execise Rate Name</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="editexciseratename" name="editexciseratename" placeholder="Execise Rate Name.">
+												</div>
+											</div><!-- ./form-group -->																																			
+										</div><!-- /.box-body -->										
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Submit</button></true></check>
+											<input type="hidden" name="editgoodcurrenttab" value="tab_good" />
+											<input type="hidden" name="editgoodcurrenttabpane" value="tab_4" />
+											<input type="hidden" name="editgoodinvoiceid" value="{{@invoice.id}}" />
+											<input type="hidden" name="editgoodid"  id="editgoodid"/>
+											<input type="hidden" name="editgoodgroupid"  id="editgoodgroupid"/>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-edit-good -->
+					
+					<div class="modal fade" id="modal-delete-payment"><!-- modal-delete-payment -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Delete Payment</h4>
+								</div>
+								<div class="modal-body">									
+									<form class="form-horizontal" role="form" action="{{@BASE . '/editinvoice'}}" method="post" enctype="multipart/form-data" name="pick-buyer-form">
+										<div class="box-body">												
+											<div class="form-group">
+												<label for="deletepaymentmode" class="col-xs-4 control-label">Payment Mode.</label>
+												<div class="col-xs-8">
+													<input type="text" class="form-control" id="deletepaymentmode" name="deletepaymentmode" placeholder="Mode." disabled>
+													<p class="help-block text-red"><i class="fa fa-bell-o"></i> Are you sure you want to delete this payment from the invoice?</p>
+												</div>
+											</div><!-- /.form-group -->																																											
+										</div><!-- /.box-body -->
+										<div class="box-footer">
+											<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+											<check if="{{@invoice.einvoiceid == null}}"><true><button type="submit" class="btn btn-info pull-right">Submit</button></true></check>
+											<input type="hidden" name="deletepaymentcurrenttab" value="tab_payment" />
+											<input type="hidden" name="deletepaymentcurrenttabpane" value="tab_6" />
+											<input type="hidden" name="deletepaymentinvoiceid" value="{{@invoice.id}}" />
+											<input type="hidden" name="deletepaymentid"  id="deletepaymentid"/>
+										</div><!-- /.box-footer -->
+									</form>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-delete-payment -->
+					
+					<div class="modal fade" id="modal-validate-buyertin"><!-- modal-validate-buyertin -->
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">Validating TIN</h4>
+								</div>
+								<div class="modal-body">									
+									<p class="help-block text-aqua"><i class="fa fa-bell-o"></i> Please wait...</p>									
+								</div><!-- /.modal-body -->
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal-validate-buyertin -->
+			
+				</section>

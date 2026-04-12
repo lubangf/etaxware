@@ -1,0 +1,21 @@
+		<!-- JQuery QR -->
+		<script src="{{@path . 'plugins/jquery-qrcode/jquery-qrcode-0.18.0.min.js'}}"></script>
+		<!-- View Invoice JS -->
+		<script src="{{@path . 'js/viewinvoice.js'}}"></script>
+		<script>
+			
+			var invoice_2 = {{@invoice.id}}
+			//console.log(invoice_2);
+								
+			$(window).load(function(){
+				$('#li-sales-1').addClass('active');//mark the invoices link as active
+				
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}	
+				
+				printqr(invoice_2.toString());
+											
+			});									
+		</script>

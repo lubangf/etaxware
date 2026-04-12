@@ -1,0 +1,195 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Select2 -->
+        <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>		
+		<!-- product JS -->
+		<script src="{{@path . 'js/product.js'}}"></script>
+		<script>
+			var currenttab = $('#currenttab').text();
+			//console.log(currenttab);
+			
+			var currenttabpane = $('#currenttabpane').text();
+			//console.log(currenttabpane);
+			
+			var productid_2 = $('#productid').val();
+			//console.log(productid_2);
+			
+			var measureunit_2 = $('#measureunit').text();
+			//console.log('measureunit = ' + measureunit_2);	
+			
+			var measureunitName = $('#measureunitName').text();
+			//console.log('measureunitName = ' + measureunitName);
+
+			var currency_2 = $('#currency').text();
+			//console.log('currency = ' + currency_2);
+
+			var currencyName = $('#currencyName').text();
+			//console.log('currencyName = ' + currencyName);
+			
+			var hscode_2 = $('#hscode').text();
+			//console.log('hscode = ' + hscode_2);	
+			
+			var hsName = $('#hsName').text();
+			//console.log('hsName = ' + hsName);
+			
+			
+			var commoditycategorycode_2 = $('#commoditycategorycode').text();
+			//console.log('commoditycategorycode = ' + commoditycategorycode_2);	
+			
+			var commoditycategoryName = $('#commoditycategoryName').text();
+			//console.log('commoditycategoryName = ' + commoditycategoryName);
+			
+			
+			var piecemeasureunit_2 = $('#piecemeasureunit').text();
+			//console.log('piecemeasureunit = ' + piecemeasureunit_2);	
+			
+			var customsmeasureunit_2 = $('#customsmeasureunit').text();
+			//console.log('customsmeasureunit = ' + customsmeasureunit_2);
+			
+			var piecemeasureunitName = $('#piecemeasureunitName').text();
+			//console.log('piecemeasureunitName = ' + piecemeasureunitName);	
+			
+			var customsmeasureunitName = $('#customsmeasureunitName').text();
+			//console.log('customsmeasureunitName = ' + customsmeasureunitName);										
+
+			// 2026-04-11 18:55:55 +03:00 - Normalize hidden span values so blank and literal NULL/null are treated as empty.
+			var normalizeCodeValue = function(value){
+				var normalized = $.trim(value || '');
+				return (normalized.toUpperCase() === 'NULL') ? '' : normalized;
+			};
+
+			measureunit_2 = normalizeCodeValue(measureunit_2);
+			measureunitName = $.trim(measureunitName || '');
+			currency_2 = normalizeCodeValue(currency_2);
+			currencyName = $.trim(currencyName || '');
+			hscode_2 = normalizeCodeValue(hscode_2);
+			hsName = $.trim(hsName || '');
+			commoditycategorycode_2 = normalizeCodeValue(commoditycategorycode_2);
+			commoditycategoryName = $.trim(commoditycategoryName || '');
+			piecemeasureunit_2 = normalizeCodeValue(piecemeasureunit_2);
+			piecemeasureunitName = $.trim(piecemeasureunitName || '');
+			customsmeasureunit_2 = normalizeCodeValue(customsmeasureunit_2);
+			customsmeasureunitName = $.trim(customsmeasureunitName || '');
+								
+			$(window).load(function(){
+				$('#li-products-1').addClass('active');//mark the products link as active
+				$('#' + currenttab).addClass('active');//set the tab to active
+				$('#' + currenttabpane).addClass('active');//set the corresponding tab-pane to active
+					
+				var hasexcisetaxvalue =  $("select#producthasexcisetax option").filter(":selected").val();
+				//console.log(hasexcisetaxvalue);	
+				
+				if(hasexcisetaxvalue == 102){
+					$('#productexcisedutylist').attr('disabled', 'disabled');
+					//$('#producthavepieceunit').val("102").change();
+					//$('#producthavepieceunit').attr('disabled', 'disabled');
+				}			
+								
+				/*Check system alert & session id are the same, then display alert*/
+				if(systemalerttext !== ''){
+					$('#modal-system-alert').modal('show');
+				}
+				
+				// 2026-04-11 19:07:14 +03:00 - Guard Select2 prefill against empty/NULL-string code values and use code fallback for display label.
+				if (measureunit_2 !== undefined && measureunit_2.trim() !== '') {//if the product measureunit is already set, then set it as the selected choice
+					
+					$('#productmeasureunit').empty();
+	        		$('#productmeasureunit').append($("<option/>").val(measureunit_2).text(measureunitName !== '' ? measureunitName : measureunit_2));
+        			$('#productmeasureunit').val(measureunit_2).trigger('change');
+				}
+
+				// 2026-04-11 19:44:49 +03:00 - Guard Select2 prefill against empty/NULL-string code values and use code fallback for display label.
+				if (currency_2 !== undefined && currency_2.trim() !== '') {//if the product currency is already set, then set it as the selected choice
+
+					$('#productcurrency').empty();
+	        		$('#productcurrency').append($("<option/>").val(currency_2).text(currencyName !== '' ? currencyName : currency_2));
+	        		$('#productcurrency').val(currency_2).trigger('change');
+				}
+				
+				// 2026-04-11 19:07:14 +03:00 - Guard Select2 prefill against empty/NULL-string code values and use code fallback for display label.
+				if (commoditycategorycode_2 !== undefined && commoditycategorycode_2.trim() !== '') {//if the product commoditycategorycode is already set, then set it as the selected choice
+					
+					$('#productcommoditycategory').empty();
+	        		$('#productcommoditycategory').append($("<option/>").val(commoditycategorycode_2).text(commoditycategoryName !== '' ? commoditycategoryName : commoditycategorycode_2));
+        			$('#productcommoditycategory').val(commoditycategorycode_2).trigger('change');
+				}
+				
+				// 2026-04-11 18:55:55 +03:00 - Guard Select2 prefill against empty/NULL-string code values and use code fallback for display label.
+				if (piecemeasureunit_2 !== undefined && piecemeasureunit_2.trim() !== '') {//if the piecemeasureunit is already set, then set it as the selected choice
+					
+					$('#productpiecemeasureunit').empty();
+	        		$('#productpiecemeasureunit').append($("<option/>").val(piecemeasureunit_2).text(piecemeasureunitName !== '' ? piecemeasureunitName : piecemeasureunit_2));
+        			$('#productpiecemeasureunit').val(piecemeasureunit_2).trigger('change');
+				}
+				
+				// 2026-04-11 18:55:55 +03:00 - Guard Select2 prefill against empty/NULL-string code values and use code fallback for display label.
+				if (customsmeasureunit_2 !== undefined && customsmeasureunit_2.trim() !== '') {//if the customsmeasureunit is already set, then set it as the selected choice
+					
+					$('#productcustomsmeasureunit').empty();
+	        		$('#productcustomsmeasureunit').append($("<option/>").val(customsmeasureunit_2).text(customsmeasureunitName !== '' ? customsmeasureunitName : customsmeasureunit_2));
+        			$('#productcustomsmeasureunit').val(customsmeasureunit_2).trigger('change');
+				}
+				
+				// 2026-04-11 18:55:55 +03:00 - Guard Select2 prefill against empty/NULL-string code values and use code fallback for display label.
+				if (hscode_2 !== undefined && hscode_2.trim() !== '') {//if the product hscode is already set, then set it as the selected choice
+					
+					$('#producthscode').empty();
+	        		$('#producthscode').append($("<option/>").val(hscode_2).text(hsName !== '' ? hsName : hscode_2));
+        			$('#producthscode').val(hscode_2).trigger('change');
+				}
+				
+				listotherunits(productid_2.toString());	
+				liststockadjustments(productid_2.toString());
+				liststocktransfers(productid_2.toString());															
+			});	
+			
+			//ensure the tab content are refreshed again when user is navigating through the tabs
+			$(document).ready(function(){
+				var anchor;
+				$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+					anchor = $(e.target).attr('href');//Read the a href of the anchor that was clicked
+					anchor = anchor.substr(1, anchor.length);// Trim the leading '#' from the href attribute
+					if(anchor == "tab_1"){// Call the ajax associated with the tab
+						$('#tab_general').addClass('active');
+						$('#tab_1').addClass('active');
+					} else if(anchor == "tab_2"){// Call the ajax associated with the tab					
+						$('#tab_otherunits').addClass('active');
+						$('#tab_2').addClass('active');
+						$('#ctnr-tbl-otherunits').append('<div class="overlay" id="otbl-otherunits"><i class="fa fa-refresh fa-spin"></i></div>');
+						listotherunits(productid_2.toString());
+					} else if(anchor == "tab_3"){// Call the ajax associated with the tab					
+						$('#tab_stockadjustments').addClass('active');
+						$('#tab_3').addClass('active');
+						$('#ctnr-tbl-stockadjustments').append('<div class="overlay" id="otbl-stockadjustments"><i class="fa fa-refresh fa-spin"></i></div>');
+						liststockadjustments(productid_2.toString());
+					} else if(anchor == "tab_4"){// Call the ajax associated with the tab					
+						$('#tab_stocktransfers').addClass('active');
+						$('#tab_4').addClass('active');
+						$('#ctnr-tbl-stocktransfers').append('<div class="overlay" id="otbl-stocktransfers"><i class="fa fa-refresh fa-spin"></i></div>');
+						liststocktransfers(productid_2.toString());
+					}
+				});
+			});
+			
+			//onclick event handler for the anchor called refresh-other-units-2
+			$('#refresh-other-units-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-otherunits').append('<div class="overlay" id="otbl-otherunits"><i class="fa fa-refresh fa-spin"></i></div>');
+				listotherunits(productid_2.toString());
+			});	
+			
+			//onclick event handler for the anchor called refresh-stock-adjustments-2
+			$('#refresh-stock-adjustments-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-stockadjustments').append('<div class="overlay" id="otbl-stockadjustments"><i class="fa fa-refresh fa-spin"></i></div>');
+				liststockadjustments(productid_2.toString());
+			});
+			
+			//onclick event handler for the anchor called refresh-stock-transfers-2
+			$('#refresh-stock-transfers-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-stocktransfers').append('<div class="overlay" id="otbl-stocktransfers"><i class="fa fa-refresh fa-spin"></i></div>');
+				liststocktransfers(productid_2.toString());
+			});			
+		</script>

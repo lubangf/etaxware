@@ -1,0 +1,160 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-building"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li><a href="{{@BASE . '/administration'}}"><i class="fa fa-briefcase"></i> Administration</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				<section class="content"><!-- Main content -->
+					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
+					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="nav-tabs-custom">
+								<ul class="nav nav-tabs">
+									<li id="tab_general"><a href="#tab_1" data-toggle="tab"><i class="fa fa-gear"></i> General</a></li>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+											<i class="fa fa-wrench"></i> Quick Actions <span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu">
+											<li branch="presentation"><a branch="menuitem" tabindex="-1" href="{{@BASE . '/createbranch'}}" id="create-new-branch-2"><i class="fa fa-plus-circle"></i>New Branch</a></li>
+										</ul>
+									</li>
+								</ul><!-- ./nav-tabs -->
+								<div class="tab-content">
+									<div class="tab-pane" id="tab_1">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info">
+													<form class="form-horizontal" branch="form" action="{{@BASE . '/editbranch'}}" method="post" enctype="multipart/form-data" name="branch-form">
+														<div class="box-body">
+															<div class="form-group">
+																<label for="" class="col-xs-2 control-label">ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@branch.id}}" id="" name="" placeholder="ID" disabled>
+																</div>
+															</div><!-- /.form-group -->		
+															<div class="form-group">
+																<label for="branchcode" class="col-xs-2 control-label">Code</label>
+																<div class="col-xs-10">
+																	<check if="{{@branch.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@branch.code}}" id="branchcode" name = "branchcode" placeholder="Code" required></true>
+																		<false><input type="text" class="form-control" value="{{@branch.code}}" id="branchcode" name = "branchcode" placeholder="Code" required disabled></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->	
+															<div class="form-group">
+																<label for="branchname" class="col-xs-2 control-label">Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@branch.name}}" id="branchname" name = "branchname" placeholder="Name" required>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="branchdescription" class="col-xs-2 control-label">Description</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@branch.description}}" id="branchdescription" name = "branchdescription" placeholder="Description">
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="branchestatus" class="col-xs-2 control-label">Status</label>
+																<div class="col-xs-10">
+																	<check if="{{@branch.id !== null}}">
+																		<true><select class="form-control" name="branchestatus" id="branchestatus" required></true>
+																		<false><select class="form-control" name="branchestatus" id="branchestatus" required disabled></false>
+																	</check>
+																		<option value="" selected disabled hidden>Select Status</option>
+																		<repeat group="{{@branchestatuses}}" value="{{@branchestatus}}">
+																			<check if="{{@branchestatus.id == @branch.status}}">
+																				<true><option value="{{@branchestatus.id}}" selected>{{@branchestatus.id}} - {{@branchestatus.name}}</option></true>
+																				<false><option value="{{@branchestatus.id}}">{{@branchestatus.id}} - {{@branchestatus.name}}</option></false>
+																			</check>
+																		</repeat>
+																	</select>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																	<label for="branchefrismap" class="col-xs-2 control-label">Mapped EFRIS Branch</label>
+																	<div class="col-xs-6">
+																		<select class="form-control" name="branchefrismap" id="branchefrismap">
+																			<option value="" selected disabled hidden>Select Branch</option>
+																			<repeat group="{{@urabranches}}" value="{{@urabranch}}">																		
+																				<check if="{{@urabranch.id == @branch.uramap}}">
+																					<true><check if="{{@urabranch.disabled == 1}}"><true><option value="{{@urabranch.id}}" selected disabled>{{@urabranch.id}} - {{@urabranch.name}}</option></true><false><option value="{{@urabranch.id}}" selected>{{@urabranch.id}} - {{@urabranch.name}}</option></false></check></true>
+																					<false><check if="{{@urabranch.disabled == 1}}"><true><option value="{{@urabranch.id}}" disabled>{{@urabranch.id}} - {{@urabranch.name}}</option></true><false><option value="{{@urabranch.id}}">{{@urabranch.id}} - {{@urabranch.name}}</option></false></check></false>
+																				</check>
+																			</repeat>
+																		</select>
+																	</div>															
+																	</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="brancherpid" class="col-xs-2 control-label">ERP ID</label>
+																<div class="col-xs-10">
+																	<check if="{{@branch.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@branch.erpid}}" id="brancherpid" name = "brancherpid" placeholder="ERP ID" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@branch.erpid}}" id="brancherpid" name = "brancherpid" placeholder="ERP ID"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="brancherpcode" class="col-xs-2 control-label">ERP Code</label>
+																<div class="col-xs-10">
+																	<check if="{{@branch.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@branch.erpcode}}" id="brancherpcode" name = "brancherpcode" placeholder="ERP Code" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@branch.erpcode}}" id="brancherpcode" name = "brancherpcode" placeholder="ERP Code"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="brancherpname" class="col-xs-2 control-label">ERP Name</label>
+																<div class="col-xs-10">
+																	<check if="{{@branch.id == null}}">
+																		<true><input type="text" class="form-control" value="{{@branch.erpname}}" id="brancherpname" name = "brancherpname" placeholder="ERP Name" disabled></true>
+																		<false><input type="text" class="form-control" value="{{@branch.erpname}}" id="brancherpname" name = "brancherpname" placeholder="ERP Name"></false>
+																	</check>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="branchuraid" class="col-xs-2 control-label">EFRIS ID</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@branch.uraid}}" id="branchuraid" name = "branchuraid" placeholder="EFRIS ID" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="branchuraname" class="col-xs-2 control-label">EFRIS Name</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@branch.uraname}}" id="branchuraname" name = "branchuraname" placeholder="EFRIS Name" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="branchinserteddt" class="col-xs-2 control-label">Create Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@branch.inserteddt}}" id="branchinserteddt" name="branchinserteddt" placeholder="Create Date" disabled>
+																</div>
+															</div><!-- /.form-group -->
+															<div class="form-group">
+																<label for="branchmodifieddt" class="col-xs-2 control-label">Modified Date</label>
+																<div class="col-xs-10">
+																	<input type="text" class="form-control" value="{{@branch.modifieddt}}" id="branchmodifieddt" name="branchmodifieddt" placeholder="Modified Date" disabled>
+																</div>
+															</div><!-- /.form-group -->								
+														</div><!-- /.box-body -->
+														<div class="box-footer">
+															<button type="submit" class="btn btn-info pull-right">Save</button>
+															<input type="hidden" name="currenttab" id="currenttab" value="tab_general" />
+															<input type="hidden" name="currenttabpane" id="currenttabpane"  value="tab_1" />
+															<input type="hidden" name="branchid" id="branchid" value="{{@branch.id}}" />
+														</div><!-- /.box-footer -->
+													</form><!-- /.form -->
+												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+								</div><!-- ./tab-content -->
+							</div><!-- ./nav-tabs-custom -->
+						</div><!-- ./col-md-12 -->
+					</div><!-- ./row -->						
+				</section>

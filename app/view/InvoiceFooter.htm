@@ -1,0 +1,69 @@
+		<!-- DataTables -->
+		<script src="{{@path . 'plugins/datatables/jquery.dataTables.min.js'}}"></script>
+		<script src="{{@path . 'plugins/datatables/dataTables.bootstrap.min.js'}}"></script>
+		<!-- Select2 -->
+		<script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>
+		<!-- bootstrap datepicker -->
+		<script src="{{@path . 'plugins/datepicker/bootstrap-datepicker.js'}}"></script>
+		<!-- Invoice JS -->
+		<script src="{{@path . 'js/invoice.js'}}"></script>
+		<script>
+		    /**
+		     * @desc initialise a date picker called startdate
+		     */
+		    $('#startdate').datepicker({
+		        autoclose: true
+		    });
+
+		    /**
+		     * @desc initialise a date picker called enddate
+		     */
+		    $('#enddate').datepicker({
+		        autoclose: true
+		    });
+
+		    $('#downloaderpinvoicesstartdate').datepicker({
+		        autoclose: true
+		    });
+
+		    $('#downloaderpinvoicesenddate').datepicker({
+		        autoclose: true
+		    });
+
+		    $('#startdate').datepicker('update', new Date());
+		    $('#enddate').datepicker('update', new Date());
+		    $('#downloaderpinvoicesstartdate').datepicker('update', new Date());
+		    $('#downloaderpinvoicesenddate').datepicker('update', new Date());
+
+		    $(window).load(function() {
+		        $('#li-sales-1').addClass('active'); //mark the invoice link as active
+		        listinvoices(); //load the invoice list table on load
+
+		        /*Check system alert & session id are the same, then display alert*/
+		        if (systemalerttext !== '') {
+		            $('#modal-system-alert').modal('show');
+		        }
+		    });
+
+		    //onclick event handler for the anchor called refresh-invoice-list-1
+		    $('#refresh-invoice-list-1').click(function(e) {
+		        e.preventDefault(); //prevent anchor from behaving normally
+		        $('#ctnr-tbl-invoice-list').append('<div class="overlay" id="otbl-invoice-list"><i class="fa fa-refresh fa-spin"></i></div>');
+		        listinvoices();
+		    });
+
+		    //onclick event handler for the anchor called refresh-invoice-list-2
+		    $('#refresh-invoice-list-2').click(function(e) {
+		        e.preventDefault(); //prevent anchor from behaving normally
+		        $('#ctnr-tbl-invoice-list').append('<div class="overlay" id="otbl-invoice-list"><i class="fa fa-refresh fa-spin"></i></div>');
+		        listinvoices();
+		    });
+
+
+		    //submit the form called sync-efrisinvoices-form
+		    $("#sync-efrisinvoices-button").click(function() {
+		        //event.preventDefault();
+		        $('#ctnr-sync-efrisinvoices-form').append('<div class="overlay" id=""><i class="fa fa-refresh fa-spin"></i></div>');
+		        $('#sync-efrisinvoices-form').submit();
+		    });
+		</script>

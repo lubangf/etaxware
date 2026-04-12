@@ -1,0 +1,225 @@
+				<section class="content-header"><!-- Content Header (Page header) -->
+					<h1>
+						<i class="fa fa-pie-chart"></i> <span>{{@pagetitle}}</span>
+					</h1>
+					<ol class="breadcrumb">
+						<li><a href="{{@BASE}}"><i class="fa fa-home"></i> Home</a></li>
+						<li class="active">{{@pagetitle}}</li>
+					</ol>
+				</section><!-- ./content-header -->
+				
+				<section class="content"><!-- Main content -->
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="box box-info">
+								<form class="form-horizontal" role="form" action="{{@BASE . '/runreport'}}" method="post" enctype="multipart/form-data" name="run-report-form">
+									<div class="box-body">
+										<fieldset>
+											<legend>Details:</legend>
+											<div class="form-group">
+												<label for="rptgroup" class="col-xs-2 control-label">Report Group</label>
+												<div class="col-xs-6">
+													<select class="form-control select2" style="width: 100%;" id="rptgroup" name="rptgroup" required></select>
+												</div>
+											</div><!-- /.form-group -->
+											<div class="form-group">
+												<label for="reports" class="col-xs-2 control-label">Report Name</label>
+												<div class="col-xs-6">
+													<select class="form-control select2" style="width: 100%;" id="reports" name="reports" required></select>
+												</div>
+											</div><!-- /.form-group -->											
+										</fieldset>
+										<fieldset>
+											<legend>Parameters:</legend>
+											<div class="form-group">
+												<div class="col-xs-12">
+													<p class="col-xs-3"></p>
+													<p class="help-block text-aqua"><i class="fa fa-bell-o"></i> Please populate parameters which apply to the report selected.</p>
+												</div>
+											</div>
+											<div class="form-group">
+												<label for="startdate" class="col-xs-2 control-label">Start Date</label>
+												<div class="col-xs-6 input-group date" >
+													<div class="input-group-addon">
+														<i class="fa fa-calendar"></i>
+													</div><!-- /.input group addon -->
+													<input type="text" class="form-control pull-right" id="startdate" name="startdate">
+												</div><!-- /.input group -->
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="enddate" class="col-xs-2 control-label">End Date</label>
+												<div class="col-xs-6 input-group date" >
+													<div class="input-group-addon">
+														<i class="fa fa-calendar"></i>
+													</div><!-- /.input group addon -->
+													<input type="text" class="form-control pull-right" id="enddate" name="enddate">
+												</div><!-- /.input group -->
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="users" class="col-xs-2 control-label">Operator</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa fa-users"></i>
+													</div><!-- /.input group addon -->
+													<select class="form-control" name="users" id="users">
+														<option value="" selected disabled hidden>Select Operator</option>
+														<repeat group="{{@users}}" value="{{@user}}">
+															<check if="{{@user.disabled == 1}}">
+																<true><option value="{{@user.id}}" disabled>{{@user.id}} - {{@user.firstname}} {{@user.lastname}}</option></true>
+																<false><option value="{{@user.id}}">{{@user.id}} - {{@user.firstname}} {{@user.lastname}}</option></false>
+															</check>
+														</repeat>
+													</select>
+												</div><!-- /.input group -->
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="product" class="col-xs-2 control-label">Product</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa fa-product-hunt"></i>
+													</div><!-- /.input group addon -->
+													<select class="form-control select2" style="width: 100%;" id="product" name="product"></select>													
+												</div>															
+											</div><!-- /.form-group -->
+											<div class="form-group">
+												<label for="fromamount" class="col-xs-2 control-label">From Amount</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa  fa-usd"></i>
+													</div><!-- /.input group addon -->
+													<input type="number" class="form-control" id="fromamount" name="fromamount" placeholder="From Amount">												
+												</div>															
+											</div><!-- /.form-group -->
+											<div class="form-group">
+												<label for="toamount" class="col-xs-2 control-label">To Amount</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa  fa-usd"></i>
+													</div><!-- /.input group addon -->
+													<input type="number" class="form-control" id="toamount" name="toamount" placeholder="To Amount">													
+												</div>															
+											</div><!-- /.form-group -->
+											<div class="form-group">
+												<label for="buyertin" class="col-xs-2 control-label">Buyer TIN</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa  fa-user"></i>
+													</div><!-- /.input group addon -->
+													<input type="text" class="form-control" id="buyertin" name="buyertin" placeholder="Buyer TIN">													
+												</div>															
+											</div><!-- /.form-group -->
+											<div class="form-group">
+												<label for="buyerlegalname" class="col-xs-2 control-label">Buyer Legal Name</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa  fa-user"></i>
+													</div><!-- /.input group addon -->
+													<input type="text" class="form-control" id="buyerlegalname" name="buyerlegalname" placeholder="Buyer Legal Name">													
+												</div>															
+											</div><!-- /.form-group -->
+											<div class="form-group">
+												<label for="fdn" class="col-xs-2 control-label">Fiscal Doc. Number</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa  fa-file"></i>
+													</div><!-- /.input group addon -->
+													<input type="text" class="form-control" id="fdn" name="fdn" placeholder="Fiscal Doc. Number">													
+												</div>															
+											</div><!-- /.form-group -->
+											<div class="form-group">
+												<label for="currency" class="col-xs-2 control-label">Currency</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa fa-money"></i>
+													</div><!-- /.input group addon -->
+													<select class="form-control" name="currency" id="currency">
+														<option value="" selected disabled hidden>Select Currency</option>
+														<repeat group="{{@currencies}}" value="{{@currency}}">																		
+															<check if="{{@currency.name == @invoice.currency}}">
+																<true><check if="{{@currency.disabled == 1}}"><true><option value="{{@currency.name}}" selected disabled>{{@currency.code}} - {{@currency.name}}</option></true><false><option value="{{@currency.name}}" selected>{{@currency.code}} - {{@currency.name}}</option></false></check></true>
+																<false><check if="{{@currency.disabled == 1}}"><true><option value="{{@currency.name}}" disabled>{{@currency.code}} - {{@currency.name}}</option></true><false><option value="{{@currency.name}}">{{@currency.code}} - {{@currency.name}}</option></false></check></false>
+															</check>
+														</repeat>
+													</select>
+												</div><!-- /.input group -->
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="invoicetype" class="col-xs-2 control-label">Invoice Type</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa fa-file-text"></i>
+													</div><!-- /.input group addon -->
+													<select class="form-control" name="invoicetype" id="invoicetype">
+														<option value="" selected disabled hidden>Select Invoice Type</option>
+														<repeat group="{{@invoicetypes}}" value="{{@invoicetype}}">																		
+															<check if="{{@invoicetype.code == @invoice.invoicetype}}">
+																<true><check if="{{@invoicetype.disabled == 1}}"><true><option value="{{@invoicetype.code}}" selected disabled>{{@invoicetype.code}} - {{@invoicetype.name}}</option></true><false><option value="{{@invoicetype.code}}" selected>{{@invoicetype.code}} - {{@invoicetype.name}}</option></false></check></true>
+																<false><check if="{{@invoicetype.disabled == 1}}"><true><option value="{{@invoicetype.code}}" disabled>{{@invoicetype.code}} - {{@invoicetype.name}}</option></true><false><option value="{{@invoicetype.code}}">{{@invoicetype.code}} - {{@invoicetype.name}}</option></false></check></false>
+															</check>
+														</repeat>
+													</select>
+												</div><!-- /.input group -->
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="invoicekind" class="col-xs-2 control-label">Invoice Kind</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa fa-file"></i>
+													</div><!-- /.input group addon -->
+													<select class="form-control" name="invoicekind" id="invoicekind">
+														<option value="" selected disabled hidden>Select Invoice Kind</option>
+														<repeat group="{{@invoicekinds}}" value="{{@invoicekind}}">																		
+															<check if="{{@invoicekind.code == @invoice.invoicekind}}">
+																<true><check if="{{@invoicekind.disabled == 1}}"><true><option value="{{@invoicekind.code}}" selected disabled>{{@invoicekind.code}} - {{@invoicekind.name}}</option></true><false><option value="{{@invoicekind.code}}" selected>{{@invoicekind.code}} - {{@invoicekind.name}}</option></false></check></true>
+																<false><check if="{{@invoicekind.disabled == 1}}"><true><option value="{{@invoicekind.code}}" disabled>{{@invoicekind.code}} - {{@invoicekind.name}}</option></true><false><option value="{{@invoicekind.code}}">{{@invoicekind.code}} - {{@invoicekind.name}}</option></false></check></false>
+															</check>
+														</repeat>
+													</select>
+												</div><!-- /.input group -->
+											</div><!-- ./form-group -->
+											<div class="form-group">
+												<label for="creditnotestatus" class="col-xs-2 control-label">Credit Note Status</label>
+												<div class="col-xs-6 input-group" >
+													<div class="input-group-addon">
+														<i class="fa fa-plus-square"></i>
+													</div><!-- /.input group addon -->
+													<select class="form-control" name="creditnotestatus" id="creditnotestatus">
+														<option value="" selected disabled hidden>Select Status</option>
+														<repeat group="{{@cdnoteapprovestatuses}}" value="{{@creditnotestatus}}">
+															<check if="{{@creditnotestatus.disabled == 1}}">
+																<true><option value="{{@creditnotestatus.code}}" disabled>{{@creditnotestatus.code}} - {{@creditnotestatus.name}}</option></true>
+																<false><option value="{{@creditnotestatus.code}}">{{@creditnotestatus.code}} - {{@creditnotestatus.name}}</option></false>
+															</check>
+														</repeat>
+													</select>
+												</div><!-- /.input group -->
+											</div><!-- ./form-group -->
+										</fieldset>	
+										<fieldset>
+											<legend>Other Options:</legend>
+											<div class="form-group">
+												<label for="" class="col-xs-2 control-label">Report Format</label>
+												<div class="col-xs-6">
+													<select class="form-control" name="format" id="format" required>
+														<option value="" selected disabled hidden>Select Format</option>
+														<repeat group="{{@reportformats}}" value="{{@reportformat}}">														
+															<check if="{{@reportformat.disabled == 1}}">
+																<true><option value="{{@reportformat.id}}" disabled>{{@reportformat.id}} - {{@reportformat.name}}</option></true>
+																<false><option value="{{@reportformat.id}}">{{@reportformat.id}} - {{@reportformat.name}}</option></false>
+															</check>
+														</repeat>
+													</select>
+												</div>
+											</div><!-- /.form-group -->
+										</fieldset>							
+									</div><!-- /.box-body -->
+									<div class="box-footer">
+										<button type="submit" class="btn btn-info pull-right">Execute</button>
+									</div><!-- /.box-footer -->
+								</form><!-- /.form -->
+							</div><!-- /.box -->																
+						</div><!-- ./col-xs-12 -->
+					</div><!-- ./row -->				
+				</section>
+				
+				

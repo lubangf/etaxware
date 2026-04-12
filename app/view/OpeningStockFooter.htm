@@ -1,0 +1,83 @@
+		<!-- DataTables -->
+		<script src="public/plugins/datatables/jquery.dataTables.min.js"></script>
+		<script src="public/plugins/datatables/dataTables.bootstrap.min.js"></script>
+		<!-- Select2 -->
+        <script src="public/plugins/select2/select2.full.min.js"></script>
+		<!-- Validation JS -->
+		<script src="public/js/openingstock.js"></script>
+		<script>
+			var username = $('#usernamespan-1').text();
+			console.log(username);
+		
+			$(window).load(function(){
+				listfiles();//load the file list table on load
+				//window.location = '../bfv/subfolderlist/' + username.toString();
+			});
+			
+			//ensure the tab content are refreshed again when user is navigating through the tabs
+			$(document).ready(function(){
+				var anchor;
+				$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+					anchor = $(e.target).attr('href');//Read the a href of the anchor that was clicked
+					anchor = anchor.substr(1, anchor.length);// Trim the leading '#' from the href attribute
+					if(anchor == "tab_1"){// Call the ajax associated with the tab
+						//console.log(anchor);
+						$('#ctnr-tbl-file-openingstock').append('<div class="overlay" id="otbl-file-openingstock"><i class="fa fa-refresh fa-spin"></i></div>');
+						$('#fileuploadfeedback').text('');//clear the fileuploadfeedback incase there is feedback from a previous file upload
+						listfiles();
+					}else if(anchor == "tab_2"){
+						//console.log(anchor);
+						$('#ctnr-tbl-openingstock-status').append('<div class="overlay" id="otbl-openingstock-status"><i class="fa fa-refresh fa-spin"></i></div>');
+						listopeningstockprocruns();
+					}else if(anchor == "tab_3"){
+						//console.log(anchor);
+						$('#ctnr-tbl-openingstock-log').append('<div class="overlay" id="otbl-openingstock-log"><i class="fa fa-refresh fa-spin"></i></div>');
+						listopeningstockproclogs();
+					}
+				});
+			});
+			
+			//onclick event handler for the anchor called refresh-file-list-1
+			$('#refresh-file-list-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-file-openingstock').append('<div class="overlay" id="otbl-file-openingstock"><i class="fa fa-refresh fa-spin"></i></div>');
+				$('#fileuploadfeedback').text('');//clear the fileuploadfeedback incase there is feedback from a previous file upload
+				listfiles();
+			});
+			
+			//onclick event handler for the anchor called refresh-file-list-2
+			$('#refresh-file-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-file-openingstock').append('<div class="overlay" id="otbl-file-openingstock"><i class="fa fa-refresh fa-spin"></i></div>');
+				$('#fileuploadfeedback').text('');//clear the fileuploadfeedback incase there is feedback from a previous file upload
+				listfiles();
+			});
+			
+			//onclick event handler for the anchor called refresh-status-1
+			$('#refresh-status-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-openingstock-status').append('<div class="overlay" id="otbl-openingstock-status"><i class="fa fa-refresh fa-spin"></i></div>');
+				listopeningstockprocruns();
+			});		
+			
+			//onclick event handler for the anchor called refresh-status-2
+			$('#refresh-status-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-openingstock-status').append('<div class="overlay" id="otbl-openingstock-status"><i class="fa fa-refresh fa-spin"></i></div>');
+				listopeningstockprocruns();
+			});				
+			
+			//onclick event handler for the anchor called refresh-log-1
+			$('#refresh-log-1').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-openingstock-log').append('<div class="overlay" id="otbl-openingstock-log"><i class="fa fa-refresh fa-spin"></i></div>');
+				listopeningstockproclogs();
+			});		
+			
+			//onclick event handler for the anchor called refresh-log-2
+			$('#refresh-log-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-openingstock-log').append('<div class="overlay" id="otbl-openingstock-log"><i class="fa fa-refresh fa-spin"></i></div>');
+				listopeningstockproclogs();
+			});				
+		</script>
