@@ -171,7 +171,7 @@
 																		<select class="form-control" name="productexcisedutylist" id="productexcisedutylist">
 																			<option value="" selected disabled hidden>Select Excise Duty Code</option>
 																			<repeat group="{{@excisedutylists}}" value="{{@excisedutylist}}">																		
-																				<check if="{{@excisedutylist.code == @product.excisedutylist}}">
+																				<check if="{{@excisedutylist.code == @product.exciseDutyCode || @excisedutylist.code == @product.excisedutylist}}">
 																					<true><check if="{{@excisedutylist.disabled == 1}}"><true><option value="{{@excisedutylist.code}}" selected disabled>{{@excisedutylist.code}} - {{@excisedutylist.goodService}}</option></true><false><option value="{{@excisedutylist.code}}" selected>{{@excisedutylist.code}} - {{@excisedutylist.goodService}}</option></false></check></true>
 																					<false><check if="{{@excisedutylist.disabled == 1}}"><true><option value="{{@excisedutylist.code}}" disabled>{{@excisedutylist.code}} - {{@excisedutylist.goodService}}</option></true><false><option value="{{@excisedutylist.code}}">{{@excisedutylist.code}} - {{@excisedutylist.goodService}}</option></false></check></false>
 																				</check>

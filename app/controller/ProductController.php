@@ -46,6 +46,40 @@ Class ProductController extends MainController{
         }
         return $errors;
     }
+
+    private function setDerivedExciseMetaOnPost($exciseDutyCode){
+        $code = trim((string)$exciseDutyCode);
+
+        if ($code === '') {
+            $this->f3->set('POST.exciseDutyName', null);
+            $this->f3->set('POST.exciseRate', null);
+            return;
+        }
+
+        try {
+            $rows = $this->db->exec(
+                'SELECT goodService, rateText FROM tblexcisedutylist WHERE TRIM(code) = ? LIMIT 1',
+                array($code)
+            );
+
+            if (!empty($rows)) {
+                $dutyName = trim((string)$rows[0]['goodService']);
+                $dutyRate = trim((string)$rows[0]['rateText']);
+
+                // Keep DB writes safe against destination column lengths.
+                $this->f3->set('POST.exciseDutyName', $dutyName === '' ? null : substr($dutyName, 0, 100));
+                $this->f3->set('POST.exciseRate', $dutyRate === '' ? null : substr($dutyRate, 0, 200));
+            } else {
+                $this->f3->set('POST.exciseDutyName', null);
+                $this->f3->set('POST.exciseRate', null);
+                $this->logger->write('Product Controller : setDerivedExciseMetaOnPost() : No excise lookup found for code = ' . $code, 'r');
+            }
+        } catch (Exception $e) {
+            $this->f3->set('POST.exciseDutyName', null);
+            $this->f3->set('POST.exciseRate', null);
+            $this->logger->write('Product Controller : setDerivedExciseMetaOnPost() : Failed to derive excise metadata. Error = ' . $e->getMessage(), 'r');
+        }
+    }
     
     /**
      *	@name index
@@ -470,26 +504,28 @@ Class ProductController extends MainController{
                     
                     if (trim($this->f3->get('POST.producthasexcisetax')) !== '' || ! empty(trim($this->f3->get('POST.producthasexcisetax')))) {
                         $this->f3->set('POST.hasexcisetax', $this->f3->get('POST.producthasexcisetax'));
+                        // 2026-04-12 11:52:00 +03:00 - Canonicalize writes to `exciseDutyCode` only.
+                        // Keep fallback reads from legacy `excisedutylist`, but do not mirror writes back to that legacy column.
                         
                         if (trim($this->f3->get('POST.producthasexcisetax')) == '102') {//If HasExciseDuty is set to No, then empty the exciseduty code
-                            $this->f3->set('POST.excisedutylist', null);
+                            $this->f3->set('POST.exciseDutyCode', null);
                         } else {
                             if (trim($this->f3->get('POST.productexcisedutylist')) !== '' || ! empty(trim($this->f3->get('POST.productexcisedutylist')))) {
-                                $this->f3->set('POST.excisedutylist', $this->f3->get('POST.productexcisedutylist'));
+                                $this->f3->set('POST.exciseDutyCode', $this->f3->get('POST.productexcisedutylist'));
                             } else {
-                                $this->f3->set('POST.excisedutylist', $product->excisedutylist);
+                                $fallbackExciseCode = (trim((string)$product->exciseDutyCode) !== '') ? $product->exciseDutyCode : $product->excisedutylist;
+                                $this->f3->set('POST.exciseDutyCode', $fallbackExciseCode);
                             }
                         }
+
+                        // 2026-04-12 12:34:00 +03:00 - Requirement: derive excise duty name/rate from selected excise code on backend save.
+                        $this->setDerivedExciseMetaOnPost($this->f3->get('POST.exciseDutyCode'));
                     } else {
                         //$this->f3->set('POST.hasexcisetax', $product->hasexcisetax);
                         $this->f3->set('POST.hasexcisetax', null);
+                        $this->f3->set('POST.exciseDutyName', null);
+                        $this->f3->set('POST.exciseRate', null);
                     }
-                    
-                    /*if (trim($this->f3->get('POST.productexcisedutylist')) !== '' || ! empty(trim($this->f3->get('POST.productexcisedutylist')))) {
-                        $this->f3->set('POST.excisedutylist', $this->f3->get('POST.productexcisedutylist'));
-                    } else {
-                        $this->f3->set('POST.excisedutylist', $product->excisedutylist);
-                    }*/
                     
                     $this->logger->write("Product Controller : edit() : havepieceunit before: " . $product->havepieceunit, 'r');
                     $this->logger->write("Product Controller : edit() : havepieceunit after: " . $this->f3->get('POST.producthavepieceunit'), 'r');
@@ -598,7 +634,7 @@ Class ProductController extends MainController{
 
                     $validationErrors = $this->getExcisePieceValidationErrors(
                         $this->f3->get('POST.hasexcisetax'),
-                        $this->f3->get('POST.excisedutylist'),
+                        $this->f3->get('POST.exciseDutyCode'),
                         $this->f3->get('POST.havepieceunit'),
                         $this->f3->get('POST.piecemeasureunit'),
                         $this->f3->get('POST.pieceunitprice'),
@@ -669,13 +705,16 @@ Class ProductController extends MainController{
                 $this->f3->set('POST.piecescaledvalue', $this->f3->get('POST.productpiecescaledvalue'));
                 // 2026-04-11 19:13:27 +03:00 - Keep create flow consistent with edit flow for excise duty persistence rules.
                 $this->f3->set('POST.hasexcisetax', $this->f3->get('POST.producthasexcisetax'));
+                // 2026-04-12 11:52:00 +03:00 - Canonicalize create-flow writes to `exciseDutyCode` only.
                 if (trim((string)$this->f3->get('POST.producthasexcisetax')) === '102') {
-                    $this->f3->set('POST.excisedutylist', null);
+                    $this->f3->set('POST.exciseDutyCode', null);
                 } elseif (trim((string)$this->f3->get('POST.productexcisedutylist')) !== '') {
-                    $this->f3->set('POST.excisedutylist', $this->f3->get('POST.productexcisedutylist'));
+                    $this->f3->set('POST.exciseDutyCode', $this->f3->get('POST.productexcisedutylist'));
                 } else {
-                    $this->f3->set('POST.excisedutylist', null);
+                    $this->f3->set('POST.exciseDutyCode', null);
                 }
+                // 2026-04-12 12:34:00 +03:00 - Requirement: derive excise duty name/rate from selected excise code on backend save.
+                $this->setDerivedExciseMetaOnPost($this->f3->get('POST.exciseDutyCode'));
 
                 // 2026-04-11 21:04:12 +03:00 - When Excise is Yes, force Have Piece Units to Yes even if the UI field is disabled and omitted from POST.
                 if (trim((string)$this->f3->get('POST.hasexcisetax')) === '101') {
@@ -700,7 +739,7 @@ Class ProductController extends MainController{
 
                 $validationErrors = $this->getExcisePieceValidationErrors(
                     $this->f3->get('POST.hasexcisetax'),
-                    $this->f3->get('POST.excisedutylist'),
+                    $this->f3->get('POST.exciseDutyCode'),
                     $this->f3->get('POST.havepieceunit'),
                     $this->f3->get('POST.piecemeasureunit'),
                     $this->f3->get('POST.pieceunitprice'),
@@ -1257,6 +1296,11 @@ Class ProductController extends MainController{
                 $sql = 'SELECT p.id "Id",
                         p.code "Code",
                         p.name "Name",
+                        p.hasexcisetax "HasExciseTax",
+                        p.exciseDutyName "ExciseDutyName",
+                        p.exciseRate "ExciseRate",
+                        p.pack "Pack",
+                        p.stick "Stick",
                         p.description "Description",
                         p.disabled "Disabled"
                     FROM tblproductdetails p
@@ -1266,6 +1310,11 @@ Class ProductController extends MainController{
                 $sql = 'SELECT p.id "Id",
                         p.code "Code",
                         p.name "Name",
+                        p.hasexcisetax "HasExciseTax",
+                        p.exciseDutyName "ExciseDutyName",
+                        p.exciseRate "ExciseRate",
+                        p.pack "Pack",
+                        p.stick "Stick",
                         p.description "Description",
                         p.disabled "Disabled"
                     FROM tblproductdetails p
@@ -1590,11 +1639,32 @@ Class ProductController extends MainController{
                                             ? 'NULL'
                                             : $pieceScaledValueValue;
                                     }
+
+                                    $packSql = 'pack';
+                                    if (array_key_exists('pack', $elem) || array_key_exists('Pack', $elem)) {
+                                        $packValue = array_key_exists('pack', $elem)
+                                            ? trim((string)$elem['pack'])
+                                            : trim((string)$elem['Pack']);
+                                        $packSql = ($packValue === '' || strtoupper($packValue) === 'NULL' || !is_numeric($packValue))
+                                            ? 'NULL'
+                                            : $packValue;
+                                    }
+
+                                    $stickSql = 'stick';
+                                    if (array_key_exists('stick', $elem) || array_key_exists('Stick', $elem)) {
+                                        $stickValue = array_key_exists('stick', $elem)
+                                            ? trim((string)$elem['stick'])
+                                            : trim((string)$elem['Stick']);
+                                        $stickSql = ($stickValue === '' || strtoupper($stickValue) === 'NULL' || !is_numeric($stickValue))
+                                            ? 'NULL'
+                                            : $stickValue;
+                                    }
                                     
                                     if ($statuscode == '102') {
                                         $disabled = '1';//Disable product from drop downs in eTW
                                     }
                                     
+                                    // 2026-04-12 11:52:00 +03:00 - Sync updates now persist excise to canonical column only.
                                     
                                     $this->db->exec(array('UPDATE tblproductdetails SET disabled = ' . $disabled . 
                                                                                     ', isexempt = ' . $isexempt . 
@@ -1605,12 +1675,14 @@ Class ProductController extends MainController{
                                                                                     ', taxrate = ' . $taxrate . 
                                                                                     ', serviceMark = ' . $servicemark . 
                                                                                     ', hasexcisetax = ' . $haveExciseTax . 
-                                                                                    ', excisedutylist = ' . $exciseDutyCodeSql . 
+                                                                                    ', exciseDutyCode = ' . $exciseDutyCodeSql . 
                                                                                     ', havepieceunit = ' . $havePieceUnit . 
                                                                                     ', piecemeasureunit = ' . $pieceMeasureUnitSql . 
                                                                                     ', pieceunitprice = ' . $pieceUnitPriceSql . 
                                                                                     ', packagescaledvalue = ' . $packageScaledValueSql . 
                                                                                     ', piecescaledvalue = ' . $pieceScaledValueSql . 
+                                                                                    ', pack = ' . $packSql . 
+                                                                                    ', stick = ' . $stickSql . 
                                                                                     ', uraproductidentifier = ' . $productid . 
                                                                                     ', modifieddt = "' .  date('Y-m-d H:i:s') . 
                                                                                     '", modifiedby = ' . $this->f3->get('SESSION.id') . 
@@ -2044,6 +2116,26 @@ Class ProductController extends MainController{
                                     : $pieceScaledValueValue;
                             }
 
+                            $packSql = 'pack';
+                            if (array_key_exists('pack', $elem) || array_key_exists('Pack', $elem)) {
+                                $packValue = array_key_exists('pack', $elem)
+                                    ? trim((string)$elem['pack'])
+                                    : trim((string)$elem['Pack']);
+                                $packSql = ($packValue === '' || strtoupper($packValue) === 'NULL' || !is_numeric($packValue))
+                                    ? 'NULL'
+                                    : $packValue;
+                            }
+
+                            $stickSql = 'stick';
+                            if (array_key_exists('stick', $elem) || array_key_exists('Stick', $elem)) {
+                                $stickValue = array_key_exists('stick', $elem)
+                                    ? trim((string)$elem['stick'])
+                                    : trim((string)$elem['Stick']);
+                                $stickSql = ($stickValue === '' || strtoupper($stickValue) === 'NULL' || !is_numeric($stickValue))
+                                    ? 'NULL'
+                                    : $stickValue;
+                            }
+
                             $hsCodeSql = 'NULLIF(hscode, "")';
                             if (array_key_exists('hsCode', $elem)) {
                                 $hsCodeSql = trim((string)$elem['hsCode']) === ''
@@ -2076,13 +2168,15 @@ Class ProductController extends MainController{
                                                                             ', name = "' . addslashes($goodsName) . 
                                                                             '", goodsTypeCode = ' . $goodsTypeCode . 
                                                                             ', hasexcisetax = ' . $haveExciseTax . 
-                                                                            ', excisedutylist = ' . $exciseDutyCodeSql . 
+                                                                            ', exciseDutyCode = ' . $exciseDutyCodeSql . 
                                                                             ', havepieceunit = ' . $havePieceUnit . 
                                                                             ', measureunit = ' . $measureUnitSql . 
                                                                             ', piecemeasureunit = ' . $pieceMeasureUnitSql . 
                                                                             ', pieceunitprice = ' . $pieceUnitPriceSql . 
                                                                             ', packagescaledvalue = ' . $packageScaledValueSql . 
                                                                             ', piecescaledvalue = ' . $pieceScaledValueSql . 
+                                                                            ', pack = ' . $packSql . 
+                                                                            ', stick = ' . $stickSql . 
                                                                             ', hscode = ' . $hsCodeSql . 
                                                                             ', customsmeasureunit = ' . $customsMeasureUnitSql . 
                                                                             ', remarks = "' . addslashes($remarks) . 
@@ -2090,6 +2184,7 @@ Class ProductController extends MainController{
                                                                             ', unitprice = ' . $unitPrice . 
                                                                             ', uraquantity = ' . $stock . 
                                                                             ', haveotherunit = ' . $haveOtherUnit . 
+                                                                            // 2026-04-12 11:52:00 +03:00 - Persist canonical excise field only; legacy `excisedutylist` is read-fallback only.
                                                                             ', modifieddt = "' .  date('Y-m-d H:i:s') . 
                                                                             '", modifiedby = ' . $this->f3->get('SESSION.id') . 
                                                                             ' WHERE TRIM(code) = "' . $productcode . '"'));
@@ -2280,6 +2375,24 @@ Class ProductController extends MainController{
                                 $piecescaledvalue = (!isset($elem['pieceScaledValue']) || trim((string)$elem['pieceScaledValue']) === '' || strtoupper(trim((string)$elem['pieceScaledValue'])) === 'NULL' || !is_numeric(trim((string)$elem['pieceScaledValue'])))
                                     ? 'NULL'
                                     : trim((string)$elem['pieceScaledValue']);
+
+                                $pack = (!isset($elem['pack']) && !isset($elem['Pack']))
+                                    ? 'pack'
+                                    : trim((string)(isset($elem['pack']) ? $elem['pack'] : $elem['Pack']));
+                                if ($pack !== 'pack') {
+                                    $pack = ($pack === '' || strtoupper($pack) === 'NULL' || !is_numeric($pack))
+                                        ? 'NULL'
+                                        : $pack;
+                                }
+
+                                $stick = (!isset($elem['stick']) && !isset($elem['Stick']))
+                                    ? 'stick'
+                                    : trim((string)(isset($elem['stick']) ? $elem['stick'] : $elem['Stick']));
+                                if ($stick !== 'stick') {
+                                    $stick = ($stick === '' || strtoupper($stick) === 'NULL' || !is_numeric($stick))
+                                        ? 'NULL'
+                                        : $stick;
+                                }
                                 
                                 $isexempt = empty($elem['isExempt'])? 'NULL' : $elem['isExempt'];
                                 $iszerorated = empty($elem['isZeroRate'])? 'NULL' : $elem['isZeroRate'];
@@ -2367,6 +2480,8 @@ Class ProductController extends MainController{
                                         ', pieceunitprice = ' . $pieceunitprice .
                                         ', packagescaledvalue = ' . $packagescaledvalue .
                                         ', piecescaledvalue = ' . $piecescaledvalue .
+                                        ', pack = ' . $pack .
+                                        ', stick = ' . $stick .
                                         ', erpcode = "' . addslashes($productcode) .
                                         '", uraproductidentifier = ' . $productid .
                                         ', modifieddt = "' .  date('Y-m-d H:i:s') .

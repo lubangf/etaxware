@@ -14,7 +14,9 @@ $(function(){
 	/**
 	 * @desc initialise select2 dropdowns
 	 */
-	$(".select2").select2();	
+	// 2026-04-12: exclude modal goods item controls from generic init.
+	// They are initialized with modal-specific dropdownParent for stable typing/focus in Bootstrap modals.
+	$(".select2").not('#additem, #edititem').select2();	
 	
 	/**
 	 * @desc Create a datatable called tbl-debitnote-list
@@ -79,70 +81,94 @@ $(function(){
 	/**
 	 * @desc Change some elements on the products form depending on the choice of execise flag
 	 */	
-	$("#addexciseflag").change(function(e) {
-		var $option = $(this).find('option:selected');
+	var lockExciseInputs = function(prefix) {
+		$(prefix + 'exciseflag').attr('disabled', 'disabled');
+		$(prefix + 'exciserate').attr('disabled', 'disabled');
+		$(prefix + 'exciserule').attr('disabled', 'disabled');
+		$(prefix + 'excisetax').attr('disabled', 'disabled');
+		$(prefix + 'pack').attr('disabled', 'disabled');
+		$(prefix + 'stick').attr('disabled', 'disabled');
+		$(prefix + 'exciseunit').attr('disabled', 'disabled');
+		$(prefix + 'excisecurrency').attr('disabled', 'disabled');
+		$(prefix + 'exciseratename').attr('disabled', 'disabled');
+	};
 
-		var value = $option.val();//to get content of "value" attrib
-	    var text = $option.text();//to get <option>Text</option> content
-	    
-	    //console.log(text + ' has been selected...');
-	    //console.log('the value is ' + value);
-	    
-	    if(value == '2'){//2 is No
-	    	//console.log('Disabling elements...');
-	    	$('#addexciserate').attr('disabled', 'disabled');
-	    	$('#addexciserule').attr('disabled', 'disabled');
-	    	$('#addexcisetax').attr('disabled', 'disabled');
-	    	$('#addpack').attr('disabled', 'disabled');
-			$('#addstick').attr('disabled', 'disabled');
-			$('#addexciseunit').attr('disabled', 'disabled');
-			$('#addexcisecurrency').attr('disabled', 'disabled');
-			$('#addexciseratename').attr('disabled', 'disabled');
-	    } else {	    	
-	    	//console.log('Refreshing page...');
-	    	$('#addexciserate').removeAttr('disabled');
-	    	$('#addexciserule').removeAttr('disabled');
-	    	$('#addexcisetax').removeAttr('disabled');
-	    	$('#addpack').removeAttr('disabled');
-			$('#addstick').removeAttr('disabled');
-			$('#addexciseunit').removeAttr('disabled');
-			$('#addexcisecurrency').removeAttr('disabled');
-			$('#addexciseratename').removeAttr('disabled');
-	    	//window.location.reload(false);//reload page from the browser's cache AS opposed to  SERVER reload
-	    }		
+	var clearExciseFields = function(prefix) {
+		$(prefix + 'exciseflag').val('2');
+		$(prefix + 'exciserate').val('');
+		$(prefix + 'exciserule').val('');
+		$(prefix + 'excisetax').val('');
+		$(prefix + 'pack').val('');
+		$(prefix + 'stick').val('');
+		$(prefix + 'exciseunit').val('');
+		$(prefix + 'excisecurrency').val('');
+		$(prefix + 'exciseratename').val('');
+	};
+
+	var setComputedExciseFields = function(prefix, computed) {
+		var ruleLabels = {
+			1: 'Calculated by tax rate',
+			2: 'Calculated by Quantity',
+			3: 'Nil tax rate'
+		};
+		var ruleCode = Number((computed && computed.exciserule) || 0);
+		var ruleLabel = ruleLabels[ruleCode] || '';
+
+		$(prefix + 'exciseflag').val((computed && computed.exciseflag) ? String(computed.exciseflag) : '2');
+		$(prefix + 'exciserate').val((computed && computed.exciserate) != null ? computed.exciserate : '');
+		$(prefix + 'exciserule').val(ruleLabel);
+		$(prefix + 'excisetax').val((computed && computed.excisetax) != null ? computed.excisetax : '');
+		$(prefix + 'pack').val((computed && computed.pack) != null ? computed.pack : '');
+		$(prefix + 'stick').val((computed && computed.stick) != null ? computed.stick : '');
+		$(prefix + 'exciseunit').val((computed && computed.exciseunit) != null ? computed.exciseunit : '');
+		$(prefix + 'excisecurrency').val((computed && computed.excisecurrency) != null ? computed.excisecurrency : '');
+		$(prefix + 'exciseratename').val((computed && computed.exciseratename) != null ? computed.exciseratename : '');
+	};
+
+	// 2026-04-12: mirror invoice UX by previewing computed excise from backend on item/qty/unit changes.
+	var requestExcisePreview = function(prefix, selectedItem) {
+		var itemCode = $(prefix + 'item').val();
+		var qty = $.trim($(prefix + 'qty').val() || '');
+		var unitPrice = $.trim($(prefix + 'unitprice').val() || '');
+		var hasExciseTax = String((selectedItem && selectedItem.hasExciseTax) || '');
+
+		if (!itemCode) {
+			clearExciseFields(prefix);
+			return;
+		}
+
+		$(prefix + 'exciseflag').val(hasExciseTax === '101' ? '1' : '2');
+
+		$.ajax({
+			type: 'POST',
+			url: '../etaxware/previewdebitnoteexcise',
+			dataType: 'json',
+			cache: false,
+			data: {
+				itemcode: itemCode,
+				qty: qty,
+				unitprice: unitPrice
+			},
+			success: function(resp) {
+				if (resp && resp.ok) {
+					setComputedExciseFields(prefix, resp);
+				}
+			}
+		});
+	};
+
+	lockExciseInputs('#add');
+	lockExciseInputs('#edit');
+
+	$("#addexciseflag").change(function(e) {
+		lockExciseInputs('#add');
 	});	
 	
 	/**
 	 * @desc Change some elements on the products form depending on the choice of execise flag
 	 */	
 	$("#editexciseflag").change(function(e) {
-		var $option = $(this).find('option:selected');
-
-		var value = $option.val();//to get content of "value" attrib
-	    var text = $option.text();//to get <option>Text</option> content
-	    
-	    //console.log(text + ' has been selected...');
-	    //console.log('the value is ' + value);
-	    
-	    if(value == '2'){//2 is No
-	    	$('#editexciserate').attr('disabled', 'disabled');
-	    	$('#editexciserule').attr('disabled', 'disabled');
-	    	$('#editexcisetax').attr('disabled', 'disabled');
-	    	$('#editpack').attr('disabled', 'disabled');
-			$('#editstick').attr('disabled', 'disabled');
-			$('#editexciseunit').attr('disabled', 'disabled');
-			$('#editexcisecurrency').attr('disabled', 'disabled');
-			$('#editexciseratename').attr('disabled', 'disabled');
-	    } else {	    	
-	    	$('#editexciserate').removeAttr('disabled');
-	    	$('#editexciserule').removeAttr('disabled');
-	    	$('#editexcisetax').removeAttr('disabled');
-	    	$('#editpack').removeAttr('disabled');
-			$('#editstick').removeAttr('disabled');
-			$('#editexciseunit').removeAttr('disabled');
-			$('#editexcisecurrency').removeAttr('disabled');
-			$('#editexciseratename').removeAttr('disabled');
-	    }		
+		lockExciseInputs('#edit');
 	});	
 	
 	/**
@@ -509,7 +535,8 @@ $(function(){
 	/**
 	 * @desc populate product search on debit note add/edit good modals
 	 */
-	$('#additem, #edititem').select2({
+	$('#additem').select2({
+		dropdownParent : $('#modal-add-good'),
 		placeholder : "Search Product...",
 		minimumInputLength : 2,
 		allowClear : true,
@@ -533,12 +560,78 @@ $(function(){
 						return {
 							text : item.Code + ' - ' + item.Name,
 							id : item.Code,
+							weight : item.Weight || item.weight,
+							hasExciseTax : item.HasExciseTax,
 							disabled: Number(item.Disabled)
 						};
 					})
 				};
 			}
 		}
+	});
+
+	$('#additem').on('select2:select', function(e) {
+		if ($('#addweight').val() === '' && e.params.data && (e.params.data.weight || e.params.data.weight === 0)) {
+			$('#addweight').val(e.params.data.weight);
+		}
+		requestExcisePreview('#add', e.params.data || {});
+	});
+
+	$('#additem').on('select2:clear', function() {
+		clearExciseFields('#add');
+	});
+
+	$('#edititem').select2({
+		dropdownParent : $('#modal-edit-good'),
+		placeholder : "Search Product...",
+		minimumInputLength : 2,
+		allowClear : true,
+		closeOnSelect : true,
+		multiple : false,
+		ajax : {
+			type : 'POST',
+			url : "../etaxware/searchproducts",
+			dataType : 'json',
+			delay : 250,
+			cache : false,
+			data : function(params) {
+				return {
+					name : params.term,
+					page : params.page,
+				};
+			},
+			processResults : function(data) {
+				return {
+					results : $.map(data, function(item) {
+						return {
+							text : item.Code + ' - ' + item.Name,
+							id : item.Code,
+							hasExciseTax : item.HasExciseTax,
+							disabled: Number(item.Disabled)
+						};
+					})
+				};
+			}
+		}
+	});
+
+	$('#edititem').on('select2:select', function(e) {
+		if ($('#editweight').val() === '' && e.params.data && (e.params.data.weight || e.params.data.weight === 0)) {
+			$('#editweight').val(e.params.data.weight);
+		}
+		requestExcisePreview('#edit', e.params.data || {});
+	});
+
+	$('#edititem').on('select2:clear', function() {
+		clearExciseFields('#edit');
+	});
+
+	$('#addqty, #addunitprice').on('input change blur', function() {
+		requestExcisePreview('#add');
+	});
+
+	$('#editqty, #editunitprice').on('input change blur', function() {
+		requestExcisePreview('#edit');
 	});
 	
 	/**
@@ -556,7 +649,25 @@ $(function(){
 
 				console.log(data);
 				var rows = { "aaData": [] };
-				var d = JSON.parse(data);
+				var d = data;
+				if (typeof data === 'string') {
+					var trimmed = $.trim(data);
+					if (trimmed.charAt(0) === '<') {
+						console.warn('listgoods returned HTML instead of JSON.');
+						return;
+					}
+					try {
+						d = JSON.parse(trimmed);
+					} catch (e) {
+						console.error('Unable to parse goods list JSON payload.', e);
+						return;
+					}
+				}
+
+				if (!$.isArray(d)) {
+					console.warn('listgoods payload format is unexpected.', d);
+					return;
+				}
 				
 				//push the column metadata into a variable called columns
 				var columns = { "aaColumn": [
@@ -570,7 +681,7 @@ $(function(){
 					{"title": "Discount Total", "data": "Discount Total"},
 					{"title": "Discount Tax Rate", "data": "Discount Tax Rate"},					
 					{"title": "Modified Date", "data": "Modified Date"},
-					{"title": "Actions", "render": function(data, type, row, meta){return "<a href='' title='Edit' id='' data-toggle='modal' data-id=\"" + row['ID'] + "\" data-code=\"" + row['Item Code'] + "\" data-discountflag=\"" + row['Discount Flag'] + "\" data-deemedflag=\"" + row['Deemed Flag'] + "\" data-exciseflag=\"" + row['Excise Flag'] + "\" data-item=\"" + row['Item'] + "\" data-qty=\"" + row['Qty'] + "\" data-unitprice=\"" + row['Unit Price'] + "\" data-taxid=\"" + row['Tax Id'] + "\" data-discountpercentage=\"" + row['Discount Percentage'] + "\" data-exciserate=\"" + row['Excise Rate'] + "\" data-exciserule=\"" + row['Excise Rule'] + "\" data-excisetax=\"" + row['Excise Tax'] + "\" data-pack=\"" + row['Pack'] + "\" data-stick=\"" + row['Stick'] + "\" data-exciseunit=\"" + row['Excise Unit'] + "\" data-excisecurrency=\"" + row['Excise Currency'] + "\" data-exciseratename=\"" + row['Excise Rate Name'] + "\" data-groupid=\"" + row['Group Id'] + "\" data-target='#modal-edit-good'><i class='fa fa-edit'></i></a> | <a class='text-red' href='' title='Delete' id='' data-toggle='modal' data-id=\"" + row['ID'] + "\" data-code=\"" + row['Item Code'] + "\" data-target='#modal-delete-good'><i class='fa fa-remove'></i></a>";}}
+					{"title": "Actions", "render": function(data, type, row, meta){return "<a href='' title='Edit' id='' data-toggle='modal' data-id=\"" + row['ID'] + "\" data-code=\"" + row['Item Code'] + "\" data-discountflag=\"" + row['Discount Flag'] + "\" data-deemedflag=\"" + row['Deemed Flag'] + "\" data-exciseflag=\"" + row['Excise Flag'] + "\" data-item=\"" + row['Item'] + "\" data-qty=\"" + row['Qty'] + "\" data-unitprice=\"" + row['Unit Price'] + "\" data-taxid=\"" + row['Tax Id'] + "\" data-discountpercentage=\"" + row['Discount Percentage'] + "\" data-exciserate=\"" + row['Excise Rate'] + "\" data-exciserule=\"" + row['Excise Rule'] + "\" data-excisetax=\"" + row['Excise Tax'] + "\" data-pack=\"" + row['Pack'] + "\" data-stick=\"" + row['Stick'] + "\" data-exciseunit=\"" + row['Excise Unit'] + "\" data-excisecurrency=\"" + row['Excise Currency'] + "\" data-exciseratename=\"" + row['Excise Rate Name'] + "\" data-totalweight=\"" + row['Total Weight'] + "\" data-groupid=\"" + row['Group Id'] + "\" data-target='#modal-edit-good'><i class='fa fa-edit'></i></a> | <a class='text-red' href='' title='Delete' id='' data-toggle='modal' data-id=\"" + row['ID'] + "\" data-code=\"" + row['Item Code'] + "\" data-target='#modal-delete-good'><i class='fa fa-remove'></i></a>";}}
 				]}; 
 				
 				//push data into a variable called rows
@@ -606,6 +717,7 @@ $(function(){
 						"Excise Unit": d[i]['Excise Unit'],
 						"Excise Currency": d[i]['Excise Currency'],
 						"Excise Rate Name": d[i]['Excise Rate Name'],				
+						"Total Weight": d[i]['Total Weight'],
 						"Disabled": d[i]['Disabled'],
 						"Modified Date": d[i]['Modified Date']
 					});
@@ -898,6 +1010,7 @@ $(function(){
 		var exciseunit = tlink.data("exciseunit");
 		var excisecurrency = tlink.data("excisecurrency");
 		var exciseratename = tlink.data("exciseratename");
+		var totalweight = tlink.data("totalweight");
 		var groupid = tlink.data("groupid");
 				
 		$('#editgoodid').val(id);
@@ -919,6 +1032,7 @@ $(function(){
 		$('#editexciseunit').val(exciseunit);
 		$('#editexcisecurrency').val(excisecurrency);
 		$('#editexciseratename').val(exciseratename);
+		$('#editweight').val((totalweight === undefined || totalweight === null) ? '' : totalweight);
 		$('#editgoodgroupid').val(groupid);
 		
 		if(discountflag == '2'){//2 is No
@@ -928,25 +1042,8 @@ $(function(){
 	    }
 		
 		
-	    if(exciseflag == '2'){//2 is No
-	    	$('#editexciserate').attr('disabled', 'disabled');
-	    	$('#editexciserule').attr('disabled', 'disabled');
-	    	$('#editexcisetax').attr('disabled', 'disabled');
-	    	$('#editpack').attr('disabled', 'disabled');
-			$('#editstick').attr('disabled', 'disabled');
-			$('#editexciseunit').attr('disabled', 'disabled');
-			$('#editexcisecurrency').attr('disabled', 'disabled');
-			$('#editexciseratename').attr('disabled', 'disabled');
-	    } else {	    	
-	    	$('#editexciserate').removeAttr('disabled');
-	    	$('#editexciserule').removeAttr('disabled');
-	    	$('#editexcisetax').removeAttr('disabled');
-	    	$('#editpack').removeAttr('disabled');
-			$('#editstick').removeAttr('disabled');
-			$('#editexciseunit').removeAttr('disabled');
-			$('#editexcisecurrency').removeAttr('disabled');
-			$('#editexciseratename').removeAttr('disabled');
-	    }
+		lockExciseInputs('#edit');
+		requestExcisePreview('#edit', { hasExciseTax: (String(exciseflag) === '1' ? '101' : '102') });
 		
 	});//modal-edit-good		
 	

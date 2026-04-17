@@ -4,7 +4,8 @@
 		<!-- Select2 -->
         <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>			
 		<!-- invoice JS -->
-		<script src="{{@path . 'js/invoice.js'}}"></script>
+		<!-- 2026-04-12: cache-bust invoice.js to load live backend excise-rule preview in goods modal -->
+		<script src="{{@path . 'js/invoice.js?v=20260412g'}}"></script>
 		<script>
 			var currenttab = $('#currenttab').text();
 			console.log(currenttab);
@@ -26,6 +27,7 @@
 			var invoiceinvoicekind_2 = $('#invoiceinvoicekind').text();
 			var invoicedatasource_2 = $('#invoicedatasource').text();
 			var invoiceindustrycode_2 = $('#invoiceindustrycode').text();
+			var buyerdeliverytermscode_2 = $('#buyerdeliveryTermsCode').text();
 
 			var normalizeCodeValue = function(value){
 				var normalized = $.trim(value || '');
@@ -76,6 +78,7 @@
 			invoiceinvoicekind_2 = normalizeCodeValue(invoiceinvoicekind_2);
 			invoicedatasource_2 = normalizeCodeValue(invoicedatasource_2);
 			invoiceindustrycode_2 = normalizeCodeValue(invoiceindustrycode_2);
+			buyerdeliverytermscode_2 = normalizeCodeValue(buyerdeliverytermscode_2);
 								
 			$(window).load(function(){
 				$('#li-sales-1').addClass('active');//mark the invoices link as active
@@ -104,6 +107,7 @@
 				prefillSelect2FromSearch('#invoicekind', invoiceinvoicekind_2, '../etaxware/searchinvoicekinds');
 				prefillSelect2FromSearch('#datasource', invoicedatasource_2, '../etaxware/searchdatasources');
 				prefillSelect2FromSearch('#industri', invoiceindustrycode_2, '../etaxware/searchindustries');
+				prefillSelect2FromSearch('#deliveryTermsCode', buyerdeliverytermscode_2, '../etaxware/searchdeliveryterms');
 			});	
 			
 			//ensure the tab content are refreshed again when user is navigating through the tabs

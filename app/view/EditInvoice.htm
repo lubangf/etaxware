@@ -9,16 +9,17 @@
 					</ol>
 				</section><!-- ./content-header -->
 				<section class="content"><!-- Main content -->
-					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
-					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
-					<span id="invoicecurrency" style="color: transparent">{{@invoice.currency}}</span>
-					<span id="invoiceinvoicetype" style="color: transparent">{{@invoice.invoicetype}}</span>
-					<span id="invoiceinvoicekind" style="color: transparent">{{@invoice.invoicekind}}</span>
-					<span id="invoicedatasource" style="color: transparent">{{@invoice.datasource}}</span>
-					<span id="invoiceindustrycode" style="color: transparent">{{@invoice.invoiceindustrycode}}</span>
-					<span id="gooddetailgroupid" style="color: transparent">{{@invoice.gooddetailgroupid}}</span>
-					<span id="paymentdetailgroupid" style="color: transparent">{{@invoice.paymentdetailgroupid}}</span>
-					<span id="taxdetailgroupid" style="color: transparent">{{@invoice.taxdetailgroupid}}</span>
+					<span id="currenttab" style="display: none;">{{@currenttab}}</span>
+					<span id="currenttabpane" style="display: none;">{{@currenttabpane}}</span>
+					<span id="invoicecurrency" style="display: none;">{{@invoice.currency}}</span>
+					<span id="invoiceinvoicetype" style="display: none;">{{@invoice.invoicetype}}</span>
+					<span id="invoiceinvoicekind" style="display: none;">{{@invoice.invoicekind}}</span>
+					<span id="invoicedatasource" style="display: none;">{{@invoice.datasource}}</span>
+					<span id="invoiceindustrycode" style="display: none;">{{@invoice.invoiceindustrycode}}</span>
+					<span id="buyerdeliveryTermsCode" style="display: none;">{{@buyer.deliveryTermsCode}}</span>
+					<span id="gooddetailgroupid" style="display: none;">{{@invoice.gooddetailgroupid}}</span>
+					<span id="paymentdetailgroupid" style="display: none;">{{@invoice.paymentdetailgroupid}}</span>
+					<span id="taxdetailgroupid" style="display: none;">{{@invoice.taxdetailgroupid}}</span>
 					<div class="row">
 						<div class="col-md-12">
 							<div class="nav-tabs-custom">
@@ -345,7 +346,8 @@
 															<div class="form-group">
 																<label for="buyertin" class="col-xs-2 control-label">TIN</label>
 																<div class="col-xs-10">
-																	<input type="text" pattern=".{10,10}"  title="10 characters required" class="form-control" value="{{@buyer.tin}}" id="buyertin" name="buyertin" placeholder="TIN">
+																	<!-- 2026-04-12: allow blank TIN for B2C; enforce 10 chars only when value is provided -->
+																	<input type="text" pattern="^$|.{10,10}" title="Leave blank for B2C, or enter exactly 10 characters" class="form-control" value="{{@buyer.tin}}" id="buyertin" name="buyertin" placeholder="TIN">
 																	<p id="tin-val-text"></p>
 																</div>
 															</div><!-- /.form-group -->	
@@ -450,15 +452,8 @@
 															<div class="form-group">
 																<label for="deliveryTermsCode" class="col-xs-2 control-label">Delivery Terms</label>
 																<div class="col-xs-10">
-																	<select class="form-control" name="deliveryTermsCode" id="deliveryTermsCode">
-																		<option value="" selected disabled hidden>Select Delivery Terms</option>
-																		<repeat group="{{@deliveryterms}}" value="{{@deliveryterm}}">																		
-																			<check if="{{@deliveryterm.code == @buyer.deliveryTermsCode}}">
-																				<true><check if="{{@deliveryterm.disabled == 1}}"><true><option value="{{@deliveryterm.code}}" selected disabled>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></true><false><option value="{{@deliveryterm.code}}" selected>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></false></check></true>
-																				<false><check if="{{@deliveryterm.disabled == 1}}"><true><option value="{{@deliveryterm.code}}" disabled>{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></true><false><option value="{{@deliveryterm.code}}">{{@deliveryterm.code}} - {{@deliveryterm.name}}</option></false></check></false>
-																			</check>
-																		</repeat>
-																	</select>
+																	<!-- 2026-04-12: AJAX Select2 delivery terms to match commodity-category search behavior -->
+																	<select class="form-control select2" style="width: 100%;" name="deliveryTermsCode" id="deliveryTermsCode"></select>
 																</div>															
 															</div><!-- /.form-group -->																			
 														</div><!-- /.box-body -->
@@ -668,20 +663,6 @@
 											</div>															
 											</div><!-- /.form-group -->	
 											<div class="form-group">
-											<label for="addexciseflag" class="col-xs-4 control-label">Excise Excise Flag</label>
-											<div class="col-xs-8">
-												<select class="form-control" name="addexciseflag" id="addexciseflag" required>
-													<option value="" selected disabled hidden>Select Flag</option>
-													<repeat group="{{@flags}}" value="{{@flag}}">																		
-														<check if="{{@flag.disabled == 1}}">
-															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
-															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
-														</check>
-													</repeat>
-												</select>
-											</div>															
-											</div><!-- /.form-group -->	
-											<div class="form-group">
 											<label for="additem" class="col-xs-4 control-label">Item</label>
 											<div class="col-xs-8">
 												<select class="form-control select2" style="width: 100%;" name="additem" id="additem" required></select>
@@ -693,6 +674,12 @@
 													<input type="number" class="form-control" id="addqty" name="addqty" placeholder="Qty" required>
 												</div>
 											</div><!-- ./form-group -->	
+												<div class="form-group">
+													<label for="addweight" class="col-xs-4 control-label">Weight</label>
+													<div class="col-xs-8">
+														<input type="number" step="0.0001" min="0" class="form-control" id="addweight" name="addweight" placeholder="Weight">
+													</div>
+												</div><!-- ./form-group -->
 											<div class="form-group">
 												<label for="addunitprice" class="col-xs-4 control-label">Unit Price</label>
 												<div class="col-xs-8">
@@ -729,52 +716,68 @@
 													<input type="number" step="0.01" min="0" class="form-control" id="adddiscountpercentage" name="adddiscountpercentage" placeholder="Discount %">
 												</div>
 											</div><!-- ./form-group -->	
+											<!-- 2026-04-12: keep Excise Flag directly after Discount % per Invoice Add Item UX requirement. -->
+											<!-- 2026-04-12: excise fields are system-derived from selected item, so keep them non-editable. -->
+											<div class="form-group">
+											<label for="addexciseflag" class="col-xs-4 control-label">Excise Flag</label>
+											<div class="col-xs-8">
+												<select class="form-control" name="addexciseflag" id="addexciseflag" disabled>
+													<option value="" selected disabled hidden>Select Flag</option>
+													<repeat group="{{@flags}}" value="{{@flag}}">																	
+														<check if="{{@flag.disabled == 1}}">
+															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
+															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
+														</check>
+													</repeat>
+												</select>
+											</div>															
+											</div><!-- /.form-group -->	
 											<div class="form-group">
 												<label for="addexciserate" class="col-xs-4 control-label">Execise Rate</label>
 												<div class="col-xs-8">
-													<input type="number" step="0.01" min="0" max="100" class="form-control" id="addexciserate" name="addexciserate" placeholder="Execise Rate.">
+													<input type="number" step="0.01" min="0" max="100" class="form-control" id="addexciserate" name="addexciserate" placeholder="Execise Rate." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="addexciserule" class="col-xs-4 control-label">Execise Rule</label>
 												<div class="col-xs-8">
-													<input type="text" class="form-control" id="addexciserule" name="addexciserule" placeholder="Execise Rule.">
+													<input type="text" class="form-control" id="addexciserule" name="addexciserule" placeholder="Execise Rule." disabled>
 												</div>
 											</div><!-- ./form-group -->
 											<div class="form-group">
 												<label for="addexcisetax" class="col-xs-4 control-label">Execise Tax</label>
 												<div class="col-xs-8">
-													<input type="text" class="form-control" id="addexcisetax" name="addexcisetax" placeholder="Execise Tax.">
+													<input type="text" class="form-control" id="addexcisetax" name="addexcisetax" placeholder="Execise Tax." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="addpack" class="col-xs-4 control-label">Pack</label>
 												<div class="col-xs-8">
-													<input type="number" class="form-control" id="addpack" name="addpack" placeholder="Pack.">
+													<input type="number" class="form-control" id="addpack" name="addpack" placeholder="Pack." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="addstick" class="col-xs-4 control-label">Stick</label>
 												<div class="col-xs-8">
-													<input type="number" class="form-control" id="addstick" name="addstick" placeholder="Stick.">
+													<input type="number" class="form-control" id="addstick" name="addstick" placeholder="Stick." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="addexciseunit" class="col-xs-4 control-label">Execise Unit</label>
 												<div class="col-xs-8">
-													<input type="number" class="form-control" id="addexciseunit" name="addexciseunit" placeholder="Execise Unit.">
+													<input type="number" class="form-control" id="addexciseunit" name="addexciseunit" placeholder="Execise Unit." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="addexcisecurrency" class="col-xs-4 control-label">Execise Currency</label>
 												<div class="col-xs-8">
-													<input type="text" class="form-control" id="addexcisecurrency" name="addexcisecurrency" placeholder="Execise Currency.">
+													<input type="text" class="form-control" id="addexcisecurrency" name="addexcisecurrency" placeholder="Execise Currency." disabled>
 												</div>
 											</div><!-- ./form-group -->
 											<div class="form-group">
 												<label for="addexciseratename" class="col-xs-4 control-label">Execise Rate Name</label>
 												<div class="col-xs-8">
-													<input type="text" class="form-control" id="addexciseratename" name="addexciseratename" placeholder="Execise Rate Name.">
+													<input type="text" class="form-control" id="addexciseratename" name="addexciseratename" placeholder="Execise Rate Name." disabled>
 												</div>
 											</div><!-- ./form-group -->																																			
 										</div><!-- /.box-body -->										
@@ -862,20 +865,6 @@
 											</div>															
 											</div><!-- /.form-group -->	
 											<div class="form-group">
-											<label for="editexciseflag" class="col-xs-4 control-label">Excise Excise Flag</label>
-											<div class="col-xs-8">
-												<select class="form-control" name="editexciseflag" id="editexciseflag" required>
-													<option value="" selected disabled hidden>Select Flag</option>
-													<repeat group="{{@flags}}" value="{{@flag}}">																		
-														<check if="{{@flag.disabled == 1}}">
-															<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
-															<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
-														</check>
-													</repeat>
-												</select>
-											</div>															
-											</div><!-- /.form-group -->	
-											<div class="form-group">
 											<label for="edititem" class="col-xs-4 control-label">Item</label>
 											<div class="col-xs-8">
 												<select class="form-control select2" style="width: 100%;" name="edititem" id="edititem" required></select>
@@ -887,6 +876,12 @@
 													<input type="number" class="form-control" id="editqty" name="editqty" placeholder="Qty" required>
 												</div>
 											</div><!-- ./form-group -->	
+												<div class="form-group">
+													<label for="editweight" class="col-xs-4 control-label">Weight</label>
+													<div class="col-xs-8">
+														<input type="number" step="0.0001" min="0" class="form-control" id="editweight" name="editweight" placeholder="Weight">
+													</div>
+												</div><!-- ./form-group -->
 											<div class="form-group">
 												<label for="editunitprice" class="col-xs-4 control-label">Unit Price</label>
 												<div class="col-xs-8">
@@ -923,52 +918,67 @@
 													<input type="number" step="0.01" min="0" class="form-control" id="editdiscountpercentage" name="editdiscountpercentage" placeholder="Discount %">
 												</div>
 											</div><!-- ./form-group -->	
+											<!-- 2026-04-12: keep Excise Flag directly after Discount % to mirror Add Good UX. -->
+											<div class="form-group">
+												<label for="editexciseflag" class="col-xs-4 control-label">Excise Flag</label>
+												<div class="col-xs-8">
+													<select class="form-control" name="editexciseflag" id="editexciseflag" disabled>
+														<option value="" selected disabled hidden>Select Flag</option>
+														<repeat group="{{@flags}}" value="{{@flag}}">																		
+															<check if="{{@flag.disabled == 1}}">
+																<true><option value="{{@flag.code}}" disabled>{{@flag.code}} - {{@flag.name}}</option></true>
+																<false><option value="{{@flag.code}}">{{@flag.code}} - {{@flag.name}}</option></false>
+															</check>
+														</repeat>
+													</select>
+												</div>
+											</div><!-- /.form-group -->
 											<div class="form-group">
 												<label for="editexciserate" class="col-xs-4 control-label">Execise Rate</label>
 												<div class="col-xs-8">
-													<input type="number" step="0.01" min="0" max="100" class="form-control" id="editexciserate" name="editexciserate" placeholder="Execise Rate.">
+													<input type="number" step="0.01" min="0" max="100" class="form-control" id="editexciserate" name="editexciserate" placeholder="Execise Rate." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="editexciserule" class="col-xs-4 control-label">Execise Rule</label>
 												<div class="col-xs-8">
-													<input type="text" class="form-control" id="editexciserule" name="editexciserule" placeholder="Execise Rule.">
+													<input type="text" class="form-control" id="editexciserule" name="editexciserule" placeholder="Execise Rule." disabled>
 												</div>
 											</div><!-- ./form-group -->
 											<div class="form-group">
 												<label for="editexcisetax" class="col-xs-4 control-label">Execise Tax</label>
 												<div class="col-xs-8">
-													<input type="text" class="form-control" id="editexcisetax" name="editexcisetax" placeholder="Execise Tax.">
+													<input type="text" class="form-control" id="editexcisetax" name="editexcisetax" placeholder="Execise Tax." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="editpack" class="col-xs-4 control-label">Pack</label>
 												<div class="col-xs-8">
-													<input type="number" class="form-control" id="editpack" name="editpack" placeholder="Pack.">
+													<input type="number" class="form-control" id="editpack" name="editpack" placeholder="Pack." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="editstick" class="col-xs-4 control-label">Stick</label>
 												<div class="col-xs-8">
-													<input type="number" class="form-control" id="editstick" name="editstick" placeholder="Stick.">
+													<input type="number" class="form-control" id="editstick" name="editstick" placeholder="Stick." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="editexciseunit" class="col-xs-4 control-label">Execise Unit</label>
 												<div class="col-xs-8">
-													<input type="number" class="form-control" id="editexciseunit" name="editexciseunit" placeholder="Execise Unit.">
+													<input type="number" class="form-control" id="editexciseunit" name="editexciseunit" placeholder="Execise Unit." disabled>
 												</div>
 											</div><!-- ./form-group -->	
 											<div class="form-group">
 												<label for="editexcisecurrency" class="col-xs-4 control-label">Execise Currency</label>
 												<div class="col-xs-8">
-													<input type="text" class="form-control" id="editexcisecurrency" name="editexcisecurrency" placeholder="Execise Currency.">
+													<input type="text" class="form-control" id="editexcisecurrency" name="editexcisecurrency" placeholder="Execise Currency." disabled>
 												</div>
 											</div><!-- ./form-group -->
 											<div class="form-group">
 												<label for="editexciseratename" class="col-xs-4 control-label">Execise Rate Name</label>
 												<div class="col-xs-8">
-													<input type="text" class="form-control" id="editexciseratename" name="editexciseratename" placeholder="Execise Rate Name.">
+													<input type="text" class="form-control" id="editexciseratename" name="editexciseratename" placeholder="Execise Rate Name." disabled>
 												</div>
 											</div><!-- ./form-group -->																																			
 										</div><!-- /.box-body -->										

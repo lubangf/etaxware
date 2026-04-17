@@ -17,6 +17,175 @@ use QuickBooksOnline\API\Facades\SalesReceipt;
 Class InvoiceController extends MainController{
     protected static $module = NULL; //tblmodules
     protected static $submodule = NULL; //tblsubmodules
+
+    // 2026-04-12 13:27:00 +03:00 - Excise computation policy for invoice goods:
+    // 1) Start from product excise duty code (tblexcisedutylist).
+    // 2) Load all matching detail rules from tblexcisedutydetailslist.
+    // 3) Compute candidate tax for each rule type.
+    // 4) Persist only the highest-tax rule output on the good line.
+    // This mirrors business guidance: "calculate for all rules and take the higher of".
+    private function toFloat($value){
+        $trimmed = trim((string)$value);
+        if ($trimmed === '' || strtoupper($trimmed) === 'NULL') {
+            return 0.0;
+        }
+        return (float)$trimmed;
+    }
+
+    private function deriveExciseFromRules($product, $qty, $unitPrice){
+        $result = array(
+            'exciseflag' => '2',
+            'categoryid' => null,
+            'categoryname' => null,
+            'exciserate' => null,
+            'exciserule' => null,
+            'excisetax' => null,
+            'pack' => null,
+            'stick' => null,
+            'exciseunit' => null,
+            'excisecurrency' => null,
+            'exciseratename' => null
+        );
+
+        if (!is_object($product) || trim((string)$product->hasexcisetax) !== '101') {
+            return $result;
+        }
+
+        $exciseDutyCode = trim((string)$product->exciseDutyCode);
+        if ($exciseDutyCode === '') {
+            $exciseDutyCode = trim((string)$product->excisedutylist);
+        }
+        if ($exciseDutyCode === '') {
+            return $result;
+        }
+
+        $result['exciseflag'] = '1';
+        $result['categoryid'] = $exciseDutyCode;
+        $result['categoryname'] = trim((string)$product->exciseDutyName) === '' ? null : trim((string)$product->exciseDutyName);
+        $result['pack'] = $this->toFloat($product->pack) == 0.0 ? null : $product->pack;
+        $result['stick'] = $this->toFloat($product->stick) == 0.0 ? null : $product->stick;
+
+        try {
+            $dutyRows = $this->db->exec(
+                'SELECT uraid, goodService FROM tblexcisedutylist WHERE TRIM(code) = ? LIMIT 1',
+                array($exciseDutyCode)
+            );
+
+            if (empty($dutyRows)) {
+                return $result;
+            }
+
+            $exciseDutyId = trim((string)$dutyRows[0]['uraid']);
+            if ($result['categoryname'] === null) {
+                $serviceName = trim((string)$dutyRows[0]['goodService']);
+                $result['categoryname'] = $serviceName === '' ? null : $serviceName;
+            }
+
+            $detailRows = $this->db->exec(
+                'SELECT rate, type, unit, currency FROM tblexcisedutydetailslist WHERE exciseDutyId = ? AND disabled = 0',
+                array($exciseDutyId)
+            );
+
+            if (empty($detailRows)) {
+                return $result;
+            }
+
+            $qtyValue = $this->toFloat($qty);
+            $unitValue = $this->toFloat($unitPrice);
+            $pieceUnitPrice = $this->toFloat($product->pieceunitprice);
+            $pieceScaledValue = $this->toFloat($product->piecescaledvalue);
+
+            $bestTax = -1.0;
+            $bestRule = null;
+
+            foreach ($detailRows as $row) {
+                $typeCode = trim((string)$row['type']);
+                $rateRaw = trim((string)$row['rate']);
+                $rateValue = $this->toFloat($rateRaw);
+                $ruleTax = 0.0;
+                $ruleId = 3;
+                $ruleRateValue = $rateRaw;
+                $ruleRateName = $rateRaw;
+
+                if ($typeCode === '101') {
+                    // Calculated by tax rate (%).
+                    $ruleTax = $unitValue * ($rateValue / 100) * $qtyValue;
+                    $ruleId = 1;
+                    $ruleRateValue = ($rateValue / 100);
+                    $ruleRateName = $rateRaw . '%';
+                } elseif ($typeCode === '102') {
+                    // Calculated by quantity.
+                    $ruleTax = $qtyValue * $pieceUnitPrice * $pieceScaledValue;
+                    $ruleId = 2;
+                } else {
+                    // Nil tax rate.
+                    $ruleTax = 0.0;
+                    $ruleId = 3;
+                }
+
+                if ($ruleTax >= $bestTax) {
+                    $bestTax = $ruleTax;
+                    $bestRule = array(
+                        'exciserate' => $ruleRateValue,
+                        'exciserule' => $ruleId,
+                        'excisetax' => $ruleTax,
+                        'exciseunit' => is_numeric(trim((string)$row['unit'])) ? (int)trim((string)$row['unit']) : null,
+                        'excisecurrency' => trim((string)$row['currency']) === '' ? null : trim((string)$row['currency']),
+                        'exciseratename' => $ruleRateName
+                    );
+                }
+            }
+
+            if ($bestRule !== null) {
+                $result['exciserate'] = $bestRule['exciserate'];
+                $result['exciserule'] = $bestRule['exciserule'];
+                $result['excisetax'] = number_format($bestRule['excisetax'], 8, '.', '');
+                $result['exciseunit'] = $bestRule['exciseunit'];
+                $result['excisecurrency'] = $bestRule['excisecurrency'];
+                $result['exciseratename'] = $bestRule['exciseratename'];
+            }
+
+            $this->logger->write('Invoice Controller : deriveExciseFromRules() : code=' . $exciseDutyCode . ', best_tax=' . $result['excisetax'] . ', rule=' . $result['exciserule'], 'r');
+        } catch (Exception $e) {
+            $this->logger->write('Invoice Controller : deriveExciseFromRules() : Failed to compute excise. Error=' . $e->getMessage(), 'r');
+        }
+
+        return $result;
+    }
+
+    private function resolveLineWeightFromPost($postKey, $fallbackWeight){
+        $postedWeight = trim((string)$this->f3->get($postKey));
+        if ($postedWeight !== '' && strtoupper($postedWeight) !== 'NULL' && is_numeric($postedWeight)) {
+            return $this->toFloat($postedWeight);
+        }
+        return $this->toFloat($fallbackWeight);
+    }
+
+    private function syncInvoiceTotalWeight($invoiceId, $goodDetailGroupId){
+        $invoiceId = (int)$invoiceId;
+        $goodDetailGroupId = (int)$goodDetailGroupId;
+        if ($invoiceId <= 0 || $goodDetailGroupId <= 0) {
+            return;
+        }
+
+        try {
+            $rows = $this->db->exec(
+                'SELECT IFNULL(SUM(IFNULL(totalWeight, 0)), 0) AS totalWeight FROM tblgooddetails WHERE groupid = ?',
+                array($goodDetailGroupId)
+            );
+            $totalWeight = 0;
+            if (!empty($rows) && isset($rows[0]['totalWeight'])) {
+                $totalWeight = round($this->toFloat($rows[0]['totalWeight']), 4);
+            }
+
+            $this->db->exec(
+                'UPDATE tblinvoices SET totalWeight = ?, modifieddt = NOW(), modifiedby = ? WHERE id = ?',
+                array($totalWeight, $this->f3->get('SESSION.id'), $invoiceId)
+            );
+        } catch (Exception $e) {
+            $this->logger->write('Invoice Controller : syncInvoiceTotalWeight() : Failed. Error=' . $e->getMessage(), 'r');
+        }
+    }
     
     /**
      *	@name index
@@ -135,13 +304,13 @@ Class InvoiceController extends MainController{
                 $invoice->getByID($id);
                 $this->f3->set('invoice', $invoice);
                  
-                if($this->appsettings['PLATFORMODE'] == 'INT'){
-                    $buyer = new customers($this->db);
-                } else {
-                    $buyer = new buyers($this->db);
-                }
-                
+                // 2026-04-12: Invoice buyerid points to tblbuyers; fall back to tblcustomers for legacy/template-linked records.
+                $buyer = new buyers($this->db);
                 $buyer->getByID($invoice->buyerid);
+                if ($buyer->dry()) {
+                    $buyer = new customers($this->db);
+                    $buyer->getByID($invoice->buyerid);
+                }
                 $this->f3->set('buyer', $buyer);
                 
                 if (is_string($tab) && is_string($tabpane)){//this check is necessary for cases where the GET request is system initiated. The params sent to the view functions are non-string.
@@ -163,12 +332,13 @@ Class InvoiceController extends MainController{
                 $invoice->getByID($id);
                 $this->f3->set('invoice', $invoice);
                 
-                if($this->appsettings['PLATFORMODE'] == 'INT'){
-                    $buyer = new customers($this->db);
-                } else {
-                    $buyer = new buyers($this->db);
-                }
+                // 2026-04-12: Invoice buyerid points to tblbuyers; fall back to tblcustomers for legacy/template-linked records.
+                $buyer = new buyers($this->db);
                 $buyer->getByID($invoice->buyerid);
+                if ($buyer->dry()) {
+                    $buyer = new customers($this->db);
+                    $buyer->getByID($invoice->buyerid);
+                }
                 $this->f3->set('buyer', $buyer);
                 
                 
@@ -194,12 +364,13 @@ Class InvoiceController extends MainController{
                 $invoice->getByID($id);
                 $this->f3->set('invoice', $invoice);
                 
-                if($this->appsettings['PLATFORMODE'] == 'INT'){
-                    $buyer = new customers($this->db);
-                } else {
-                    $buyer = new buyers($this->db);
-                }
+                // 2026-04-12: Invoice buyerid points to tblbuyers; fall back to tblcustomers for legacy/template-linked records.
+                $buyer = new buyers($this->db);
                 $buyer->getByID($invoice->buyerid);
+                if ($buyer->dry()) {
+                    $buyer = new customers($this->db);
+                    $buyer->getByID($invoice->buyerid);
+                }
                 $this->f3->set('buyer', $buyer);
                 
                 
@@ -355,8 +526,6 @@ Class InvoiceController extends MainController{
             $permission = 'EDITINVOICE'; // tblpermissions
             $event = NULL; // tblevents
             $eventnotification = NULL; // tbleventnotifications
-			
-			var_dump(trim($this->f3->get('POST.invoiceid')));
             
             $this->logger->write("Invoice Controller : edit() : Checking permissions", 'r');
             if ($this->userpermissions[$permission]) {
@@ -455,13 +624,18 @@ Class InvoiceController extends MainController{
                     
                     
                     $custId = trim($this->f3->get('POST.pickbuyertemplate'));
+                    $buyerTypeInput = trim($this->f3->get('POST.buyertype'));
                     $buyerTinInput = trim($this->f3->get('POST.buyertin'));
                     $buyerLegalNameInput = trim($this->f3->get('POST.buyerlegalname'));
 
+                    // 2026-04-12: TIN is mandatory only for B2B buyers (buyer type code 0).
+                    $requiresTinForType = ($buyerTypeInput === '0');
+                    $missingMandatoryBuyerFields = ($buyerLegalNameInput === '') || ($requiresTinForType && $buyerTinInput === '');
+
                     // Prevent persisting partial buyer records when no customer template is selected.
-                    if (($custId === '' || empty($custId)) && ($buyerTinInput === '' || $buyerLegalNameInput === '')) {
-                        $this->logger->write("Invoice Controller : edit() : tab_buyer : Validation failed. Missing required buyer fields (TIN and/or Legal Name) with no selected customer template.", 'r');
-                        self::$systemalert = "Buyer save failed: enter Buyer TIN and Legal Name, or pick a buyer template.";
+                    if (($custId === '' || empty($custId)) && $missingMandatoryBuyerFields) {
+                        $this->logger->write("Invoice Controller : edit() : tab_buyer : Validation failed. Missing required buyer fields with no selected customer template. type = " . $buyerTypeInput, 'r');
+                        self::$systemalert = "Buyer save failed: enter Legal Name (and TIN for B2B), or pick a buyer template.";
                         $this->f3->set('systemalert', self::$systemalert);
                         self::view($id, 'tab_buyer', 'tab_3');
                         return;
@@ -621,7 +795,7 @@ Class InvoiceController extends MainController{
                             //$this->f3->set('POST.discountflag', $this->f3->get('POST.editdiscountflag'));
                             
                             if(trim($this->f3->get('POST.editdiscountpercentage')) !== '' || ! empty(trim($this->f3->get('POST.editdiscountpercentage')))) {
-                                if ((float)$this->f3->get('POST.editdiscountpercentage') ==! 0) {
+                                if ((float)$this->f3->get('POST.editdiscountpercentage') != 0) {
                                     $this->f3->set('POST.discountflag', '1'); ///SET TO 1
                                 } else {
                                     $this->f3->set('POST.discountflag', '2'); ///SET TO 2
@@ -662,8 +836,8 @@ Class InvoiceController extends MainController{
                             $this->f3->set('POST.vatProjectName', $product->vatProjectName);
                             $this->f3->set('POST.hsCode', $product->hsCode);
                             $this->f3->set('POST.hsName', $product->hsName);
-                            $this->f3->set('POST.totalWeight', $product->weight);
-                            $this->f3->set('POST.pieceQty', $this->f3->get('POST.addqty'));
+                            $this->f3->set('POST.totalWeight', $this->resolveLineWeightFromPost('POST.editweight', $product->weight));
+                            $this->f3->set('POST.pieceQty', $this->f3->get('POST.editqty'));
                             $this->f3->set('POST.pieceMeasureUnit', $product->piecemeasureunit);
                             $this->f3->set('POST.deemedExemptCode', $product->deemedExemptCode);
                             
@@ -734,6 +908,17 @@ Class InvoiceController extends MainController{
                             $unit = $this->f3->get('POST.editunitprice');
                             $discountpct = empty($this->f3->get('POST.editdiscountpercentage'))? 0 : (float)$this->f3->get('POST.editdiscountpercentage');
                             $taxdisplaycategory = $tr->displayCategoryCode;
+
+                            // 2026-04-12: derive excise first, then re-base unit price for tax computation.
+                            $derivedExcise = $this->deriveExciseFromRules($product, $qty, $unit);
+                            $qtyValueForRebase = (float)$qty;
+                            $unitValueForRebase = (float)$unit;
+                            $exciseTaxForRebase = (float)$this->toFloat($derivedExcise['excisetax']);
+                            if ($qtyValueForRebase > 0 && $exciseTaxForRebase > 0) {
+                                $unit = $unitValueForRebase + ($exciseTaxForRebase / $qtyValueForRebase);
+                            } else {
+                                $unit = $unitValueForRebase;
+                            }
                             
                             
                             /*$total = ($qty * $unit);
@@ -839,38 +1024,34 @@ Class InvoiceController extends MainController{
                             
                             $this->f3->set('POST.discounttotal', $discount);
                             
-                            $this->logger->write("Invoice Controller : edit() : tab_good : editexciseflag = " . $this->f3->get('POST.editexciseflag'), 'r');
-                            
-                            
-                            if(trim($this->f3->get('POST.editexciseflag')) !== '' || ! empty(trim($this->f3->get('POST.editexciseflag')))) {
-                                if ($this->f3->get('POST.editexciseflag') == '1') {
-                                    $this->f3->set('POST.exciseflag', '1'); ///SET TO 1
-                                } elseif($this->f3->get('POST.editexciseflag') == '2'){
-                                    $this->f3->set('POST.exciseflag', '2'); ///SET TO 2
-                                } else {
-                                    $this->f3->set('POST.exciseflag', '2'); ///SET TO 2
-                                }
-                                
-                            } else {
-                                $this->f3->set('POST.exciseflag', '2'); //SET TO 2
-                            }
-                            
-                            
-                            //$this->f3->set('POST.deemedflag', $this->f3->get('POST.editdeemedflag'));
-                            //$this->f3->set('POST.exciseflag', $this->f3->get('POST.editexciseflag'));
+                            // 2026-04-12: persist derived excise fields after tax computation.
+                            $this->f3->set('POST.exciseflag', $derivedExcise['exciseflag']);
                             $this->f3->set('POST.categoryid', $this->f3->get('POST.editcategoryid'));
                             $this->f3->set('POST.categoryname', $this->f3->get('POST.editcategoryname'));
-                            
-                            
-                            
-                            //$this->f3->set('POST.exciserate', $this->f3->get('POST.editexciserate'));
-                            //$this->f3->set('POST.exciserule', $this->f3->get('POST.editexciserule'));
-                            //$this->f3->set('POST.excisetax', $this->f3->get('POST.editexcisetax'));
-                            //$this->f3->set('POST.pack', $this->f3->get('POST.editpack'));
-                            //$this->f3->set('POST.stick', $this->f3->get('POST.editstick'));
-                            //$this->f3->set('POST.exciseunit', $this->f3->get('POST.editexciseunit'));
-                            //$this->f3->set('POST.excisecurrency', $this->f3->get('POST.editexcisecurrency'));
-                            //$this->f3->set('POST.exciseratename', $this->f3->get('POST.editexciseratename'));
+                            $this->f3->set('POST.exciserate', $derivedExcise['exciserate']);
+                            $this->f3->set('POST.exciserule', $derivedExcise['exciserule']);
+                            $this->f3->set('POST.excisetax', $derivedExcise['excisetax']);
+                            $this->f3->set('POST.pack', $derivedExcise['pack']);
+                            $this->f3->set('POST.stick', $derivedExcise['stick']);
+                            $this->f3->set('POST.exciseunit', $derivedExcise['exciseunit']);
+                            $this->f3->set('POST.excisecurrency', $derivedExcise['excisecurrency']);
+                            $this->f3->set('POST.exciseratename', $derivedExcise['exciseratename']);
+
+                            $exciseUnitSql = 'NULL';
+                            if ($derivedExcise['exciseunit'] !== null && trim((string)$derivedExcise['exciseunit']) !== '') {
+                                $exciseUnitValue = trim((string)$derivedExcise['exciseunit']);
+                                $exciseUnitSql = is_numeric($exciseUnitValue)
+                                    ? $exciseUnitValue
+                                    : '"' . addslashes($exciseUnitValue) . '"';
+                            }
+
+                            $exciseCurrencySql = 'NULL';
+                            if ($derivedExcise['excisecurrency'] !== null && trim((string)$derivedExcise['excisecurrency']) !== '') {
+                                $exciseCurrencyValue = trim((string)$derivedExcise['excisecurrency']);
+                                $exciseCurrencySql = is_numeric($exciseCurrencyValue)
+                                    ? $exciseCurrencyValue
+                                    : '"' . addslashes($exciseCurrencyValue) . '"';
+                            }
                             
                             
                             $this->f3->set('POST.modifieddt', date('Y-m-d H:i:s'));
@@ -884,7 +1065,18 @@ Class InvoiceController extends MainController{
                                         $this->db->exec(array('DELETE FROM tbltaxdetails WHERE goodid = ' . $good->id . ' AND groupid = ' . $invoice->taxdetailgroupid));
                                         
                                         $this->db->exec(array('INSERT INTO tbltaxdetails (groupid, goodid, taxcategory, taxcategoryCode, netamount, taxrate, taxamount, grossamount, exciseunit, excisecurrency, taxratename, taxdescription, inserteddt, insertedby, modifieddt, modifiedby)
-                                                                    VALUES(' . $invoice->taxdetailgroupid . ', ' . $goodid . ', "' . $taxcategory . '", "' . $taxcode . '", ' . ($net + $d_net) . ', ' . $rate . ', ' . ($tax + $d_tax) . ', ' . ($gross + $d_gross) . ', NULL, NULL, "' . $taxname . '", "' . $taxdescription . '", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                                                    VALUES(' . $invoice->taxdetailgroupid . ', ' . $goodid . ', "' . $taxcategory . '", "' . $taxcode . '", ' . ($net + $d_net) . ', ' . $rate . ', ' . ($tax + $d_tax) . ', ' . ($gross + $d_gross) . ', ' . $exciseUnitSql . ', ' . $exciseCurrencySql . ', "' . $taxname . '", "' . $taxdescription . '", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+
+                                        $mainNetAmount = (float) ($net + $d_net);
+                                        $exciseTaxAmount = (float) $this->toFloat($derivedExcise['excisetax']);
+                                        $exciseRateValue = $this->toFloat($derivedExcise['exciserate']);
+                                        $exciseRateSql = ($exciseRateValue === null || $exciseRateValue === '') ? 'NULL' : (float) $exciseRateValue;
+                                        $exciseRateNameSql = empty($derivedExcise['exciseratename']) ? 'NULL' : '"' . addslashes($derivedExcise['exciseratename']) . '"';
+
+                                        if ($exciseTaxAmount > 0) {
+                                            $this->db->exec(array('INSERT INTO tbltaxdetails (groupid, goodid, taxcategory, taxcategoryCode, netamount, taxrate, taxamount, grossamount, exciseunit, excisecurrency, taxratename, taxdescription, inserteddt, insertedby, modifieddt, modifiedby)
+                                                                    VALUES(' . $invoice->taxdetailgroupid . ', ' . $goodid . ', "E: Excise Duty", "05", ' . max(0, ($mainNetAmount - $exciseTaxAmount)) . ', ' . $exciseRateSql . ', ' . $exciseTaxAmount . ', ' . $mainNetAmount . ', ' . $exciseUnitSql . ', ' . $exciseCurrencySql . ', ' . $exciseRateNameSql . ', "E", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                        }
                                         
                                         //insert a tax record for the discount
                                         /*
@@ -941,7 +1133,7 @@ Class InvoiceController extends MainController{
                         
                                                 
                         if(trim($this->f3->get('POST.adddiscountpercentage')) !== '' || ! empty(trim($this->f3->get('POST.adddiscountpercentage')))) {
-                            if ((float)$this->f3->get('POST.adddiscountpercentage') ==! 0) {
+                            if ((float)$this->f3->get('POST.adddiscountpercentage') != 0) {
                                 $this->f3->set('POST.discountflag', '1'); ///SET TO 1
                             } else {
                                 $this->f3->set('POST.discountflag', '2'); ///SET TO 2
@@ -979,7 +1171,7 @@ Class InvoiceController extends MainController{
                         $this->f3->set('POST.vatProjectName', $product->vatProjectName);
                         $this->f3->set('POST.hsCode', $product->hsCode);
                         $this->f3->set('POST.hsName', $product->hsName);
-                        $this->f3->set('POST.totalWeight', $product->weight);
+                        $this->f3->set('POST.totalWeight', $this->resolveLineWeightFromPost('POST.addweight', $product->weight));
                         $this->f3->set('POST.pieceQty', $this->f3->get('POST.addqty'));
                         $this->f3->set('POST.pieceMeasureUnit', $product->piecemeasureunit);
                         $this->f3->set('POST.deemedExemptCode', $product->deemedExemptCode);
@@ -1053,6 +1245,17 @@ Class InvoiceController extends MainController{
                         $unit = $this->f3->get('POST.addunitprice');
                         $discountpct = empty($this->f3->get('POST.adddiscountpercentage'))? 0 : (float)$this->f3->get('POST.adddiscountpercentage');
                         $taxdisplaycategory = $tr->displayCategoryCode;
+
+                        // 2026-04-12: derive excise first, then re-base unit price for tax computation.
+                        $derivedExcise = $this->deriveExciseFromRules($product, $qty, $unit);
+                        $qtyValueForRebase = (float)$qty;
+                        $unitValueForRebase = (float)$unit;
+                        $exciseTaxForRebase = (float)$this->toFloat($derivedExcise['excisetax']);
+                        if ($qtyValueForRebase > 0 && $exciseTaxForRebase > 0) {
+                            $unit = $unitValueForRebase + ($exciseTaxForRebase / $qtyValueForRebase);
+                        } else {
+                            $unit = $unitValueForRebase;
+                        }
                         
                         
                         /*$total = ($qty * $unit);
@@ -1159,36 +1362,34 @@ Class InvoiceController extends MainController{
                         $this->f3->set('POST.discounttotal', $discount);
                         
                                                
-                        $this->logger->write("Invoice Controller : edit() : tab_good : addexciseflag = " . $this->f3->get('POST.addexciseflag'), 'r');
-                        
-                        if(trim($this->f3->get('POST.addexciseflag')) !== '' || ! empty(trim($this->f3->get('POST.addexciseflag')))) {
-                            if ($this->f3->get('POST.addexciseflag') == '1') {
-                                $this->f3->set('POST.exciseflag', '1'); ///SET TO 1
-                            } elseif($this->f3->get('POST.addexciseflag') == '2'){
-                                $this->f3->set('POST.exciseflag', '2'); ///SET TO 2
-                            } else {
-                                $this->f3->set('POST.exciseflag', '2'); ///SET TO 2
-                            }
-                            
-                        } else {
-                            $this->f3->set('POST.exciseflag', '2'); //SET TO 2
-                        }
-                        
-                        //$this->f3->set('POST.deemedflag', $this->f3->get('POST.adddeemedflag'));
-                        //$this->f3->set('POST.exciseflag', $this->f3->get('POST.addexciseflag'));
+                        // 2026-04-12: persist derived excise fields after tax computation.
+                        $this->f3->set('POST.exciseflag', $derivedExcise['exciseflag']);
                         $this->f3->set('POST.categoryid', $this->f3->get('POST.addcategoryid'));
                         $this->f3->set('POST.categoryname', $this->f3->get('POST.addcategoryname'));
-                        
-                        
-                        
-                        //$this->f3->set('POST.exciserate', $this->f3->get('POST.addexciserate'));
-                        //$this->f3->set('POST.exciserule', $this->f3->get('POST.addexciserule'));
-                        //$this->f3->set('POST.excisetax', $this->f3->get('POST.addexcisetax'));
-                        //$this->f3->set('POST.pack', $this->f3->get('POST.addpack'));
-                        //$this->f3->set('POST.stick', $this->f3->get('POST.addstick'));
-                        //$this->f3->set('POST.exciseunit', $this->f3->get('POST.addexciseunit'));
-                        //$this->f3->set('POST.excisecurrency', $this->f3->get('POST.addexcisecurrency'));
-                        //$this->f3->set('POST.exciseratename', $this->f3->get('POST.addexciseratename'));
+                        $this->f3->set('POST.exciserate', $derivedExcise['exciserate']);
+                        $this->f3->set('POST.exciserule', $derivedExcise['exciserule']);
+                        $this->f3->set('POST.excisetax', $derivedExcise['excisetax']);
+                        $this->f3->set('POST.pack', $derivedExcise['pack']);
+                        $this->f3->set('POST.stick', $derivedExcise['stick']);
+                        $this->f3->set('POST.exciseunit', $derivedExcise['exciseunit']);
+                        $this->f3->set('POST.excisecurrency', $derivedExcise['excisecurrency']);
+                        $this->f3->set('POST.exciseratename', $derivedExcise['exciseratename']);
+
+                        $exciseUnitSql = 'NULL';
+                        if ($derivedExcise['exciseunit'] !== null && trim((string)$derivedExcise['exciseunit']) !== '') {
+                            $exciseUnitValue = trim((string)$derivedExcise['exciseunit']);
+                            $exciseUnitSql = is_numeric($exciseUnitValue)
+                                ? $exciseUnitValue
+                                : '"' . addslashes($exciseUnitValue) . '"';
+                        }
+
+                        $exciseCurrencySql = 'NULL';
+                        if ($derivedExcise['excisecurrency'] !== null && trim((string)$derivedExcise['excisecurrency']) !== '') {
+                            $exciseCurrencyValue = trim((string)$derivedExcise['excisecurrency']);
+                            $exciseCurrencySql = is_numeric($exciseCurrencyValue)
+                                ? $exciseCurrencyValue
+                                : '"' . addslashes($exciseCurrencyValue) . '"';
+                        }
                         
                         
                         $this->f3->set('POST.inserteddt', date('Y-m-d H:i:s'));
@@ -1211,7 +1412,18 @@ Class InvoiceController extends MainController{
                                 
                                 if ($this->vatRegistered == 'Y') {
                                     $this->db->exec(array('INSERT INTO tbltaxdetails (groupid, goodid, taxcategory, taxcategoryCode, netamount, taxrate, taxamount, grossamount, exciseunit, excisecurrency, taxratename, taxdescription, inserteddt, insertedby, modifieddt, modifiedby)
-                                                                VALUES(' . $invoice->taxdetailgroupid . ', ' . $goodid . ', "' . $taxcategory . '", "' . $taxcode . '", ' . ($net + $d_net) . ', ' . $rate . ', ' . ($tax + $d_tax) . ', ' . ($gross + $d_gross) . ', NULL, NULL, "' . $taxname . '", "' . $taxdescription . '", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                                                VALUES(' . $invoice->taxdetailgroupid . ', ' . $goodid . ', "' . $taxcategory . '", "' . $taxcode . '", ' . ($net + $d_net) . ', ' . $rate . ', ' . ($tax + $d_tax) . ', ' . ($gross + $d_gross) . ', ' . $exciseUnitSql . ', ' . $exciseCurrencySql . ', "' . $taxname . '", "' . $taxdescription . '", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+
+                                    $mainNetAmount = (float) ($net + $d_net);
+                                    $exciseTaxAmount = (float) $this->toFloat($derivedExcise['excisetax']);
+                                    $exciseRateValue = $this->toFloat($derivedExcise['exciserate']);
+                                    $exciseRateSql = ($exciseRateValue === null || $exciseRateValue === '') ? 'NULL' : (float) $exciseRateValue;
+                                    $exciseRateNameSql = empty($derivedExcise['exciseratename']) ? 'NULL' : '"' . addslashes($derivedExcise['exciseratename']) . '"';
+
+                                    if ($exciseTaxAmount > 0) {
+                                        $this->db->exec(array('INSERT INTO tbltaxdetails (groupid, goodid, taxcategory, taxcategoryCode, netamount, taxrate, taxamount, grossamount, exciseunit, excisecurrency, taxratename, taxdescription, inserteddt, insertedby, modifieddt, modifiedby)
+                                                                VALUES(' . $invoice->taxdetailgroupid . ', ' . $goodid . ', "E: Excise Duty", "05", ' . max(0, ($mainNetAmount - $exciseTaxAmount)) . ', ' . $exciseRateSql . ', ' . $exciseTaxAmount . ', ' . $mainNetAmount . ', ' . $exciseUnitSql . ', ' . $exciseCurrencySql . ', ' . $exciseRateNameSql . ', "E", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                    }
                                     
                                     //insert a tax record for the discount
                                     /*
@@ -1232,6 +1444,9 @@ Class InvoiceController extends MainController{
                         
                     }
                     
+                    $this->syncInvoiceTotalWeight($invoice->id, $invoice->gooddetailgroupid);
+                    $invoice->getByID($id);
+
                     $this->util->createinappnotification(NULL, NULL, NULL, self::$module, self::$submodule, $operation, $event, $eventnotification, NULL, $this->f3->get('SESSION.id'), "The good details on invoice - " . $invoice->id . " have been edited by " . $this->f3->get('SESSION.username'));
                     if ($invoice->einvoiceid) {
                         $this->logger->write("Invoice Controller : edit() : This invoice is already uploaded", 'r');
@@ -1444,12 +1659,13 @@ Class InvoiceController extends MainController{
         $org->getBySeller($this->appsettings['SELLER_RECORD_ID']);
         $this->f3->set('seller', $org);
         
-        if($this->appsettings['PLATFORMODE'] == 'INT'){
-            $buyer = new customers($this->db);
-        } else {
-            $buyer = new buyers($this->db);
-        }
+        // 2026-04-12: Invoice buyerid points to tblbuyers; fall back to tblcustomers for legacy/template-linked records.
+        $buyer = new buyers($this->db);
         $buyer->getByID($invoice->buyerid);
+        if ($buyer->dry()) {
+            $buyer = new customers($this->db);
+            $buyer->getByID($invoice->buyerid);
+        }
         $this->f3->set('buyer', $buyer);
         
         $product = new products($this->db);
@@ -1864,6 +2080,79 @@ Class InvoiceController extends MainController{
             }
         }
 
+        die(json_encode($data));
+    }
+
+    /**
+     *  @name searchdeliveryterms
+     *  @desc List delivery terms for Select2 search
+     *  @return JSON-encoded object
+     **/
+    function searchdeliveryterms(){
+        $permission = 'VIEWINVOICES';
+        $data = array();
+
+        $this->logger->write("Invoice Controller : searchdeliveryterms() : Checking permissions", 'r');
+        if ($this->userpermissions[$permission]) {
+            $name = trim($this->f3->get('POST.name'));
+            if ($name !== '' || ! empty($name)) {
+                $subquery = " '%" . $name . "%' ";
+                $sql = 'SELECT r.id "Id", r.code "Code", r.name "Name", r.description "Description", r.disabled "Disabled"
+                        FROM tbldeliverytermscodes r
+                        WHERE r.name LIKE ' . $subquery . ' OR r.code LIKE ' . $subquery . '
+                        ORDER BY r.id DESC';
+            } else {
+                $sql = 'SELECT r.id "Id", r.code "Code", r.name "Name", r.description "Description", r.disabled "Disabled"
+                        FROM tbldeliverytermscodes r
+                        ORDER BY r.id DESC';
+            }
+
+            try {
+                $dtls = $this->db->exec($sql);
+                foreach ($dtls as $obj) {
+                    $data[] = $obj;
+                }
+            } catch (Exception $e) {
+                $this->logger->write("Invoice Controller : searchdeliveryterms() : The operation was not successful. The error message is " . $e->getMessage(), 'r');
+            }
+        }
+
+        die(json_encode($data));
+    }
+
+    /**
+     *  @name previewinvoiceexcise
+     *  @desc Compute invoice good excise fields using all rules and highest-tax selection
+     *  @return JSON-encoded object
+     **/
+    function previewinvoiceexcise(){
+        $permission = 'VIEWINVOICES';
+        $data = array('ok' => false);
+
+        $this->logger->write("Invoice Controller : previewinvoiceexcise() : Checking permissions", 'r');
+        if (!$this->userpermissions[$permission]) {
+            $data['message'] = 'Forbidden';
+            die(json_encode($data));
+        }
+
+        $itemCode = trim((string)$this->f3->get('POST.itemcode'));
+        $qty = $this->toFloat($this->f3->get('POST.qty'));
+        $unitPrice = $this->toFloat($this->f3->get('POST.unitprice'));
+
+        if ($itemCode === '') {
+            $data['message'] = 'Missing item code';
+            die(json_encode($data));
+        }
+
+        $product = new products($this->db);
+        $product->getByCode($itemCode);
+        if ($product->dry()) {
+            $data['message'] = 'Product not found';
+            die(json_encode($data));
+        }
+
+        $derivedExcise = $this->deriveExciseFromRules($product, $qty, $unitPrice);
+        $data = array_merge(array('ok' => true), $derivedExcise);
         die(json_encode($data));
     }
     
@@ -2372,7 +2661,12 @@ Class InvoiceController extends MainController{
                                         try{
                                             
                                             $deemedFlag = empty($elem['deemedFlag'])? 'NULL' : $elem['deemedFlag'];
-                                            $discountFlag = empty($elem['discountFlag'])? 'NULL' : $elem['discountFlag'];
+                                            $discountFlagRaw = isset($elem['discountFlag']) ? trim((string)$elem['discountFlag']) : '';
+                                            $discountFlag = ($discountFlagRaw === '' || strtoupper($discountFlagRaw) === 'NULL' || $discountFlagRaw === '0') ? '2' : (is_numeric($discountFlagRaw) ? $discountFlagRaw : '2');
+                                            $discountTotalRaw = isset($elem['discountTotal']) ? trim((string)$elem['discountTotal']) : '';
+                                            $discountTotal = ($discountTotalRaw === '' || strtoupper($discountTotalRaw) === 'NULL' || !is_numeric($discountTotalRaw)) ? 'NULL' : $discountTotalRaw;
+                                            $discountTaxRateRaw = isset($elem['discountTaxRate']) ? trim((string)$elem['discountTaxRate']) : '';
+                                            $discountTaxRate = ($discountTaxRateRaw === '' || strtoupper($discountTaxRateRaw) === 'NULL' || !is_numeric($discountTaxRateRaw)) ? 'NULL' : $discountTaxRateRaw;
                                             $exciseFlag = empty($elem['exciseFlag'])? 'NULL' : $elem['exciseFlag'];
                                             $exciseTax = empty($elem['exciseTax'])? 'NULL' : $elem['exciseTax'];
                                             $goodsCategoryId = empty($elem['goodsCategoryId'])? '' : $elem['goodsCategoryId'];
@@ -2386,6 +2680,11 @@ Class InvoiceController extends MainController{
                                             $total = empty($elem['total'])? 'NULL' : $elem['total'];
                                             $unitOfMeasure = empty($elem['unitOfMeasure'])? '' : $elem['unitOfMeasure'];
                                             $unitPrice = empty($elem['unitPrice'])? 'NULL' : $elem['unitPrice'];
+
+                                            $discountPercentage = 'NULL';
+                                            if ($discountTotal !== 'NULL' && $total !== 'NULL' && is_numeric($total) && (float)$total != 0.0) {
+                                                $discountPercentage = number_format((abs((float)$discountTotal) / (float)$total) * 100, 8, '.', '');
+                                            }
                                             
                                             $measureunit = new measureunits($this->db);
                                             $measureunit->getByCode($unitOfMeasure);
@@ -2399,6 +2698,9 @@ Class InvoiceController extends MainController{
                                                                 (groupid,
                                                                 deemedflag,
                                                                 discountflag,
+                                                                discounttotal,
+                                                                discounttaxrate,
+                                                                discountpercentage,
                                                                 exciseflag,
                                                                 excisetax,
                                                                 goodscategoryid,
@@ -2421,6 +2723,9 @@ Class InvoiceController extends MainController{
                                                                 (' . $invoice->gooddetailgroupid . ',
                                                                 ' . $deemedFlag . ',
                                                                 ' . $discountFlag . ',
+                                                                ' . $discountTotal . ',
+                                                                ' . $discountTaxRate . ',
+                                                                ' . $discountPercentage . ',
                                                                 ' . $exciseFlag . ',
                                                                 ' . $exciseTax . ',
                                                                 "' . addslashes($goodsCategoryId) . '",
@@ -3141,7 +3446,12 @@ Class InvoiceController extends MainController{
                                 try{
                                     
                                     $deemedFlag = $elem['deemedFlag'];
-                                    $discountFlag = $elem['discountFlag'];
+                                    $discountFlagRaw = isset($elem['discountFlag']) ? trim((string)$elem['discountFlag']) : '';
+                                    $discountFlag = ($discountFlagRaw === '' || strtoupper($discountFlagRaw) === 'NULL' || $discountFlagRaw === '0') ? '2' : (is_numeric($discountFlagRaw) ? $discountFlagRaw : '2');
+                                    $discountTotalRaw = isset($elem['discountTotal']) ? trim((string)$elem['discountTotal']) : '';
+                                    $discountTotal = ($discountTotalRaw === '' || strtoupper($discountTotalRaw) === 'NULL' || !is_numeric($discountTotalRaw)) ? 'NULL' : $discountTotalRaw;
+                                    $discountTaxRateRaw = isset($elem['discountTaxRate']) ? trim((string)$elem['discountTaxRate']) : '';
+                                    $discountTaxRate = ($discountTaxRateRaw === '' || strtoupper($discountTaxRateRaw) === 'NULL' || !is_numeric($discountTaxRateRaw)) ? 'NULL' : $discountTaxRateRaw;
                                     $exciseFlag = $elem['exciseFlag'];
                                     $exciseTax = $elem['exciseTax'];
                                     $goodsCategoryId = $elem['goodsCategoryId'];
@@ -3155,6 +3465,11 @@ Class InvoiceController extends MainController{
                                     $total = $elem['total'];
                                     $unitOfMeasure = $elem['unitOfMeasure'];
                                     $unitPrice = $elem['unitPrice'];
+
+                                    $discountPercentage = 'NULL';
+                                    if ($discountTotal !== 'NULL' && is_numeric($total) && (float)$total != 0.0) {
+                                        $discountPercentage = number_format((abs((float)$discountTotal) / (float)$total) * 100, 8, '.', '');
+                                    }
                                     
                                     $measureunit = new measureunits($this->db);
                                     $measureunit->getByCode($unitOfMeasure);
@@ -3168,6 +3483,9 @@ Class InvoiceController extends MainController{
                                                                 (groupid,
                                                                 deemedflag,
                                                                 discountflag,
+                                                                discounttotal,
+                                                                discounttaxrate,
+                                                                discountpercentage,
                                                                 exciseflag,
                                                                 excisetax,
                                                                 goodscategoryid,
@@ -3190,6 +3508,9 @@ Class InvoiceController extends MainController{
                                                                 (' . $invoice->gooddetailgroupid . ',
                                                                 ' . $deemedFlag . ',
                                                                 ' . $discountFlag . ',
+                                                                ' . $discountTotal . ',
+                                                                ' . $discountTaxRate . ',
+                                                                ' . $discountPercentage . ',
                                                                 ' . $exciseFlag . ',
                                                                 ' . $exciseTax . ',
                                                                 "' . addslashes($goodsCategoryId) . '",

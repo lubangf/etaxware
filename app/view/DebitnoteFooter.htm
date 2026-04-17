@@ -5,8 +5,8 @@
         <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>
 		<!-- bootstrap datepicker -->
 		<script src="{{@path . 'plugins/datepicker/bootstrap-datepicker.js'}}"></script>        
-		<!-- debit note javascript -->
-		<script src="{{@path . 'js/debitnote.js'}}"></script>
+		<!-- 2026-04-12: cache-bust debitnote.js to load live excise preview and modal-select2 fixes immediately -->
+		<script src="{{@path . 'js/debitnote.js?v=20260412a'}}"></script>
 		<script>
 			/**
 			 * @desc initialise a date picker called startdate

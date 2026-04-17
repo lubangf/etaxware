@@ -2,7 +2,8 @@
         <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>
         
 		<!-- Dashboard JS -->
-		<script src="public/js/home.js"></script>
+		<!-- 2026-04-12: cache-bust home.js so direct-link UX updates load immediately in browsers -->
+		<script src="public/js/home.js?v=20260412"></script>
 		<script>
 			$(window).load(function(){
 				$('#li-home-1').addClass('active'); //mark the home link as active

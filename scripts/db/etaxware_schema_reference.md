@@ -5,6 +5,7 @@ Generated from scripts/db/etaxware_schema.sqlite
 Total tables: 117
 
 ## Module Summary
+
 - Products and Catalog: 17 tables
 - Documents and Transactions: 13 tables
 - Stock and Inventory Operations: 6 tables
@@ -15,6 +16,7 @@ Total tables: 117
 - Other: 39 tables
 
 ## Products and Catalog
+
 - tblcommoditycategories (29 columns)
   Key columns: id, erpid, erpcode, inserteddt, modifieddt
 - tblexcisedutydetailslist (17 columns)
@@ -51,6 +53,7 @@ Total tables: 117
   Key columns: id, code, name, erpid, erpcode, inserteddt, modifieddt
 
 ## Documents and Transactions
+
 - tblcreditmemos (66 columns)
   Key columns: id, inserteddt, modifieddt
 - tblcreditnotes (79 columns)
@@ -79,6 +82,7 @@ Total tables: 117
   Key columns: id, inserteddt, modifieddt
 
 ## Stock and Inventory Operations
+
 - tblopeningstocklogs (10 columns)
   Key columns: id, inserteddt, modifieddt
 - tblopeningstockruns (17 columns)
@@ -93,6 +97,7 @@ Total tables: 117
   Key columns: id, code, name, erpid, erpcode, inserteddt, modifieddt
 
 ## Access, Security, and Workflow
+
 - tblauditlogs (11 columns)
   Key columns: id, inserteddt, modifieddt
 - tbleventnotifications (14 columns)
@@ -121,6 +126,7 @@ Total tables: 117
   Key columns: id, erpid, erpcode, inserteddt, modifieddt
 
 ## Integration and Platform
+
 - tbldevices (18 columns)
   Key columns: id, inserteddt, modifieddt
 - tbldevicestatuses (11 columns)
@@ -145,6 +151,7 @@ Total tables: 117
   Key columns: id, inserteddt, modifieddt
 
 ## Parties and Geography
+
 - tblbranches (17 columns)
   Key columns: id, code, name, erpid, erpcode, inserteddt, modifieddt
 - tblbuyers (35 columns)
@@ -161,6 +168,7 @@ Total tables: 117
   Key columns: id, inserteddt, modifieddt
 
 ## Reference and Configuration
+
 - tblchoices (11 columns)
   Key columns: id, code, name, erpid, erpcode, inserteddt, modifieddt
 - tblflags (11 columns)
@@ -185,6 +193,7 @@ Total tables: 117
   Key columns: id, code, name, inserteddt, modifieddt
 
 ## Other
+
 - file_11 (18 columns)
   Key columns: id, inserteddt, modifieddt
 - file_13 (18 columns)

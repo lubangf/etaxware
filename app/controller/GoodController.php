@@ -76,6 +76,7 @@ Class GoodController extends MainController{
                         g.exciseunit "Excise Unit",
                         g.excisecurrency "Excise Currency",
                         g.exciseratename "Excise Rate Name",
+                        g.totalWeight "Total Weight",
                         g.disabled "Disabled",
                         g.inserteddt "Creation Date",
                         g.insertedby "Created By",

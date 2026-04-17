@@ -4469,7 +4469,11 @@ pieceMeasureUnit,
                 'pieceunitprice' => empty($pdct->pieceunitprice) ? '' : $pdct->pieceunitprice,
                 'packagescaledvalue' => empty($pdct->packagescaledvalue) ? '' : $pdct->packagescaledvalue,
                 'piecescaledvalue' => empty($pdct->piecescaledvalue) ? '' : $pdct->piecescaledvalue,
-                'exciseDutyCode' => (empty($pdct->hasexcisetax) || strval($pdct->hasexcisetax) === '102' || empty($pdct->excisedutylist)) ? '' : $pdct->excisedutylist,
+                // 2026-04-12 12:24:00 +03:00 - Requirement: always emit canonical `exciseDutyCode`.
+                // For historical rows, allow read fallback from legacy `excisedutylist` only.
+                'exciseDutyCode' => (empty($pdct->hasexcisetax) || strval($pdct->hasexcisetax) === '102')
+                    ? ''
+                    : (!empty($pdct->exciseDutyCode) ? $pdct->exciseDutyCode : $pdct->excisedutylist),
                 'haveotherunit' => empty($pdct->haveotherunit) ? '' : strval($pdct->haveotherunit),
                 'goodsTypeCode' => empty($pdct->goodsTypeCode) ? '101' : $pdct->goodsTypeCode,
                 'customsmeasureunit' => empty($pdct->customsmeasureunit) ? '' : $pdct->customsmeasureunit,
@@ -4481,6 +4485,25 @@ pieceMeasureUnit,
 
         if (!is_array($altunits)) {
             $altunits = array();
+        }
+
+        // 2026-04-12 12:24:00 +03:00 - Requirement: canonicalize payload input to `exciseDutyCode`.
+        // Accept legacy `excisedutylist` as read-compatibility fallback only.
+        // New writes must continue through `exciseDutyCode`.
+        if (is_array($product)) {
+            $hasExciseTax = isset($product['hasexcisetax']) ? trim((string)$product['hasexcisetax']) : '';
+            $exciseDutyCode = isset($product['exciseDutyCode']) ? trim((string)$product['exciseDutyCode']) : '';
+            $exciseDutyList = isset($product['excisedutylist']) ? trim((string)$product['excisedutylist']) : '';
+
+            if ($exciseDutyCode === '' && $exciseDutyList !== '') {
+                $exciseDutyCode = $exciseDutyList;
+            }
+
+            if ($hasExciseTax === '102') {
+                $exciseDutyCode = '';
+            }
+
+            $product['exciseDutyCode'] = $exciseDutyCode;
         }
 
         $web = \Web::instance();
@@ -6722,6 +6745,97 @@ pieceMeasureUnit,
         }
     }
 
+    private function loadLegacyUploadContext($documentType, $documentId, $userid)
+    {
+        $context = array(
+            'ok' => false,
+            'message' => 'Unsupported document type',
+            'branchuraid' => '',
+            'buyer' => array(),
+            'document' => array(),
+            'goods' => array(),
+            'payments' => array(),
+            'taxes' => array()
+        );
+
+        $documentId = (int)$documentId;
+        $userid = (int)$userid;
+        if ($documentId <= 0) {
+            $context['message'] = 'Document id is missing';
+            return $context;
+        }
+
+        $table = '';
+        if ($documentType === 'invoice') {
+            $table = 'tblinvoices';
+        } elseif ($documentType === 'creditnote') {
+            $table = 'tblcreditnotes';
+        } elseif ($documentType === 'debitnote') {
+            $table = 'tbldebitnotes';
+        }
+
+        if ($table === '') {
+            return $context;
+        }
+
+        try {
+            $rows = $this->db->exec('SELECT * FROM ' . $table . ' WHERE id = ? LIMIT 1', array($documentId));
+            if (empty($rows)) {
+                $context['message'] = 'Document not found';
+                return $context;
+            }
+
+            $document = $rows[0];
+
+            $buyerRows = array();
+            if (!empty($document['buyerid'])) {
+                $buyerRows = $this->db->exec('SELECT * FROM tblbuyers WHERE id = ? LIMIT 1', array((int)$document['buyerid']));
+                if (empty($buyerRows)) {
+                    $buyerRows = $this->db->exec('SELECT * FROM tblcustomers WHERE id = ? LIMIT 1', array((int)$document['buyerid']));
+                }
+            }
+
+            $goods = array();
+            if (!empty($document['gooddetailgroupid'])) {
+                $goods = $this->db->exec('SELECT * FROM tblgooddetails WHERE groupid = ?', array((int)$document['gooddetailgroupid']));
+            }
+
+            $payments = array();
+            if (!empty($document['paymentdetailgroupid'])) {
+                $payments = $this->db->exec('SELECT * FROM tblpaymentdetails WHERE groupid = ?', array((int)$document['paymentdetailgroupid']));
+            }
+
+            $taxes = array();
+            if (!empty($document['taxdetailgroupid'])) {
+                $taxes = $this->db->exec('SELECT * FROM tbltaxdetails WHERE groupid = ?', array((int)$document['taxdetailgroupid']));
+            }
+
+            $branchuraid = '';
+            if ($userid > 0) {
+                $branchRows = $this->db->exec(
+                    'SELECT b.uraid FROM tblusers u LEFT JOIN tblbranches b ON b.id = u.branch WHERE u.id = ? LIMIT 1',
+                    array($userid)
+                );
+                if (!empty($branchRows) && isset($branchRows[0]['uraid'])) {
+                    $branchuraid = trim((string)$branchRows[0]['uraid']);
+                }
+            }
+
+            $context['ok'] = true;
+            $context['message'] = '';
+            $context['branchuraid'] = $branchuraid;
+            $context['buyer'] = empty($buyerRows) ? array() : $buyerRows[0];
+            $context['document'] = $document;
+            $context['goods'] = $goods;
+            $context['payments'] = $payments;
+            $context['taxes'] = $taxes;
+        } catch (Exception $e) {
+            $context['message'] = $e->getMessage();
+        }
+
+        return $context;
+    }
+
     /**
      * @name uploadinvoice
      * @desc Upload an invoice to EFRIS
@@ -6729,8 +6843,25 @@ pieceMeasureUnit,
      * @param $userid int, $invoiceid int, $vatRegistered string
      *
      */
-    public function uploadinvoice($userid, $branchuraid, $buyer, $invoicedetails, $goods, $payments, $taxes)
+    public function uploadinvoice($userid, $branchuraid, $buyer = null, $invoicedetails = null, $goods = null, $payments = null, $taxes = null)
     {
+        // Backward compatibility: some controllers still call uploadinvoice($userid, $invoiceid, $vatRegistered).
+        if (!is_array($invoicedetails) || !is_array($goods) || !is_array($payments) || !is_array($taxes)) {
+            $legacyInvoiceId = is_numeric($branchuraid) ? (int)$branchuraid : 0;
+            $legacyContext = $this->loadLegacyUploadContext('invoice', $legacyInvoiceId, $userid);
+            if (!$legacyContext['ok']) {
+                $this->logger->write('Utilities : uploadinvoice() : Legacy compatibility load failed. ' . $legacyContext['message'], 'r');
+                return json_encode(array('returnCode' => '999', 'returnMessage' => $legacyContext['message']));
+            }
+
+            $branchuraid = $legacyContext['branchuraid'];
+            $buyer = $legacyContext['buyer'];
+            $invoicedetails = $legacyContext['document'];
+            $goods = $legacyContext['goods'];
+            $payments = $legacyContext['payments'];
+            $taxes = $legacyContext['taxes'];
+        }
+
         $web = \Web::instance();
         $url = $this->appsettings['EFRIS_ENDPOINT'];//api endpoint
         $content = json_encode(new stdClass());// create an empty JSON
@@ -6777,6 +6908,11 @@ pieceMeasureUnit,
             $taxamount = 0;
             $grossamount = 0;
             $itemcount = 0;
+
+            // Delivery terms precedence for payload consistency: line override -> header -> buyer default -> empty.
+            $headerDeliveryTermsCode = empty($invoicedetails['deliveryTermsCode']) ? '' : trim((string)$invoicedetails['deliveryTermsCode']);
+            $buyerDeliveryTermsCode = empty($buyer['deliveryTermsCode']) ? '' : trim((string)$buyer['deliveryTermsCode']);
+            $effectiveDeliveryTermsCode = $headerDeliveryTermsCode !== '' ? $headerDeliveryTermsCode : $buyerDeliveryTermsCode;
 
             try {
                 //$temp = $goods;
@@ -6922,7 +7058,7 @@ pieceMeasureUnit,
                         //'vatApplicableFlag' => empty($obj['vatApplicableFlag'])? '' : $obj['vatApplicableFlag'],
                         'deemedExemptCode' => empty($obj['deemedExemptCode']) ? '' : $obj['deemedExemptCode'],
                         'nonResidentFlag' => empty($obj['nonResidentFlag']) ? (empty($buyer['nonResidentFlag']) ? '0' : $buyer['nonResidentFlag']) : $obj['nonResidentFlag'],
-                        'deliveryTermsCode' => empty($obj['deliveryTermsCode']) ? (empty($buyer['deliveryTermsCode']) ? (empty($invoicedetails['deliveryTermsCode']) ? '' : $invoicedetails['deliveryTermsCode']) : $buyer['deliveryTermsCode']) : $obj['deliveryTermsCode'],
+                        'deliveryTermsCode' => empty($obj['deliveryTermsCode']) ? $effectiveDeliveryTermsCode : $obj['deliveryTermsCode'],
                         'vatProjectId' => empty($obj['vatProjectId']) ? '' : $obj['vatProjectId'],
                         'vatProjectName' => empty($obj['vatProjectName']) ? '' : $obj['vatProjectName'],
                         'hsCode' => empty($obj['hsCode']) ? '' : $obj['hsCode'],
@@ -6985,7 +7121,7 @@ pieceMeasureUnit,
                             //'vatApplicableFlag' => empty($obj['vatApplicableFlag'])? '' : $obj['vatApplicableFlag'],
                             'deemedExemptCode' => empty($obj['deemedExemptCode']) ? '' : $obj['deemedExemptCode'],
                             'nonResidentFlag' => empty($obj['nonResidentFlag']) ? (empty($buyer['nonResidentFlag']) ? '0' : $buyer['nonResidentFlag']) : $obj['nonResidentFlag'],
-                            'deliveryTermsCode' => empty($obj['deliveryTermsCode']) ? (empty($buyer['deliveryTermsCode']) ? (empty($invoicedetails['deliveryTermsCode']) ? '' : $invoicedetails['deliveryTermsCode']) : $buyer['deliveryTermsCode']) : $obj['deliveryTermsCode'],
+                            'deliveryTermsCode' => empty($obj['deliveryTermsCode']) ? $effectiveDeliveryTermsCode : $obj['deliveryTermsCode'],
                             'vatProjectId' => empty($obj['vatProjectId']) ? '' : $obj['vatProjectId'],
                             'vatProjectName' => empty($obj['vatProjectName']) ? '' : $obj['vatProjectName'],
                             'hsCode' => empty($obj['hsCode']) ? '' : $obj['hsCode'],
@@ -7172,7 +7308,7 @@ pieceMeasureUnit,
                         'invoiceIndustryCode' => empty($invoicedetails['invoiceindustrycode']) ? '' : strval($invoicedetails['invoiceindustrycode']),
                         'vatProjectId' => empty($invoicedetails['vatProjectId']) ? '' : $invoicedetails['vatProjectId'],
                         'vatProjectName' => empty($invoicedetails['vatProjectName']) ? '' : $invoicedetails['vatProjectName'],
-                        'deliveryTermsCode' => empty($invoicedetails['deliveryTermsCode']) ? '' : $invoicedetails['deliveryTermsCode'],
+                        'deliveryTermsCode' => $effectiveDeliveryTermsCode,
                         'isBatch' => empty($invoicedetails['isbatch']) ? '' : $invoicedetails['isbatch']
                     ),
                     'buyerDetails' => array(
@@ -7191,7 +7327,7 @@ pieceMeasureUnit,
                         'buyerSector' => '',
                         'buyerReferenceNo' => empty($buyer['referenceno']) ? '' : $buyer['referenceno'],
                         'nonResidentFlag' => '0',
-                        'deliveryTermsCode' => ''
+                        'deliveryTermsCode' => $effectiveDeliveryTermsCode
                     ),
                     'goodsDetails' => $t_goods,
                     'taxDetails' => $t_taxes,
@@ -7265,7 +7401,7 @@ pieceMeasureUnit,
                         'invoiceIndustryCode' => empty($invoicedetails['invoiceindustrycode']) ? '' : strval($invoicedetails['invoiceindustrycode']),
                         'vatProjectId' => empty($invoicedetails['vatProjectId']) ? '' : $invoicedetails['vatProjectId'],
                         'vatProjectName' => empty($invoicedetails['vatProjectName']) ? '' : $invoicedetails['vatProjectName'],
-                        'deliveryTermsCode' => empty($invoicedetails['deliveryTermsCode']) ? '' : $invoicedetails['deliveryTermsCode'],
+                        'deliveryTermsCode' => $effectiveDeliveryTermsCode,
                         'isBatch' => empty($invoicedetails['isbatch']) ? '' : $invoicedetails['isbatch']
                     ),
                     'buyerDetails' => array(
@@ -7284,7 +7420,7 @@ pieceMeasureUnit,
                         'buyerSector' => empty($buyer['sector']) ? '' : $buyer['sector'],
                         'buyerReferenceNo' => empty($buyer['referenceno']) ? '' : $buyer['referenceno'],
                         'nonResidentFlag' => empty($buyer['nonResidentFlag']) ? '0' : $buyer['nonResidentFlag'],
-                        'deliveryTermsCode' => empty($buyer['deliveryTermsCode']) ? '' : $buyer['deliveryTermsCode']
+                        'deliveryTermsCode' => $effectiveDeliveryTermsCode
                     ),
                     'goodsDetails' => $t_goods,
                     'taxDetails' => $t_taxes,
@@ -7875,8 +8011,24 @@ pieceMeasureUnit,
      * @param $userid int, $creditnoteid int, $vatRegistered string
      *
      */
-    public function uploadcreditnote($userid, $buyer, $creditnotedetails, $goods, $payments, $taxes)
+    public function uploadcreditnote($userid, $buyer, $creditnotedetails = null, $goods = null, $payments = null, $taxes = null)
     {
+        // Backward compatibility: some controllers still call uploadcreditnote($userid, $creditnoteid, $vatRegistered).
+        if (!is_array($creditnotedetails) || !is_array($goods) || !is_array($payments) || !is_array($taxes)) {
+            $legacyCreditnoteId = is_numeric($buyer) ? (int)$buyer : 0;
+            $legacyContext = $this->loadLegacyUploadContext('creditnote', $legacyCreditnoteId, $userid);
+            if (!$legacyContext['ok']) {
+                $this->logger->write('Utilities : uploadcreditnote() : Legacy compatibility load failed. ' . $legacyContext['message'], 'r');
+                return json_encode(array('returnCode' => '999', 'returnMessage' => $legacyContext['message']));
+            }
+
+            $buyer = $legacyContext['buyer'];
+            $creditnotedetails = $legacyContext['document'];
+            $goods = $legacyContext['goods'];
+            $payments = $legacyContext['payments'];
+            $taxes = $legacyContext['taxes'];
+        }
+
         $web = \Web::instance();
         $url = $this->appsettings['EFRIS_ENDPOINT'];//api endpoint
         $content = json_encode(new stdClass());// create an empty JSON
@@ -7921,6 +8073,11 @@ pieceMeasureUnit,
             $taxamount = 0;
             $grossamount = 0;
             $itemcount = 0;
+
+            // Delivery terms precedence for payload consistency: line override -> header -> buyer default -> empty.
+            $headerDeliveryTermsCode = empty($creditnotedetails['deliveryTermsCode']) ? '' : trim((string)$creditnotedetails['deliveryTermsCode']);
+            $buyerDeliveryTermsCode = empty($buyer['deliveryTermsCode']) ? '' : trim((string)$buyer['deliveryTermsCode']);
+            $effectiveDeliveryTermsCode = $headerDeliveryTermsCode !== '' ? $headerDeliveryTermsCode : $buyerDeliveryTermsCode;
 
             try {
                 //$temp = $goods;
@@ -8865,8 +9022,25 @@ pieceMeasureUnit,
      * @param $userid int, $debitnoteid int, $vatRegistered string
      *
      */
-    public function uploaddebitnote($userid, $branchuraid, $buyer, $debitnotedetails, $goods, $payments, $taxes)
+    public function uploaddebitnote($userid, $branchuraid, $buyer = null, $debitnotedetails = null, $goods = null, $payments = null, $taxes = null)
     {
+        // Backward compatibility: some controllers still call uploaddebitnote($userid, $debitnoteid, $vatRegistered).
+        if (!is_array($debitnotedetails) || !is_array($goods) || !is_array($payments) || !is_array($taxes)) {
+            $legacyDebitnoteId = is_numeric($branchuraid) ? (int)$branchuraid : 0;
+            $legacyContext = $this->loadLegacyUploadContext('debitnote', $legacyDebitnoteId, $userid);
+            if (!$legacyContext['ok']) {
+                $this->logger->write('Utilities : uploaddebitnote() : Legacy compatibility load failed. ' . $legacyContext['message'], 'r');
+                return json_encode(array('returnCode' => '999', 'returnMessage' => $legacyContext['message']));
+            }
+
+            $branchuraid = $legacyContext['branchuraid'];
+            $buyer = $legacyContext['buyer'];
+            $debitnotedetails = $legacyContext['document'];
+            $goods = $legacyContext['goods'];
+            $payments = $legacyContext['payments'];
+            $taxes = $legacyContext['taxes'];
+        }
+
         $web = \Web::instance();
         $url = $this->appsettings['EFRIS_ENDPOINT'];//api endpoint
         $content = json_encode(new stdClass());// create an empty JSON
@@ -8901,6 +9075,23 @@ pieceMeasureUnit,
 
             $org = new organisations($this->db);
             $org->getBySeller($this->appsettings['SELLER_RECORD_ID']);
+
+            // Delivery terms precedence: header value first, then buyer default.
+            $headerDeliveryTermsCode = '';
+            if (!empty($debitnotedetails['deliveryTermsCode'])) {
+                $headerDeliveryTermsCode = trim((string)$debitnotedetails['deliveryTermsCode']);
+            } elseif (!empty($debitnotedetails['deliverytermscode'])) {
+                $headerDeliveryTermsCode = trim((string)$debitnotedetails['deliverytermscode']);
+            }
+
+            $buyerDeliveryTermsCode = '';
+            if (!empty($buyer['deliveryTermsCode'])) {
+                $buyerDeliveryTermsCode = trim((string)$buyer['deliveryTermsCode']);
+            } elseif (!empty($buyer['deliverytermscode'])) {
+                $buyerDeliveryTermsCode = trim((string)$buyer['deliverytermscode']);
+            }
+
+            $effectiveDeliveryTermsCode = $headerDeliveryTermsCode !== '' ? $headerDeliveryTermsCode : $buyerDeliveryTermsCode;
 
             $t_goods = array();
             $t_taxes = array();
@@ -8981,7 +9172,7 @@ pieceMeasureUnit,
                         'exciseCurrency' => empty($obj['excisecurrency']) ? '' : $obj['excisecurrency'],
                         'exciseRateName' => empty($obj['exciseratename']) ? '' : $obj['exciseratename'],
                         'nonResidentFlag' => empty($obj['nonResidentFlag']) ? (empty($buyer['nonResidentFlag']) ? '0' : $buyer['nonResidentFlag']) : $obj['nonResidentFlag'],
-                        'deliveryTermsCode' => empty($obj['deliveryTermsCode']) ? (empty($buyer['deliveryTermsCode']) ? (empty($debitnotedetails['deliveryTermsCode']) ? '' : $debitnotedetails['deliveryTermsCode']) : $buyer['deliveryTermsCode']) : $obj['deliveryTermsCode'],
+                        'deliveryTermsCode' => empty($obj['deliveryTermsCode']) ? $effectiveDeliveryTermsCode : $obj['deliveryTermsCode'],
                         'vatProjectId' => empty($obj['vatProjectId']) ? '' : $obj['vatProjectId'],
                         'vatProjectName' => empty($obj['vatProjectName']) ? '' : $obj['vatProjectName'],
                         'totalWeight' => empty($obj['totalWeight']) ? '' : round($obj['totalWeight'], 4),
@@ -9029,7 +9220,7 @@ pieceMeasureUnit,
                             'exciseCurrency' => empty($obj['excisecurrency']) ? '' : $obj['excisecurrency'],
                             'exciseRateName' => empty($obj['exciseratename']) ? '' : $obj['exciseratename'],
                             'nonResidentFlag' => empty($obj['nonResidentFlag']) ? (empty($buyer['nonResidentFlag']) ? '0' : $buyer['nonResidentFlag']) : $obj['nonResidentFlag'],
-                            'deliveryTermsCode' => empty($obj['deliveryTermsCode']) ? (empty($buyer['deliveryTermsCode']) ? (empty($debitnotedetails['deliveryTermsCode']) ? '' : $debitnotedetails['deliveryTermsCode']) : $buyer['deliveryTermsCode']) : $obj['deliveryTermsCode'],
+                            'deliveryTermsCode' => empty($obj['deliveryTermsCode']) ? $effectiveDeliveryTermsCode : $obj['deliveryTermsCode'],
                             'vatProjectId' => empty($obj['vatProjectId']) ? '' : $obj['vatProjectId'],
                             'vatProjectName' => empty($obj['vatProjectName']) ? '' : $obj['vatProjectName'],
                             'totalWeight' => empty($obj['totalWeight']) ? '' : round($obj['totalWeight'], 4),
@@ -9148,6 +9339,13 @@ pieceMeasureUnit,
 
             //return json_encode(array('returnCode' => '999', 'returnMessage' => 'Unknown Error'));
 
+            $debitSellerReferenceNo = '';
+            if (!empty($debitnotedetails['erpdebitnoteno'])) {
+                $debitSellerReferenceNo = trim((string)$debitnotedetails['erpdebitnoteno']);
+            } elseif (!empty($debitnotedetails['id'])) {
+                $debitSellerReferenceNo = strval($debitnotedetails['id']);
+            }
+
             $invoice_u = array(
                 'sellerDetails' => array(
                     'tin' => empty($org->tin) ? '' : $org->tin,
@@ -9159,7 +9357,7 @@ pieceMeasureUnit,
                     'linePhone' => empty($org->linephone) ? '' : $org->linephone,
                     'emailAddress' => empty($org->emailaddress) ? '' : addslashes($org->emailaddress),
                     'placeOfBusiness' => empty($org->placeofbusiness) ? '' : addslashes($org->placeofbusiness),
-                    'referenceNo' => empty($debitnotedetails['erpinvoiceid']) ? '' : $debitnotedetails['erpinvoiceid'],
+                    'referenceNo' => $debitSellerReferenceNo,
                     'branchId' => empty($branchuraid) ? $devicedetails->branchId : $branchuraid,
                     'isCheckReferenceNo' => '0'
                 ),
@@ -9177,7 +9375,7 @@ pieceMeasureUnit,
                     'invoiceIndustryCode' => empty($debitnotedetails['invoiceindustrycode']) ? '' : strval($debitnotedetails['invoiceindustrycode']),
                     'vatProjectId' => empty($debitnotedetails['vatProjectId']) ? '' : $debitnotedetails['vatProjectId'],
                     'vatProjectName' => empty($debitnotedetails['vatProjectName']) ? '' : $debitnotedetails['vatProjectName'],
-                    'deliveryTermsCode' => empty($debitnotedetails['deliveryTermsCode']) ? '' : $debitnotedetails['deliveryTermsCode'],
+                    'deliveryTermsCode' => $effectiveDeliveryTermsCode,
                     'isBatch' => empty($debitnotedetails['isbatch']) ? '' : $debitnotedetails['isbatch']
                 ),
                 'buyerDetails' => array(
@@ -9196,7 +9394,7 @@ pieceMeasureUnit,
                     'buyerSector' => empty($buyer['sector']) ? '' : $buyer['sector'],
                     'buyerReferenceNo' => empty($buyer['referenceno']) ? '' : $buyer['referenceno'],
                     'nonResidentFlag' => empty($buyer['nonResidentFlag']) ? '0' : $buyer['nonResidentFlag'],
-                    'deliveryTermsCode' => empty($buyer['deliveryTermsCode']) ? '' : $buyer['deliveryTermsCode']
+                    'deliveryTermsCode' => $effectiveDeliveryTermsCode
                 ),
                 'goodsDetails' => $t_goods,
                 'taxDetails' => $t_taxes,
@@ -9229,6 +9427,7 @@ pieceMeasureUnit,
 
             $debitnotePayloadAudit = array(
                 'invoiceNo' => empty($invoice_u['basicInformation']['invoiceNo']) ? '' : $invoice_u['basicInformation']['invoiceNo'],
+                'sellerReferenceNo' => empty($invoice_u['sellerDetails']['referenceNo']) ? '' : $invoice_u['sellerDetails']['referenceNo'],
                 'invoiceIndustryCode' => empty($invoice_u['basicInformation']['invoiceIndustryCode']) ? '' : $invoice_u['basicInformation']['invoiceIndustryCode'],
                 'invoiceType' => empty($invoice_u['basicInformation']['invoiceType']) ? '' : $invoice_u['basicInformation']['invoiceType'],
                 'buyerTin' => empty($invoice_u['buyerDetails']['buyerTin']) ? '' : $invoice_u['buyerDetails']['buyerTin'],

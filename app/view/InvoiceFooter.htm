@@ -6,7 +6,8 @@
 		<!-- bootstrap datepicker -->
 		<script src="{{@path . 'plugins/datepicker/bootstrap-datepicker.js'}}"></script>
 		<!-- Invoice JS -->
-		<script src="{{@path . 'js/invoice.js'}}"></script>
+		<!-- 2026-04-12: cache-bust invoice.js to load live backend excise-rule preview in goods modal -->
+		<script src="{{@path . 'js/invoice.js?v=20260412g'}}"></script>
 		<script>
 		    /**
 		     * @desc initialise a date picker called startdate

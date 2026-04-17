@@ -9,19 +9,19 @@
 					</ol>
 				</section><!-- ./content-header -->
 				<section class="content"><!-- Main content -->
-					<span id="currenttab" style="color: transparent">{{@currenttab}}</span>
-					<span id="currenttabpane" style="color: transparent">{{@currenttabpane}}</span>
-					<span id="debitnotecurrency" style="color: transparent">{{@debitnote.currency}}</span>
-					<span id="debitnotereasoncode" style="color: transparent">{{@debitnote.reasoncode}}</span>
-					<span id="debitnoteinvoicetype" style="color: transparent">{{@debitnote.invoicetype}}</span>
-					<span id="debitnoteinvoicekind" style="color: transparent">{{@debitnote.invoicekind}}</span>
-					<span id="debitnotedatasource" style="color: transparent">{{@debitnote.datasource}}</span>
-					<span id="debitnoteinvoiceindustrycode" style="color: transparent">{{@debitnote.invoiceindustrycode}}</span>
-					<span id="gooddetailgroupid" style="color: transparent">{{@debitnote.gooddetailgroupid}}</span>
-					<span id="paymentdetailgroupid" style="color: transparent">{{@debitnote.paymentdetailgroupid}}</span>
-					<span id="taxdetailgroupid" style="color: transparent">{{@debitnote.taxdetailgroupid}}</span>
-					<span id="oriinvoiceno" style="color: transparent">{{@debitnote.oriinvoiceno}}</span>
-					<span id="oriinvoiceid" style="color: transparent">{{@debitnote.oriinvoiceid}}</span>
+					<span id="currenttab" style="display: none;">{{@currenttab}}</span>
+					<span id="currenttabpane" style="display: none;">{{@currenttabpane}}</span>
+					<span id="debitnotecurrency" style="display: none;">{{@debitnote.currency}}</span>
+					<span id="debitnotereasoncode" style="display: none;">{{@debitnote.reasoncode}}</span>
+					<span id="debitnoteinvoicetype" style="display: none;">{{@debitnote.invoicetype}}</span>
+					<span id="debitnoteinvoicekind" style="display: none;">{{@debitnote.invoicekind}}</span>
+					<span id="debitnotedatasource" style="display: none;">{{@debitnote.datasource}}</span>
+					<span id="debitnoteinvoiceindustrycode" style="display: none;">{{@debitnote.invoiceindustrycode}}</span>
+					<span id="gooddetailgroupid" style="display: none;">{{@debitnote.gooddetailgroupid}}</span>
+					<span id="paymentdetailgroupid" style="display: none;">{{@debitnote.paymentdetailgroupid}}</span>
+					<span id="taxdetailgroupid" style="display: none;">{{@debitnote.taxdetailgroupid}}</span>
+					<span id="oriinvoiceno" style="display: none;">{{@debitnote.oriinvoiceno}}</span>
+					<span id="oriinvoiceid" style="display: none;">{{@debitnote.oriinvoiceid}}</span>
 					<div class="row">
 						<div class="col-md-12">
 							<div class="nav-tabs-custom">
@@ -683,6 +683,12 @@
 													<input type="number" class="form-control" id="addqty" name="addqty" placeholder="Qty" required>
 												</div>
 											</div><!-- ./form-group -->	
+												<div class="form-group">
+													<label for="addweight" class="col-xs-4 control-label">Weight</label>
+													<div class="col-xs-8">
+														<input type="number" step="0.0001" min="0" class="form-control" id="addweight" name="addweight" placeholder="Weight">
+													</div>
+												</div><!-- ./form-group -->
 											<div class="form-group">
 												<label for="addunitprice" class="col-xs-4 control-label">Unit Price</label>
 												<div class="col-xs-8">
@@ -877,6 +883,12 @@
 													<input type="number" class="form-control" id="editqty" name="editqty" placeholder="Qty" required>
 												</div>
 											</div><!-- ./form-group -->	
+												<div class="form-group">
+													<label for="editweight" class="col-xs-4 control-label">Weight</label>
+													<div class="col-xs-8">
+														<input type="number" step="0.0001" min="0" class="form-control" id="editweight" name="editweight" placeholder="Weight">
+													</div>
+												</div><!-- ./form-group -->
 											<div class="form-group">
 												<label for="editunitprice" class="col-xs-4 control-label">Unit Price</label>
 												<div class="col-xs-8">

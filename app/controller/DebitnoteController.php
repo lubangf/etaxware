@@ -12,6 +12,294 @@
 Class DebitnoteController extends MainController{
     protected static $module = NULL; //tblmodules
     protected static $submodule = NULL; //tblsubmodules
+
+    private function toFloat($value){
+        $trimmed = trim((string)$value);
+        if ($trimmed === '' || strtoupper($trimmed) === 'NULL') {
+            return 0.0;
+        }
+        return (float)$trimmed;
+    }
+
+    private function deriveExciseFromRules($product, $qty, $unitPrice){
+        $result = array(
+            'exciseflag' => '2',
+            'exciserate' => null,
+            'exciserule' => null,
+            'excisetax' => null,
+            'pack' => null,
+            'stick' => null,
+            'exciseunit' => null,
+            'excisecurrency' => null,
+            'exciseratename' => null
+        );
+
+        if (!is_object($product) || trim((string)$product->hasexcisetax) !== '101') {
+            return $result;
+        }
+
+        $exciseDutyCode = trim((string)$product->exciseDutyCode);
+        if ($exciseDutyCode === '') {
+            $exciseDutyCode = trim((string)$product->excisedutylist);
+        }
+        if ($exciseDutyCode === '') {
+            return $result;
+        }
+
+        $result['exciseflag'] = '1';
+        $result['pack'] = $this->toFloat($product->pack) == 0.0 ? null : $product->pack;
+        $result['stick'] = $this->toFloat($product->stick) == 0.0 ? null : $product->stick;
+
+        try {
+            $dutyRows = $this->db->exec(
+                'SELECT uraid FROM tblexcisedutylist WHERE TRIM(code) = ? LIMIT 1',
+                array($exciseDutyCode)
+            );
+            if (empty($dutyRows)) {
+                return $result;
+            }
+
+            $detailRows = $this->db->exec(
+                'SELECT rate, type, unit, currency FROM tblexcisedutydetailslist WHERE exciseDutyId = ? AND disabled = 0',
+                array(trim((string)$dutyRows[0]['uraid']))
+            );
+            if (empty($detailRows)) {
+                return $result;
+            }
+
+            $qtyValue = $this->toFloat($qty);
+            $unitValue = $this->toFloat($unitPrice);
+            $pieceUnitPrice = $this->toFloat($product->pieceunitprice);
+            $pieceScaledValue = $this->toFloat($product->piecescaledvalue);
+
+            $bestTax = -1.0;
+            $bestRule = null;
+
+            foreach ($detailRows as $row) {
+                $typeCode = trim((string)$row['type']);
+                $rateRaw = trim((string)$row['rate']);
+                $rateValue = $this->toFloat($rateRaw);
+                $ruleTax = 0.0;
+                $ruleId = 3;
+                $ruleRateValue = $rateRaw;
+                $ruleRateName = $rateRaw;
+
+                if ($typeCode === '101') {
+                    $ruleTax = $unitValue * ($rateValue / 100) * $qtyValue;
+                    $ruleId = 1;
+                    $ruleRateValue = ($rateValue / 100);
+                    $ruleRateName = $rateRaw . '%';
+                } elseif ($typeCode === '102') {
+                    $ruleTax = $qtyValue * $pieceUnitPrice * $pieceScaledValue;
+                    $ruleId = 2;
+                }
+
+                if ($ruleTax >= $bestTax) {
+                    $bestTax = $ruleTax;
+                    $bestRule = array(
+                        'exciserate' => $ruleRateValue,
+                        'exciserule' => $ruleId,
+                        'excisetax' => $ruleTax,
+                        'exciseunit' => is_numeric(trim((string)$row['unit'])) ? (int)trim((string)$row['unit']) : null,
+                        'excisecurrency' => trim((string)$row['currency']) === '' ? null : trim((string)$row['currency']),
+                        'exciseratename' => $ruleRateName
+                    );
+                }
+            }
+
+            if ($bestRule !== null) {
+                $result['exciserate'] = $bestRule['exciserate'];
+                $result['exciserule'] = $bestRule['exciserule'];
+                $result['excisetax'] = number_format($bestRule['excisetax'], 8, '.', '');
+                $result['exciseunit'] = $bestRule['exciseunit'];
+                $result['excisecurrency'] = $bestRule['excisecurrency'];
+                $result['exciseratename'] = $bestRule['exciseratename'];
+            }
+        } catch (Exception $e) {
+            $this->logger->write('Debitnote Controller : deriveExciseFromRules() : Failed. Error=' . $e->getMessage(), 'r');
+        }
+
+        return $result;
+    }
+
+    private function resolveLineWeightFromPost($postKey, $fallbackWeight){
+        $postedWeight = trim((string)$this->f3->get($postKey));
+        if ($postedWeight !== '' && strtoupper($postedWeight) !== 'NULL' && is_numeric($postedWeight)) {
+            return $this->toFloat($postedWeight);
+        }
+        return $this->toFloat($fallbackWeight);
+    }
+
+    private function syncDebitnoteTotalWeight($debitnoteId, $goodDetailGroupId){
+        $debitnoteId = (int)$debitnoteId;
+        $goodDetailGroupId = (int)$goodDetailGroupId;
+        if ($debitnoteId <= 0 || $goodDetailGroupId <= 0) {
+            return;
+        }
+
+        try {
+            $rows = $this->db->exec(
+                'SELECT IFNULL(SUM(IFNULL(totalWeight, 0)), 0) AS totalWeight FROM tblgooddetails WHERE groupid = ?',
+                array($goodDetailGroupId)
+            );
+            $totalWeight = 0;
+            if (!empty($rows) && isset($rows[0]['totalWeight'])) {
+                $totalWeight = round($this->toFloat($rows[0]['totalWeight']), 4);
+            }
+
+            $this->db->exec(
+                'UPDATE tbldebitnotes SET totalWeight = ?, modifieddt = NOW(), modifiedby = ? WHERE id = ?',
+                array($totalWeight, $this->f3->get('SESSION.id'), $debitnoteId)
+            );
+        } catch (Exception $e) {
+            $this->logger->write('Debitnote Controller : syncDebitnoteTotalWeight() : Failed. Error=' . $e->getMessage(), 'r');
+        }
+    }
+
+    private function ensureBuyerFromCustomer($customerId){
+        $customerId = (int)$customerId;
+        if ($customerId <= 0) {
+            return null;
+        }
+
+        $customer = new customers($this->db);
+        $customer->getByID($customerId);
+        if ($customer->dry()) {
+            return null;
+        }
+
+        try {
+            $tin = trim((string)$customer->tin);
+            $legalName = trim((string)$customer->legalname);
+
+            if ($tin !== '') {
+                $rows = $this->db->exec(
+                    'SELECT id FROM tblbuyers WHERE TRIM(tin) = ? ORDER BY id DESC LIMIT 1',
+                    array($tin)
+                );
+                if (!empty($rows)) {
+                    return (int)$rows[0]['id'];
+                }
+            }
+
+            if ($legalName !== '') {
+                $rows = $this->db->exec(
+                    'SELECT id FROM tblbuyers WHERE TRIM(legalname) = ? ORDER BY id DESC LIMIT 1',
+                    array($legalName)
+                );
+                if (!empty($rows)) {
+                    return (int)$rows[0]['id'];
+                }
+            }
+
+            // Legacy invoices can point to tblcustomers only; create a buyer clone so debit note flows can proceed.
+            $buyerType = trim((string)$customer->type) === '' ? '1' : trim((string)$customer->type);
+            $this->db->exec(
+                'INSERT INTO tblbuyers
+                    (erpbuyerid, erpbuyercode, tin, ninbrn, PassportNum, legalname, businessname, address, mobilephone,
+                     linephone, emailaddress, placeofbusiness, type, citizineship, sector, datasource, disabled,
+                     inserteddt, insertedby, modifieddt, modifiedby, deliveryTermsCode, nonResidentFlag)
+                 VALUES
+                    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), ?, NOW(), ?, ?, ?)',
+                array(
+                    $customer->erpcustomerid,
+                    $customer->erpcustomercode,
+                    $customer->tin,
+                    $customer->ninbrn,
+                    $customer->PassportNum,
+                    $customer->legalname,
+                    $customer->businessname,
+                    $customer->address,
+                    $customer->mobilephone,
+                    $customer->linephone,
+                    $customer->emailaddress,
+                    $customer->placeofbusiness,
+                    $buyerType,
+                    $customer->citizineship,
+                    $customer->sector,
+                    trim((string)$customer->datasource) === '' ? 'MW' : $customer->datasource,
+                    $this->f3->get('SESSION.id'),
+                    $this->f3->get('SESSION.id'),
+                    $customer->deliveryTermsCode,
+                    (trim((string)$customer->nonResidentFlag) === '' ? 0 : (int)$customer->nonResidentFlag)
+                )
+            );
+
+            $inserted = $this->db->exec('SELECT LAST_INSERT_ID() AS id');
+            if (!empty($inserted) && !empty($inserted[0]['id'])) {
+                return (int)$inserted[0]['id'];
+            }
+        } catch (Exception $e) {
+            $this->logger->write('Debitnote Controller : ensureBuyerFromCustomer() : Failed. Error=' . $e->getMessage(), 'r');
+        }
+
+        return null;
+    }
+
+    private function resolveBuyerIdFromOriginalInvoice($invoice, $existingBuyerId = null){
+        if (!is_object($invoice)) {
+            return null;
+        }
+
+        $invoiceBuyerId = trim((string)$invoice->buyerid);
+        if ($invoiceBuyerId !== '' && $invoiceBuyerId !== '0') {
+            $buyer = new buyers($this->db);
+            $buyer->getByID((int)$invoiceBuyerId);
+            if (!$buyer->dry()) {
+                return (int)$buyer->id;
+            }
+
+            $mappedBuyerId = $this->ensureBuyerFromCustomer((int)$invoiceBuyerId);
+            if ($mappedBuyerId !== null) {
+                return $mappedBuyerId;
+            }
+        }
+
+        // Some legacy ERP invoice rows keep customer codes on invoice ids instead of buyerid.
+        $erpCandidate = trim((string)$invoice->erpinvoiceid);
+        if ($erpCandidate === '') {
+            $erpCandidate = trim((string)$invoice->erpinvoiceno);
+        }
+
+        if ($erpCandidate !== '') {
+            $erpCandidateTrimmed = trim((string)$erpCandidate);
+            $erpCandidateUpper = strtoupper($erpCandidateTrimmed);
+            $erpCandidateNoPrefix = preg_replace('/^[A-Za-z]+/', '', $erpCandidateTrimmed);
+
+            $buyerRows = $this->db->exec(
+                'SELECT id FROM tblbuyers
+                 WHERE TRIM(erpbuyercode) = ? OR TRIM(erpbuyercode) = ? OR TRIM(erpbuyercode) = ? OR CAST(erpbuyerid AS CHAR) = ?
+                 ORDER BY id DESC LIMIT 1',
+                array($erpCandidateTrimmed, $erpCandidateUpper, $erpCandidateNoPrefix, $erpCandidateNoPrefix)
+            );
+            if (!empty($buyerRows)) {
+                return (int)$buyerRows[0]['id'];
+            }
+
+            $customerRows = $this->db->exec(
+                'SELECT id FROM tblcustomers
+                 WHERE TRIM(erpcustomerid) = ? OR TRIM(erpcustomerid) = ? OR TRIM(erpcustomerid) = ?
+                    OR TRIM(erpcustomercode) = ? OR TRIM(erpcustomercode) = ? OR TRIM(erpcustomercode) = ?
+                 ORDER BY id DESC LIMIT 1',
+                array($erpCandidateTrimmed, $erpCandidateUpper, $erpCandidateNoPrefix, $erpCandidateTrimmed, $erpCandidateUpper, $erpCandidateNoPrefix)
+            );
+
+            if (!empty($customerRows)) {
+                $mappedBuyerId = $this->ensureBuyerFromCustomer((int)$customerRows[0]['id']);
+                if ($mappedBuyerId !== null) {
+                    return $mappedBuyerId;
+                }
+            }
+        }
+
+        // Never clear an already selected buyer when source invoice has no buyer mapping.
+        $existingBuyerId = trim((string)$existingBuyerId);
+        if ($existingBuyerId !== '' && $existingBuyerId !== '0') {
+            return (int)$existingBuyerId;
+        }
+
+        return null;
+    }
     
     /**
      *	@name index
@@ -295,6 +583,14 @@ Class DebitnoteController extends MainController{
             
             $this->f3->set('currenttab', 'tab_general');//set the GENERAL tab as ACTIVE
             $this->f3->set('currenttabpane', 'tab_1');
+
+            // Surface one-time warning messages after redirects in create flow.
+            $flashAlert = trim((string)$this->f3->get('SESSION.systemalert'));
+            if ($flashAlert !== '') {
+                self::$systemalert = $flashAlert;
+                $this->f3->clear('SESSION.systemalert');
+            }
+            $this->f3->set('systemalert', self::$systemalert);
             
             
             $debitnote = array(
@@ -420,7 +716,12 @@ Class DebitnoteController extends MainController{
                         $this->f3->set('POST.oriinvoiceno', $invoice->einvoicenumber);
                         $this->f3->set('POST.currency', $invoice->currency);
                         $this->f3->set('POST.origrossamount', $invoice->grossamount);
-                        $this->f3->set('POST.buyerid', $invoice->buyerid);
+                        // Buyer must be inherited from the original invoice (with legacy customer fallback) so Goods tab stays accessible.
+                        $resolvedBuyerId = $this->resolveBuyerIdFromOriginalInvoice($invoice, $debitnote->buyerid);
+                        $this->f3->set('POST.buyerid', $resolvedBuyerId);
+                        if ($resolvedBuyerId === null) {
+                            $this->logger->write('Debitnote Controller : edit() : Unable to resolve buyer from original invoice id ' . $invoice->einvoiceid . ' (invoice row id ' . $invoice->id . ')', 'r');
+                        }
                         $this->f3->set('POST.invoiceindustrycode', $invoice->invoiceindustrycode);
                         $this->f3->set('POST.deliveryTermsCode', $invoice->deliveryTermsCode);
                         
@@ -519,7 +820,7 @@ Class DebitnoteController extends MainController{
                                     try{
                                         
                                         $temp = $this->db->exec(array('SELECT id, groupid, item, itemcode, qty, unitofmeasure, unitprice, total, taxrate, tax, ifnull(discounttotal, NULL) discounttotal, ifnull(discounttaxrate, NULL) discounttaxrate, ifnull(ordernumber, NULL) ordernumber, discountflag, deemedflag, exciseflag, ifnull(categoryid, NULL) categoryid, categoryname, goodscategoryid, goodscategoryname
-                                                                        , exciserate, taxid, discountpercentage, ifnull(exciserule, NULL) exciserule, ifnull(excisetax, NULL) excisetax, ifnull(pack, NULL) pack, ifnull(stick, NULL) stick, ifnull(exciseunit, NULL) exciseunit, excisecurrency, exciseratename, taxcategory, displayCategoryCode, unitofmeasurename, disabled, NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ' FROM tblgooddetails WHERE groupid = ' . $invoice->gooddetailgroupid));
+                                                                        , exciserate, taxid, discountpercentage, ifnull(exciserule, NULL) exciserule, ifnull(excisetax, NULL) excisetax, ifnull(pack, NULL) pack, ifnull(stick, NULL) stick, ifnull(exciseunit, NULL) exciseunit, excisecurrency, exciseratename, taxcategory, displayCategoryCode, unitofmeasurename, ifnull(totalWeight, NULL) totalWeight, disabled, NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ' FROM tblgooddetails WHERE groupid = ' . $invoice->gooddetailgroupid));
                                         
                                         $k = 0;
                                         
@@ -529,9 +830,9 @@ Class DebitnoteController extends MainController{
                                             
                                             try{
                                                 $this->db->exec(array('INSERT INTO tblgooddetails (groupid, item, itemcode, qty, unitofmeasure, unitprice, total, taxrate, tax, discounttotal, discounttaxrate, ordernumber, discountflag, deemedflag, exciseflag, categoryid, categoryname, goodscategoryid, goodscategoryname
-                                                                    , exciserate, taxid, discountpercentage, exciserule, excisetax, pack, stick, exciseunit, excisecurrency, exciseratename, taxcategory, displayCategoryCode, unitofmeasurename, disabled, inserteddt, insertedby, modifieddt, modifiedby)
+                                                                    , exciserate, taxid, discountpercentage, exciserule, excisetax, pack, stick, exciseunit, excisecurrency, exciseratename, taxcategory, displayCategoryCode, unitofmeasurename, totalWeight, disabled, inserteddt, insertedby, modifieddt, modifiedby)
                                                                     VALUES( '. $gooddetailgroupid . ', "' . $obj['item'] . '", "' . $obj['itemcode'] . '", ' . $obj['qty'] . ', "' . $obj['unitofmeasure'] . '", ' . $obj['unitprice'] . ', ' . $obj['total'] . ', ' . $obj['taxrate'] . ', ' . $obj['tax'] . ', ' . $obj['discounttotal'] . ', ' . $obj['discounttaxrate'] . ', ' . (empty($obj['ordernumber'])? strval($k) : $obj['ordernumber']) . ', ' . $obj['discountflag'] . ', ' . $obj['deemedflag'] . ', ' . $obj['exciseflag'] . ', ' . (empty($obj['categoryid'])? 'NULL' : $obj['categoryid']) . ', "' . $obj['categoryname'] . '", ' . $obj['goodscategoryid'] . ', "' . $obj['goodscategoryname'] . '", "' .
-                                                    $obj['exciserate'] . '", ' . (empty($obj['taxid'])? 'NULL' : $obj['taxid']) . ', ' . (empty($obj['discountpercentage'])? 'NULL' : $obj['discountpercentage']) . ', ' . (empty($obj['exciserule'])? 'NULL' : $obj['exciserule']) . ', ' . (empty($obj['excisetax'])? 'NULL' : $obj['excisetax']) . ', ' . (empty($obj['pack'])? 'NULL' : $obj['pack']) . ', ' . (empty($obj['stick'])? 'NULL' : $obj['stick']) . ', ' . (empty($obj['exciseunit'])? 'NULL' : $obj['exciseunit']) . ', "' . $obj['excisecurrency'] . '", "' . $obj['exciseratename'] . '", "' . $obj['taxcategory'] . '", "' . $obj['displayCategoryCode'] . '", "' . $obj['unitofmeasurename'] . '", ' . $obj['disabled'] . ', NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                                    $obj['exciserate'] . '", ' . (empty($obj['taxid'])? 'NULL' : $obj['taxid']) . ', ' . (empty($obj['discountpercentage'])? 'NULL' : $obj['discountpercentage']) . ', ' . (empty($obj['exciserule'])? 'NULL' : $obj['exciserule']) . ', ' . (empty($obj['excisetax'])? 'NULL' : $obj['excisetax']) . ', ' . (empty($obj['pack'])? 'NULL' : $obj['pack']) . ', ' . (empty($obj['stick'])? 'NULL' : $obj['stick']) . ', ' . (empty($obj['exciseunit'])? 'NULL' : $obj['exciseunit']) . ', "' . $obj['excisecurrency'] . '", "' . $obj['exciseratename'] . '", "' . $obj['taxcategory'] . '", "' . $obj['displayCategoryCode'] . '", "' . $obj['unitofmeasurename'] . '", ' . (empty($obj['totalWeight']) ? 'NULL' : $obj['totalWeight']) . ', ' . $obj['disabled'] . ', NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
                                                 
                                                 $this->logger->write($this->db->log(TRUE), 'r');
                                             } catch (Exception $e) {
@@ -691,6 +992,10 @@ Class DebitnoteController extends MainController{
                             
                             $this->f3->set('POST.unitprice', $this->f3->get('POST.editunitprice'));
                             $this->f3->set('POST.item', $product->name);
+                            $this->f3->set('POST.totalWeight', $this->resolveLineWeightFromPost('POST.editweight', $product->weight));
+                            $this->f3->set('POST.pieceQty', $this->f3->get('POST.editqty'));
+                            $this->f3->set('POST.pieceMeasureUnit', $product->piecemeasureunit);
+                            $this->f3->set('POST.deemedExemptCode', $product->deemedExemptCode);
                             $this->f3->set('POST.taxid', $this->f3->get('POST.edittaxrate'));
                             
                             //Calculate
@@ -724,6 +1029,16 @@ Class DebitnoteController extends MainController{
                             $d_tax = 0;
                             $d_net = 0;
                             
+                            $derivedExcise = $this->deriveExciseFromRules($product, $qty, $unit);
+                            $qtyValueForRebase = (float)$qty;
+                            $unitValueForRebase = (float)$unit;
+                            $exciseTaxForRebase = (float)$this->toFloat($derivedExcise['excisetax']);
+                            if ($qtyValueForRebase > 0 && $exciseTaxForRebase > 0) {
+                                $unit = $unitValueForRebase + ($exciseTaxForRebase / $qtyValueForRebase);
+                            } else {
+                                $unit = $unitValueForRebase;
+                            }
+
                             $total = ($qty * $unit);
                             $discount = ($discountpct/100) * $total;
                             
@@ -793,7 +1108,7 @@ Class DebitnoteController extends MainController{
                             
                             
                             $this->f3->set('POST.deemedflag', $this->f3->get('POST.editdeemedflag'));
-                            $this->f3->set('POST.exciseflag', $this->f3->get('POST.editexciseflag'));
+                            $this->f3->set('POST.exciseflag', $derivedExcise['exciseflag']);
                             $this->f3->set('POST.categoryid', $this->f3->get('POST.editcategoryid'));
                             $this->f3->set('POST.categoryname', $this->f3->get('POST.editcategoryname'));
                             
@@ -802,14 +1117,30 @@ Class DebitnoteController extends MainController{
                             $this->f3->set('POST.goodscategoryid', $commoditycategory->commoditycode);
                             $this->f3->set('POST.goodscategoryname', $commoditycategory->commodityname);
                             
-                            //$this->f3->set('POST.exciserate', $this->f3->get('POST.editexciserate'));
-                            //$this->f3->set('POST.exciserule', $this->f3->get('POST.editexciserule'));
-                            //$this->f3->set('POST.excisetax', $this->f3->get('POST.editexcisetax'));
-                            //$this->f3->set('POST.pack', $this->f3->get('POST.editpack'));
-                            //$this->f3->set('POST.stick', $this->f3->get('POST.editstick'));
-                            //$this->f3->set('POST.exciseunit', $this->f3->get('POST.editexciseunit'));
-                            //$this->f3->set('POST.excisecurrency', $this->f3->get('POST.editexcisecurrency'));
-                            //$this->f3->set('POST.exciseratename', $this->f3->get('POST.editexciseratename'));
+                            $this->f3->set('POST.exciserate', $derivedExcise['exciserate']);
+                            $this->f3->set('POST.exciserule', $derivedExcise['exciserule']);
+                            $this->f3->set('POST.excisetax', $derivedExcise['excisetax']);
+                            $this->f3->set('POST.pack', $derivedExcise['pack']);
+                            $this->f3->set('POST.stick', $derivedExcise['stick']);
+                            $this->f3->set('POST.exciseunit', $derivedExcise['exciseunit']);
+                            $this->f3->set('POST.excisecurrency', $derivedExcise['excisecurrency']);
+                            $this->f3->set('POST.exciseratename', $derivedExcise['exciseratename']);
+
+                            $exciseUnitSql = 'NULL';
+                            if ($derivedExcise['exciseunit'] !== null && trim((string)$derivedExcise['exciseunit']) !== '') {
+                                $exciseUnitValue = trim((string)$derivedExcise['exciseunit']);
+                                $exciseUnitSql = is_numeric($exciseUnitValue)
+                                    ? $exciseUnitValue
+                                    : '"' . addslashes($exciseUnitValue) . '"';
+                            }
+
+                            $exciseCurrencySql = 'NULL';
+                            if ($derivedExcise['excisecurrency'] !== null && trim((string)$derivedExcise['excisecurrency']) !== '') {
+                                $exciseCurrencyValue = trim((string)$derivedExcise['excisecurrency']);
+                                $exciseCurrencySql = is_numeric($exciseCurrencyValue)
+                                    ? $exciseCurrencyValue
+                                    : '"' . addslashes($exciseCurrencyValue) . '"';
+                            }
                             
                             
                             $this->f3->set('POST.modifieddt', date('Y-m-d H:i:s'));
@@ -823,7 +1154,18 @@ Class DebitnoteController extends MainController{
                                 try{
                                                                         
                                     $this->db->exec(array('INSERT INTO tbltaxdetails (groupid, goodid, taxcategory, taxcategoryCode, netamount, taxrate, taxamount, grossamount, exciseunit, excisecurrency, taxratename, taxdescription, inserteddt, insertedby, modifieddt, modifiedby)
-                                                            VALUES(' . $debitnote->taxdetailgroupid . ', ' . $goodid . ', "' . $taxcategory . '", "' . $taxcode . '", ' . ($net + $d_net) . ', ' . $rate . ', ' . ($tax + $d_tax) . ', ' . ($gross + $d_gross) . ', NULL, NULL, "' . $taxname . '", "' . $taxdescription . '", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                                            VALUES(' . $debitnote->taxdetailgroupid . ', ' . $goodid . ', "' . $taxcategory . '", "' . $taxcode . '", ' . ($net + $d_net) . ', ' . $rate . ', ' . ($tax + $d_tax) . ', ' . ($gross + $d_gross) . ', ' . $exciseUnitSql . ', ' . $exciseCurrencySql . ', "' . $taxname . '", "' . $taxdescription . '", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+
+                                    $mainNetAmount = (float) ($net + $d_net);
+                                    $exciseTaxAmount = (float) $this->toFloat($derivedExcise['excisetax']);
+                                    $exciseRateValue = $this->toFloat($derivedExcise['exciserate']);
+                                    $exciseRateSql = ($exciseRateValue === null || $exciseRateValue === '') ? 'NULL' : (float) $exciseRateValue;
+                                    $exciseRateNameSql = empty($derivedExcise['exciseratename']) ? 'NULL' : '"' . addslashes($derivedExcise['exciseratename']) . '"';
+
+                                    if ($exciseTaxAmount > 0) {
+                                        $this->db->exec(array('INSERT INTO tbltaxdetails (groupid, goodid, taxcategory, taxcategoryCode, netamount, taxrate, taxamount, grossamount, exciseunit, excisecurrency, taxratename, taxdescription, inserteddt, insertedby, modifieddt, modifiedby)
+                                                                VALUES(' . $debitnote->taxdetailgroupid . ', ' . $goodid . ', "E: Excise Duty", "05", ' . max(0, ($mainNetAmount - $exciseTaxAmount)) . ', ' . $exciseRateSql . ', ' . $exciseTaxAmount . ', ' . $mainNetAmount . ', ' . $exciseUnitSql . ', ' . $exciseCurrencySql . ', ' . $exciseRateNameSql . ', "E", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                    }
                                     
                                     $this->logger->write($this->db->log(TRUE), 'r');
                                     //insert a tax record for the discount
@@ -886,6 +1228,10 @@ Class DebitnoteController extends MainController{
                         
                         $this->f3->set('POST.unitprice', $this->f3->get('POST.addunitprice'));
                         $this->f3->set('POST.item', $product->name);
+                        $this->f3->set('POST.totalWeight', $this->resolveLineWeightFromPost('POST.addweight', $product->weight));
+                        $this->f3->set('POST.pieceQty', $this->f3->get('POST.addqty'));
+                        $this->f3->set('POST.pieceMeasureUnit', $product->piecemeasureunit);
+                        $this->f3->set('POST.deemedExemptCode', $product->deemedExemptCode);
                         $this->f3->set('POST.taxid', $this->f3->get('POST.addtaxrate'));
                         
                         //Calculate
@@ -919,6 +1265,16 @@ Class DebitnoteController extends MainController{
                         $d_tax = 0;
                         $d_net = 0;
                         
+                        $derivedExcise = $this->deriveExciseFromRules($product, $qty, $unit);
+                        $qtyValueForRebase = (float)$qty;
+                        $unitValueForRebase = (float)$unit;
+                        $exciseTaxForRebase = (float)$this->toFloat($derivedExcise['excisetax']);
+                        if ($qtyValueForRebase > 0 && $exciseTaxForRebase > 0) {
+                            $unit = $unitValueForRebase + ($exciseTaxForRebase / $qtyValueForRebase);
+                        } else {
+                            $unit = $unitValueForRebase;
+                        }
+
                         $total = ($qty * $unit);
                         $discount = ($discountpct/100) * $total;
                         
@@ -988,7 +1344,7 @@ Class DebitnoteController extends MainController{
                                                
 
                         $this->f3->set('POST.deemedflag', $this->f3->get('POST.adddeemedflag'));
-                        $this->f3->set('POST.exciseflag', $this->f3->get('POST.addexciseflag'));
+                        $this->f3->set('POST.exciseflag', $derivedExcise['exciseflag']);
                         $this->f3->set('POST.categoryid', $this->f3->get('POST.addcategoryid'));
                         $this->f3->set('POST.categoryname', $this->f3->get('POST.addcategoryname'));
                         
@@ -997,14 +1353,30 @@ Class DebitnoteController extends MainController{
                         $this->f3->set('POST.goodscategoryid', $commoditycategory->commoditycode);
                         $this->f3->set('POST.goodscategoryname', $commoditycategory->commodityname);
                         
-                        //$this->f3->set('POST.exciserate', $this->f3->get('POST.addexciserate'));
-                        //$this->f3->set('POST.exciserule', $this->f3->get('POST.addexciserule'));
-                        //$this->f3->set('POST.excisetax', $this->f3->get('POST.addexcisetax'));
-                        //$this->f3->set('POST.pack', $this->f3->get('POST.addpack'));
-                        //$this->f3->set('POST.stick', $this->f3->get('POST.addstick'));
-                        //$this->f3->set('POST.exciseunit', $this->f3->get('POST.addexciseunit'));
-                        //$this->f3->set('POST.excisecurrency', $this->f3->get('POST.addexcisecurrency'));
-                        //$this->f3->set('POST.exciseratename', $this->f3->get('POST.addexciseratename'));
+                        $this->f3->set('POST.exciserate', $derivedExcise['exciserate']);
+                        $this->f3->set('POST.exciserule', $derivedExcise['exciserule']);
+                        $this->f3->set('POST.excisetax', $derivedExcise['excisetax']);
+                        $this->f3->set('POST.pack', $derivedExcise['pack']);
+                        $this->f3->set('POST.stick', $derivedExcise['stick']);
+                        $this->f3->set('POST.exciseunit', $derivedExcise['exciseunit']);
+                        $this->f3->set('POST.excisecurrency', $derivedExcise['excisecurrency']);
+                        $this->f3->set('POST.exciseratename', $derivedExcise['exciseratename']);
+
+                        $exciseUnitSql = 'NULL';
+                        if ($derivedExcise['exciseunit'] !== null && trim((string)$derivedExcise['exciseunit']) !== '') {
+                            $exciseUnitValue = trim((string)$derivedExcise['exciseunit']);
+                            $exciseUnitSql = is_numeric($exciseUnitValue)
+                                ? $exciseUnitValue
+                                : '"' . addslashes($exciseUnitValue) . '"';
+                        }
+
+                        $exciseCurrencySql = 'NULL';
+                        if ($derivedExcise['excisecurrency'] !== null && trim((string)$derivedExcise['excisecurrency']) !== '') {
+                            $exciseCurrencyValue = trim((string)$derivedExcise['excisecurrency']);
+                            $exciseCurrencySql = is_numeric($exciseCurrencyValue)
+                                ? $exciseCurrencyValue
+                                : '"' . addslashes($exciseCurrencyValue) . '"';
+                        }
                         
                         
                         $this->f3->set('POST.inserteddt', date('Y-m-d H:i:s'));
@@ -1025,7 +1397,18 @@ Class DebitnoteController extends MainController{
                             
                             if ($this->vatRegistered == 'Y') {
                                 $this->db->exec(array('INSERT INTO tbltaxdetails (groupid, goodid, taxcategory, taxcategoryCode, netamount, taxrate, taxamount, grossamount, exciseunit, excisecurrency, taxratename, taxdescription, inserteddt, insertedby, modifieddt, modifiedby)
-                                                        VALUES(' . $debitnote->taxdetailgroupid . ', ' . $goodid . ', "' . $taxcategory . '", "' . $taxcode . '", ' . ($net + $d_net) . ', ' . $rate . ', ' . ($tax + $d_tax) . ', ' . ($gross + $d_gross) . ', NULL, NULL, "' . $taxname . '", "' . $taxdescription . '", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                                        VALUES(' . $debitnote->taxdetailgroupid . ', ' . $goodid . ', "' . $taxcategory . '", "' . $taxcode . '", ' . ($net + $d_net) . ', ' . $rate . ', ' . ($tax + $d_tax) . ', ' . ($gross + $d_gross) . ', ' . $exciseUnitSql . ', ' . $exciseCurrencySql . ', "' . $taxname . '", "' . $taxdescription . '", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+
+                                $mainNetAmount = (float) ($net + $d_net);
+                                $exciseTaxAmount = (float) $this->toFloat($derivedExcise['excisetax']);
+                                $exciseRateValue = $this->toFloat($derivedExcise['exciserate']);
+                                $exciseRateSql = ($exciseRateValue === null || $exciseRateValue === '') ? 'NULL' : (float) $exciseRateValue;
+                                $exciseRateNameSql = empty($derivedExcise['exciseratename']) ? 'NULL' : '"' . addslashes($derivedExcise['exciseratename']) . '"';
+
+                                if ($exciseTaxAmount > 0) {
+                                    $this->db->exec(array('INSERT INTO tbltaxdetails (groupid, goodid, taxcategory, taxcategoryCode, netamount, taxrate, taxamount, grossamount, exciseunit, excisecurrency, taxratename, taxdescription, inserteddt, insertedby, modifieddt, modifiedby)
+                                                            VALUES(' . $debitnote->taxdetailgroupid . ', ' . $goodid . ', "E: Excise Duty", "05", ' . max(0, ($mainNetAmount - $exciseTaxAmount)) . ', ' . $exciseRateSql . ', ' . $exciseTaxAmount . ', ' . $mainNetAmount . ', ' . $exciseUnitSql . ', ' . $exciseCurrencySql . ', ' . $exciseRateNameSql . ', "E", NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
+                                }
                                 
                                 $this->logger->write($this->db->log(TRUE), 'r');
                                 //insert a tax record for the discount
@@ -1041,6 +1424,9 @@ Class DebitnoteController extends MainController{
                         }
                     }
                     
+                    $this->syncDebitnoteTotalWeight($debitnote->id, $debitnote->gooddetailgroupid);
+                    $debitnote->getByID($id);
+
                     $this->util->createinappnotification(NULL, NULL, NULL, self::$module, self::$submodule, $operation, $event, $eventnotification, NULL, $this->f3->get('SESSION.id'), "The good details on debitnote - " . $debitnote->id . " have been edited by " . $this->f3->get('SESSION.username'));
                     
                     if ($debitnote->debitnoteno) {
@@ -1133,7 +1519,16 @@ Class DebitnoteController extends MainController{
                 $this->f3->set('POST.oriinvoiceno', $invoice->einvoicenumber);
                 $this->f3->set('POST.currency', $invoice->currency);
                 $this->f3->set('POST.origrossamount', $invoice->grossamount);
-                $this->f3->set('POST.buyerid', $invoice->buyerid);
+                // Buyer must be inherited from the original invoice (with legacy customer fallback) so Goods tab stays accessible.
+                $resolvedBuyerId = $this->resolveBuyerIdFromOriginalInvoice($invoice);
+                $this->f3->set('POST.buyerid', $resolvedBuyerId);
+                if ($resolvedBuyerId === null) {
+                    self::$systemalert = 'Buyer could not be inherited from the selected original invoice. Update buyer information on the source invoice, then try again.';
+                    $this->f3->set('SESSION.systemalert', self::$systemalert);
+                    $this->logger->write('Debitnote Controller : edit() : Create blocked because buyer could not be resolved for original invoice id ' . $invoice->einvoiceid . ' (invoice row id ' . $invoice->id . ')', 'r');
+                    $this->f3->reroute('/createdebitnote');
+                    return;
+                }
                 $this->f3->set('POST.invoiceindustrycode', $invoice->invoiceindustrycode);
                 $this->f3->set('POST.reasoncode', $this->f3->get('POST.reasoncode'));
                 $this->f3->set('POST.reason', $this->f3->get('POST.reason'));
@@ -1629,6 +2024,36 @@ Class DebitnoteController extends MainController{
             }
         }
 
+        die(json_encode($data));
+    }
+
+    function previewdebitnoteexcise(){
+        $permission = 'VIEWDEBITNOTES';
+        $data = array('ok' => false);
+
+        if (!$this->userpermissions[$permission]) {
+            $data['message'] = 'Forbidden';
+            die(json_encode($data));
+        }
+
+        $itemCode = trim((string)$this->f3->get('POST.itemcode'));
+        $qty = $this->toFloat($this->f3->get('POST.qty'));
+        $unitPrice = $this->toFloat($this->f3->get('POST.unitprice'));
+
+        if ($itemCode === '') {
+            $data['message'] = 'Missing item code';
+            die(json_encode($data));
+        }
+
+        $product = new products($this->db);
+        $product->getByCode($itemCode);
+        if ($product->dry()) {
+            $data['message'] = 'Product not found';
+            die(json_encode($data));
+        }
+
+        $derivedExcise = $this->deriveExciseFromRules($product, $qty, $unitPrice);
+        $data = array_merge(array('ok' => true), $derivedExcise);
         die(json_encode($data));
     }
     
