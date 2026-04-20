@@ -4,7 +4,7 @@
 		<!-- Select2 -->
         <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>		
 		<!-- product JS -->
-		<script src="{{@path . 'js/product.js'}}"></script>
+		<script src="{{@path . 'js/product.js?v=20260420-3'}}"></script>
 		<script>
 			var currenttab = $('#currenttab').text();
 			//console.log(currenttab);
@@ -39,6 +39,10 @@
 			
 			var commoditycategoryName = $('#commoditycategoryName').text();
 			//console.log('commoditycategoryName = ' + commoditycategoryName);
+
+			var exciseDutyCode_2 = $('#exciseDutyCode').text();
+			var exciseDutyCodeLegacy_2 = $('#exciseDutyCodeLegacy').text();
+			var exciseDutyName = $('#exciseDutyName').text();
 			
 			
 			var piecemeasureunit_2 = $('#piecemeasureunit').text();
@@ -67,6 +71,12 @@
 			hsName = $.trim(hsName || '');
 			commoditycategorycode_2 = normalizeCodeValue(commoditycategorycode_2);
 			commoditycategoryName = $.trim(commoditycategoryName || '');
+			exciseDutyCode_2 = normalizeCodeValue(exciseDutyCode_2);
+			exciseDutyCodeLegacy_2 = normalizeCodeValue(exciseDutyCodeLegacy_2);
+			exciseDutyName = $.trim(exciseDutyName || '');
+			if (exciseDutyCode_2 === '' && exciseDutyCodeLegacy_2 !== '') {
+				exciseDutyCode_2 = exciseDutyCodeLegacy_2;
+			}
 			piecemeasureunit_2 = normalizeCodeValue(piecemeasureunit_2);
 			piecemeasureunitName = $.trim(piecemeasureunitName || '');
 			customsmeasureunit_2 = normalizeCodeValue(customsmeasureunit_2);
@@ -113,6 +123,12 @@
 					$('#productcommoditycategory').empty();
 	        		$('#productcommoditycategory').append($("<option/>").val(commoditycategorycode_2).text(commoditycategoryName !== '' ? commoditycategoryName : commoditycategorycode_2));
         			$('#productcommoditycategory').val(commoditycategorycode_2).trigger('change');
+				}
+
+				if (exciseDutyCode_2 !== undefined && exciseDutyCode_2.trim() !== '') {
+					$('#productexcisedutylist').empty();
+	        		$('#productexcisedutylist').append($("<option/>").val(exciseDutyCode_2).text(exciseDutyName !== '' ? exciseDutyName : exciseDutyCode_2));
+	        		$('#productexcisedutylist').val(exciseDutyCode_2).trigger('change');
 				}
 				
 				// 2026-04-11 18:55:55 +03:00 - Guard Select2 prefill against empty/NULL-string code values and use code fallback for display label.

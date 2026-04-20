@@ -1512,6 +1512,63 @@ Class ProductController extends MainController{
         
         die(json_encode($data));
     }
+
+    /**
+     *	@name searchexcisedutycodes
+     *  @desc List Excise Duty Codes
+     *	@return JSON-encoded object
+     *	@param NULL
+     **/
+    function searchexcisedutycodes(){
+        $operation = NULL; //tblevents
+        $permission = 'VIEWPRODUCTS'; //tblpermissions
+        $event = NULL; //tblevents
+        $eventnotification = NULL; //tbleventnotifications
+
+        $data = array();
+
+        $this->logger->write("Product Controller : searchexcisedutycodes() : Checking permissions", 'r');
+        if ($this->userpermissions[$permission]) {
+            $this->logger->write("Product Controller : searchexcisedutycodes() : Processing search of excise duty codes started", 'r');
+            $name = trim($this->f3->get('POST.name'));
+
+            if ($name !== '' || !empty($name)) {
+
+                $subquery = " '%" . $name . "%' ";
+
+                $sql = 'SELECT  e.id "Id",
+                        e.code "Code",
+                        e.goodService "Name",
+                        e.disabled "Disabled"
+                    FROM tblexcisedutylist e
+                    WHERE e.goodService LIKE ' . $subquery . '
+                       OR e.code LIKE ' . $subquery . '
+                    ORDER BY e.id DESC';
+            } else {
+                $sql = 'SELECT  e.id "Id",
+                        e.code "Code",
+                        e.goodService "Name",
+                        e.disabled "Disabled"
+                    FROM tblexcisedutylist e
+                    ORDER BY e.id DESC';
+            }
+
+
+            try {
+                $dtls = $this->db->exec($sql);
+
+                foreach ($dtls as $obj) {
+                    $data[] = $obj;
+                }
+            } catch (Exception $e) {
+                $this->logger->write("Product Controller : searchexcisedutycodes() : The operation to search excise duty codes was not successful. The error message is " . $e->getMessage(), 'r');
+            }
+        } else {
+            $this->logger->write("Product Controller : searchexcisedutycodes() : The user is not allowed to perform this function", 'r');
+        }
+
+        die(json_encode($data));
+    }
     
     /**
      *	@name uploadproduct

@@ -18,6 +18,9 @@
 					<span id="currencyName" style="color: transparent">{{@product.currencyName}}</span>
 					<span id="commoditycategorycode" style="color: transparent">{{@product.commoditycategorycode}}</span>
 					<span id="commoditycategoryName" style="color: transparent">{{@product.commoditycategoryName}}</span>
+					<span id="exciseDutyCode" style="color: transparent">{{@product.exciseDutyCode}}</span>
+					<span id="exciseDutyCodeLegacy" style="color: transparent">{{@product.excisedutylist}}</span>
+					<span id="exciseDutyName" style="color: transparent">{{@product.exciseDutyName}}</span>
 					<span id="piecemeasureunit" style="color: transparent">{{@product.piecemeasureunit}}</span>	
 					<span id="piecemeasureunitName" style="color: transparent">{{@product.piecemeasureunitName}}</span>		
 					<span id="customsmeasureunit" style="color: transparent">{{@product.customsmeasureunit}}</span>	
@@ -168,14 +171,8 @@
 																	<div class="form-group">
 																	<label for="productexcisedutylist" class="col-xs-2 control-label">Excise Duty Code</label>
 																	<div class="col-xs-6">
-																		<select class="form-control select2" style="width: 100%;" name="productexcisedutylist" id="productexcisedutylist">
-																			<option value="" selected disabled hidden>Select Excise Duty Code</option>
-																			<repeat group="{{@excisedutylists}}" value="{{@excisedutylist}}">																		
-																				<check if="{{@excisedutylist.code == @product.exciseDutyCode || @excisedutylist.code == @product.excisedutylist}}">
-																					<true><check if="{{@excisedutylist.disabled == 1}}"><true><option value="{{@excisedutylist.code}}" selected disabled>{{@excisedutylist.code}} - {{@excisedutylist.goodService}}</option></true><false><option value="{{@excisedutylist.code}}" selected>{{@excisedutylist.code}} - {{@excisedutylist.goodService}}</option></false></check></true>
-																					<false><check if="{{@excisedutylist.disabled == 1}}"><true><option value="{{@excisedutylist.code}}" disabled>{{@excisedutylist.code}} - {{@excisedutylist.goodService}}</option></true><false><option value="{{@excisedutylist.code}}">{{@excisedutylist.code}} - {{@excisedutylist.goodService}}</option></false></check></false>
-																				</check>
-																			</repeat>
+																		<select class="form-control select2" style="width: 100%;" name="productexcisedutylist" id="productexcisedutylist" data-placeholder="Search Excise Duty Codes...">
+																			<option value=""></option>
 																		</select>
 																	</div>															
 																	</div><!-- /.form-group -->

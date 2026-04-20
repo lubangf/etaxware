@@ -635,6 +635,50 @@ $(function(){
 			}
 		}
 	});			
+
+	/**
+	 * @desc populate the excise duty code search on the product screen
+	 */
+	$('#productexcisedutylist').select2({
+		placeholder : {
+			id : '',
+			text : "Search Excise Duty Codes..."
+		},
+		minimumInputLength : 2,
+		allowClear : true,
+		closeOnSelect : true,
+		multiple : false,
+		ajax : {
+			type : 'POST',
+			url : "../etaxware/searchexcisedutycodes",
+			dataType : 'json',
+			delay : 250,
+			cache : false,
+			data : function(params) {
+				return {
+					name : params.term,
+					page : params.page,
+				};
+			},
+			processResults : function(data) {
+				return {
+					results : $.map(data, function(item) {
+						return {
+							text : item.Name,
+							id : item.Code,
+							disabled: Number(item.Disabled)
+						};
+					})
+				};
+			},
+			formatNoResults : function() {
+				return "No results returned";
+			},
+			formatAjaxError : function() {
+				return "An error occured";
+			}
+		}
+	});
 	
 	/**
 	 * @desc validate a TIN
@@ -709,16 +753,36 @@ $(function(){
 	 * @desc Change some elements on the products form depending on the choice of piece units
 	 */	
 	var setPieceFieldsDisabled = function(disabled){
+		var $pieceMeasureSelection = $('#select2-productpiecemeasureunit-container').closest('.select2-selection');
+
 		if(disabled){
-	    	$('#productpiecemeasureunit').attr('disabled', 'disabled');
-	    	$('#productpieceunitprice').attr('disabled', 'disabled');
-	    	$('#productpackagescaledvalue').attr('disabled', 'disabled');
-	    	$('#productpiecescaledvalue').attr('disabled', 'disabled');
+	    	$('#productpiecemeasureunit').val('').trigger('change');
+	    	$('#productpieceunitprice').val('');
+	    	$('#productpackagescaledvalue').val('');
+	    	$('#productpiecescaledvalue').val('');
+	    	$('#productpiecemeasureunit').prop('disabled', true).trigger('change.select2');
+	    	$('#productpieceunitprice').prop('disabled', true);
+	    	$('#productpackagescaledvalue').prop('disabled', true);
+	    	$('#productpiecescaledvalue').prop('disabled', true);
+	    	$('#productpieceunitprice, #productpackagescaledvalue, #productpiecescaledvalue')
+	    		.css({'background-color': '#f5f5f5', 'border-color': '#d2d6de'})
+	    		.attr('placeholder', 'Auto-cleared while Piece Units = No')
+	    		.attr('title', 'Auto-cleared while Piece Units = No');
+	    	$pieceMeasureSelection
+	    		.css({'background-color': '#f5f5f5', 'opacity': '0.75'})
+	    		.attr('title', 'Auto-cleared while Piece Units = No');
 		} else {
-	    	$('#productpiecemeasureunit').removeAttr('disabled');
-	    	$('#productpieceunitprice').removeAttr('disabled');
-	    	$('#productpackagescaledvalue').removeAttr('disabled');
-	    	$('#productpiecescaledvalue').removeAttr('disabled');
+	    	$('#productpiecemeasureunit').prop('disabled', false).trigger('change.select2');
+	    	$('#productpieceunitprice').prop('disabled', false);
+	    	$('#productpackagescaledvalue').prop('disabled', false);
+	    	$('#productpiecescaledvalue').prop('disabled', false);
+	    	$('#productpieceunitprice, #productpackagescaledvalue, #productpiecescaledvalue')
+	    		.css({'background-color': '', 'border-color': ''})
+	    		.attr('placeholder', '')
+	    		.attr('title', '');
+	    	$pieceMeasureSelection
+	    		.css({'background-color': '', 'opacity': ''})
+	    		.attr('title', '');
 		}
 	};
 
@@ -727,34 +791,38 @@ $(function(){
 		var havePieceUnit = $.trim($('#producthavepieceunit').val() || '');
 
 		if(hasExciseTax === '101'){
-			$('#productexcisedutylist').removeAttr('disabled');
+			$('#productexcisedutylist').prop('disabled', false).trigger('change.select2');
 			if(havePieceUnit !== '101'){
-				$('#producthavepieceunit').val('101').trigger('change.select2');
+				$('#producthavepieceunit').val('101').trigger('change');
 			}
-			$('#producthavepieceunit').attr('disabled', 'disabled');
+			$('#producthavepieceunit').prop('disabled', true);
 			setPieceFieldsDisabled(false);
-			$('#productpiecemeasureunit').attr('required', 'required');
-			$('#productpieceunitprice').attr('required', 'required');
-			$('#productpackagescaledvalue').attr('required', 'required');
-			$('#productpiecescaledvalue').attr('required', 'required');
+			$('#productpiecemeasureunit').prop('required', true);
+			$('#productpieceunitprice').prop('required', true);
+			$('#productpackagescaledvalue').prop('required', true);
+			$('#productpiecescaledvalue').prop('required', true);
 		} else {
-			$('#producthavepieceunit').removeAttr('disabled');
-			$('#productpiecemeasureunit').removeAttr('required');
-			$('#productpieceunitprice').removeAttr('required');
-			$('#productpackagescaledvalue').removeAttr('required');
-			$('#productpiecescaledvalue').removeAttr('required');
+			$('#producthavepieceunit').prop('disabled', false);
+			$('#productpiecemeasureunit').prop('required', false);
+			$('#productpieceunitprice').prop('required', false);
+			$('#productpackagescaledvalue').prop('required', false);
+			$('#productpiecescaledvalue').prop('required', false);
 
 			if(hasExciseTax === '102'){
+				if(havePieceUnit !== '102'){
+					$('#producthavepieceunit').val('102').trigger('change');
+				}
+				$('#producthavepieceunit').prop('disabled', true);
 				$('#productexcisedutylist').val('').change();
-				$('#productexcisedutylist').attr('disabled', 'disabled');
-			} else {
-				$('#productexcisedutylist').removeAttr('disabled');
-			}
-
-			if(havePieceUnit === '102'){
+				$('#productexcisedutylist').prop('disabled', true).trigger('change.select2');
 				setPieceFieldsDisabled(true);
 			} else {
-				setPieceFieldsDisabled(false);
+				$('#productexcisedutylist').prop('disabled', false).trigger('change.select2');
+				if(havePieceUnit === '102'){
+					setPieceFieldsDisabled(true);
+				} else {
+					setPieceFieldsDisabled(false);
+				}
 			}
 		}
 	};
