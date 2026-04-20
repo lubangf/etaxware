@@ -168,7 +168,7 @@
 																	<div class="form-group">
 																	<label for="productexcisedutylist" class="col-xs-2 control-label">Excise Duty Code</label>
 																	<div class="col-xs-6">
-																		<select class="form-control" name="productexcisedutylist" id="productexcisedutylist">
+																		<select class="form-control select2" style="width: 100%;" name="productexcisedutylist" id="productexcisedutylist">
 																			<option value="" selected disabled hidden>Select Excise Duty Code</option>
 																			<repeat group="{{@excisedutylists}}" value="{{@excisedutylist}}">																		
 																				<check if="{{@excisedutylist.code == @product.exciseDutyCode || @excisedutylist.code == @product.excisedutylist}}">

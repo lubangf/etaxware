@@ -79,6 +79,37 @@ net stop Apache2.4
 net start Apache2.4
 ```
 
+## Production Git Sync (Overwrite Always)
+
+If production must always match `origin/main` and discard all local
+changes, use this flow instead of `git pull`:
+
+```bash
+git fetch origin main
+git reset --hard origin/main
+git clean -fd
+```
+
+What this does:
+
+- `git reset --hard origin/main` discards all local tracked-file changes.
+- `git clean -fd` removes untracked files and directories.
+- Final state matches the remote branch exactly.
+
+Optional alias:
+
+```bash
+git config --global alias.force-sync "!git fetch origin main && git reset --hard origin/main && git clean -fd"
+```
+
+Then run:
+
+```bash
+git force-sync
+```
+
+Warning: This workflow is destructive by design.
+
 ## Post-Deploy Verification
 
 Open home and login routes:
