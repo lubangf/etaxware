@@ -1,6 +1,7 @@
 # eTaxWare Production Hotfix - 2026-04-20
 
 ## Summary
+
 This hotfix addresses production HTTP 500 errors observed after Git deploys.
 
 Reported symptoms:
@@ -9,6 +10,7 @@ Reported symptoms:
 - Unable to open (`vendor/bcosca/fatfree-core/base.php:3305`)
 
 ## Root Cause
+
 The layout template used raw F3 include tags for variables that can be
 empty in some request and error paths:
 
@@ -26,6 +28,7 @@ on error handling settings:
 - Creation of dynamic property is deprecated
 
 ## Code Changes
+
 Guarded optional includes in layout template:
 
 - `public/Layout.htm`
@@ -43,6 +46,7 @@ Declared `emailUrl` property to avoid dynamic property deprecation:
 - `util/v3/Utilities.php`
 
 ## Deployment Commands (Production)
+
 Run from the project root.
 
 Fetch and update branch:
@@ -76,6 +80,7 @@ net start Apache2.4
 ```
 
 ## Post-Deploy Verification
+
 Open home and login routes:
 
 - `/etaxware/`
@@ -93,6 +98,7 @@ Functional smoke test:
 - Open one module page (invoice or product)
 
 ## Rollback
+
 If required:
 
 ```bash
@@ -102,7 +108,8 @@ git checkout PREVIOUS_KNOWN_GOOD_COMMIT
 Then restart Apache.
 
 ## Notes
+
 - Keep existing environment and config differences untouched during this
-	hotfix.
+  hotfix.
 - If new PHP 8.2 notices appear, treat them as separate hardening tasks
-	and patch incrementally.
+  and patch incrementally.
