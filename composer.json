@@ -1,5 +1,6 @@
 {
 	"require" : {
+		"php" : ">=7.4 <8.3",
 		"phpoffice/phpspreadsheet" : "^1.6",
 		"bcosca/fatfree-core" : "^3.6",
 		"ikkez/f3-fal" : "^0.7.2",
