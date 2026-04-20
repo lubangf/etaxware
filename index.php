@@ -14,6 +14,9 @@ $f3 = require ("vendor/bcosca/fatfree-core/base.php");
 // load configurations
 $f3->config("config/config.ini");
 
+// Global template value used by footer text in login/error views
+$f3->set('currentyear', date('Y'));
+
 // Resolve DB password securely with this precedence:
 // 1) Environment variable (dbpwd_env)
 // 2) Base64 value in config (dbpwd_b64)
