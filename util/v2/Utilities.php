@@ -20,6 +20,7 @@ Class Utilities{
     protected $username;
     protected $userid;
     protected $branch;
+    protected $emailUrl;
     
     protected $vatRegistered;
     
@@ -189,7 +190,7 @@ Class Utilities{
      * @param $entitytype int
      * @param $type int
      */
-    function getnotifications($id=NULL, $userid=NULL, $status, $entitytype, $type){
+    function getnotifications($id=NULL, $userid=NULL, $status=NULL, $entitytype=NULL, $type=NULL){
         //$this->logger->write("Utilities : getnotifications() : Processing notifications", 'r');
         
         //$this->logger->write("Utilities : getnotifications() : id = " . $id, 'r');
@@ -233,7 +234,7 @@ Class Utilities{
      *	@return bool status
      *	@param NULL
      **/
-    function createinappnotification($notificationtype=NULL, $notificationsubtype=NULL, $entitytype=NULL, $module=NULL, $submodule=NULL, $operation=NULL, $event=NULL, $eventnotification=NULL, $status=NULL, $recipient, $notification){
+    function createinappnotification($notificationtype=NULL, $notificationsubtype=NULL, $entitytype=NULL, $module=NULL, $submodule=NULL, $operation=NULL, $event=NULL, $eventnotification=NULL, $status=NULL, $recipient=NULL, $notification=NULL){
         //$this->logger->write("Utilities : createinappnotification() : Creating of in-app notification started", 'r');
         
         if (!$notificationtype) {

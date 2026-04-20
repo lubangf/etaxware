@@ -39,7 +39,7 @@
 	    <!-- Bootstrap Dual Listbox -->
 	    <link rel="stylesheet" href="{{@path . 'plugins/bootstrap-duallistbox/bootstrap-duallistbox.css'}}">
 	    <!-- Includes headers specific to a page -->
-	    <include href="{{@pageheader}}"></include>	
+	    <check if="{{@pageheader && trim(@pageheader) != ''}}"><true><include href="{{@pageheader}}"></include></true></check>	
 		
 		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -171,7 +171,7 @@
 			
 			<!-- Content Wrapper. It contains page content -->
 			<div class="content-wrapper">
-				<include href="{{@pagecontent}}"></include> <!-- Includes content specific to a page -->
+				<check if="{{@pagecontent && trim(@pagecontent) != ''}}"><true><include href="{{@pagecontent}}"></include></true></check> <!-- Includes content specific to a page -->
 				<section class="content"><!-- Container for modals -->
 					<div class="modal fade" id="modal-logout"><!-- Logout Modal -->
 						<div class="modal-dialog">
@@ -372,6 +372,6 @@
 				window.location = "{{@BASE}}";
 			});
 		</script>
-		<include href="{{@pagescripts}}"></include>
+		<check if="{{@pagescripts && trim(@pagescripts) != ''}}"><true><include href="{{@pagescripts}}"></include></true></check>
 	</body>
 </html>
