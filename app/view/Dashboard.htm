@@ -9,23 +9,24 @@
 				</section><!-- ./content-header -->
 				
 				<section class="content"><!-- Main content -->
+					<span id="dashboard-chart-data" style="display:none;">{{@dashboardChartData}}</span>
 					<div class="row">
 						<div class="col-lg-3 col-xs-6">
 							<div class="small-box bg-aqua">
 								<div class="inner">
-									<h3>{{@kpis.0.value}}</h3>
-									<p>Running Matchruns</p>
+									<h3>{{@kpis.invoices}}</h3>
+									<p>Total Invoices</p>
 								</div><!-- ./inner -->
 								<div class="icon">
-									<i class="icon ion-ios-timer"></i>
+									<i class="icon ion-document-text"></i>
 								</div><!-- ./icon -->
 							</div><!-- ./small-box -->
 						</div><!-- ./col-lg-3 -->
 						<div class="col-lg-3 col-xs-6">
 							<div class="small-box bg-green">
 								<div class="inner">
-									<h3>{{@kpis.1.value}}</h3>
-									<p>Successful Matchruns</p>
+									<h3>{{@kpis.invoicesSynced}}</h3>
+									<p>Synced Invoices</p>
 								</div><!-- ./inner -->
 								<div class="icon">
 									<i class="icon ion-checkmark-circled"></i>
@@ -35,24 +36,108 @@
 						<div class="col-lg-3 col-xs-6">
 							<div class="small-box bg-yellow">
 								<div class="inner">
-									<h3>{{@kpis.2.value}}</h3>
-									<p>Queued Matchruns</p>
+									<h3>{{@kpis.creditnotes}}</h3>
+									<p>Credit Notes</p>
 								</div><!-- ./inner -->
 								<div class="icon">
-									<i class="icon ion-alert-circled"></i>
+									<i class="icon ion-arrow-return-left"></i>
 								</div><!-- ./icon -->
 							</div><!-- ./small-box -->
 						</div><!-- ./col-lg-3 -->
 						<div class="col-lg-3 col-xs-6">
 							<div class="small-box bg-red">
 								<div class="inner">
-									<h3>{{@kpis.3.value}}</h3>
-									<p>Failed Matchruns</p>
+									<h3>{{@kpis.debitnotes}}</h3>
+									<p>Debit Notes</p>
 								</div><!-- ./inner -->
 								<div class="icon">
-									<i class="icon ion-close-circled"></i>
+									<i class="icon ion-arrow-return-right"></i>
 								</div><!-- ./icon -->
 							</div><!-- ./small-box -->
 						</div><!-- ./col-lg-3 -->
 					</div><!-- ./row -->
+
+					<div class="row">
+						<div class="col-lg-3 col-xs-6">
+							<div class="small-box bg-teal">
+								<div class="inner">
+									<h3>{{@kpis.products}}</h3>
+									<p>Products</p>
+								</div>
+								<div class="icon">
+									<i class="icon ion-cube"></i>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-3 col-xs-6">
+							<div class="small-box bg-navy">
+								<div class="inner">
+									<h3>{{@kpis.customers}}</h3>
+									<p>Customers</p>
+								</div>
+								<div class="icon">
+									<i class="icon ion-person-stalker"></i>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-3 col-xs-6">
+							<div class="small-box bg-purple">
+								<div class="inner">
+									<h3>{{@kpis.suppliers}}</h3>
+									<p>Suppliers</p>
+								</div>
+								<div class="icon">
+									<i class="icon ion-ios-people"></i>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-3 col-xs-6">
+							<div class="small-box bg-maroon">
+								<div class="inner">
+									<h3>{{@kpis.events24h}}</h3>
+									<p>Events (Last 24h)</p>
+								</div>
+								<div class="icon">
+									<i class="icon ion-ios-pulse-strong"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-8">
+							<div class="box box-primary">
+								<div class="box-header with-border">
+									<h3 class="box-title"><i class="fa fa-line-chart"></i> Document Trend (Last 6 Months)</h3>
+								</div>
+								<div class="box-body">
+									<canvas id="dashboard-trend-chart" height="120"></canvas>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-md-4">
+							<div class="box box-info">
+								<div class="box-header with-border">
+									<h3 class="box-title"><i class="fa fa-pie-chart"></i> Document Mix</h3>
+								</div>
+								<div class="box-body">
+									<canvas id="dashboard-mix-chart" height="220"></canvas>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12">
+							<div class="box box-success">
+								<div class="box-header with-border">
+									<h3 class="box-title"><i class="fa fa-tasks"></i> Sync Coverage by Document Type</h3>
+								</div>
+								<div class="box-body">
+									<canvas id="dashboard-sync-chart" height="90"></canvas>
+								</div>
+							</div>
+						</div>
+					</div>
 				</section><!-- ./content -->
