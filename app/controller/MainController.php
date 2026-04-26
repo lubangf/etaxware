@@ -218,7 +218,8 @@ class MainController{
 
         $this->db = $db;
         
-        $logger = new Log('app.log');
+        // 2026-04-26 11:00:00 +03:00 - Split verbose controller traces from operational app logs.
+        $logger = new SmartLogger('app.log', 'app-trace.log');
         $this->logger = $logger; 
         
         $data = array();

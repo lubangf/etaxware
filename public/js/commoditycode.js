@@ -116,21 +116,46 @@
 	 * @desc Fetch commoditycode rates asyncronously
 	 */
 	window.fetchcommoditycode = function(){
+		var token = $.trim($('#fetch-commoditycode-csrf-token').text());
+		var showSystemAlert = function(message) {
+			window.showSystemAlertByMessage(message);
+		};
+		var resetFetchButtons = function() {
+			$('#fetch-commoditycode-1').removeClass('disabled');
+			$('#fetch-commoditycode-2').removeClass('disabled');
+			$('#fetch-commoditycode-1 span').text('Fetch EFRIS Codes');
+			$('#fetch-commoditycode-2 span').text('Fetch EFRIS Codes');
+		};
+
 		$.ajax({
 			url: '../etaxware/fetchcommoditycode',
 			data: {
-				//insert parameters here
+				'fetchcommoditycode_csrf_token': token
 			},
 			method: 'POST',
+			cache: false,
 			success: function(data){
+				resetFetchButtons();
 				console.log(data);
-				//var rows = { "aaData": [] };
-				//var d = JSON.parse(data);
-				
-				//$('#fetch-commoditycode-2 span').text('Processing...');			
+				var response = data;
+				if (typeof data === 'string') {
+					try {
+						response = JSON.parse(data);
+					} catch (e) {
+						response = { success: false, message: 'Invalid response payload' };
+					}
+				}
+
+				if (!response.success) {
+					showSystemAlert(response.message || 'The operation to sync commodity codes was not successful.');
+				} else {
+					showSystemAlert((response.message || 'Commodity sync completed') + ' (Synced: ' + (response.syncedCount || 0) + ')');
+				}
 			},
 			error: function(data) {
+				resetFetchButtons();
 				console.log(data);
+				showSystemAlert('The operation to sync commodity codes failed. Please try again.');
 			}
 		});//.ajax
 	};//fetchcommoditycoderates			

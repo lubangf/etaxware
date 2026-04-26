@@ -107,6 +107,9 @@ Class AdministrationController extends MainController{
 	        if (is_string($alert) && $alert !== 'AdministrationController->index'){
 	            $this->f3->set('systemalert', $alert);
 	        } 
+	        
+	        // 2026-04-26 10:40:00 +03:00 - Generate per-render CSRF token used by Administration recycle-logs POST form.
+	        $this->f3->set('recyclelogsCsrfToken', $this->generaterecyclelogscsrftoken());
 	        	        
 	        $this->f3->set('pagetitle','Administration');
 	        $this->f3->set('pagecontent','Administration.htm');
@@ -318,7 +321,7 @@ Class AdministrationController extends MainController{
 	            
 	            
 	            
-	            foreach ($this->f3->get('POST.editoverridelists') as $code) {
+	            foreach ($this->f3->get('POST.editenforcetaxexclusionlists') as $code) {
 	                try {
 	                    $this->db->exec(array('INSERT INTO tblenforcetaxexclusionlist (code, name, inserteddt, insertedby, modifieddt, modifiedby)
                                                     VALUES("' . $code . '", NULL, NOW(), ' . $this->f3->get('SESSION.id') . ', NOW(), ' . $this->f3->get('SESSION.id') . ')'));
@@ -351,6 +354,362 @@ Class AdministrationController extends MainController{
 	        $this->logger->write("Administration Controller : editenforcetaxexclusionlist() : The user is not allowed to perform this function", 'r');
 	        $this->f3->reroute('/forbidden');
 	    }
+	}
+
+	/**
+	 *	@name listproductoverridelist
+	 *  @desc List product override list
+	 *	@return JSON-encoded object
+	 *	@param NULL
+	 **/
+	function listproductoverridelist(){
+	    $permission = 'EDITPRODUCTOVERRIDELIST'; //tblpermissions
+	    $data = array();
+	    
+	    $this->logger->write("Administration Controller : listproductoverridelist() : Checking permissions", 'r');
+	    if ($this->userpermissions[$permission]) {
+	        $sql = 'SELECT t.id "ID",
+	                    t.code "Code",
+	                    COALESCE(NULLIF(t.name, ""), p.name) "Name",
+	                    t.modifieddt "Modified Date"
+	                FROM tblproductoverridelist t
+	                LEFT JOIN tblproductdetails p ON TRIM(p.code) = TRIM(t.code)
+	                ORDER BY t.id DESC';
+	        
+	        try {
+	            $dtls = $this->db->exec($sql);
+	            foreach ($dtls as $obj) {
+	                $data[] = $obj;
+	            }
+	        } catch (Exception $e) {
+	            $this->logger->write("Administration Controller : listproductoverridelist() : The operation to list product overrides was not successful. The error message is " . $e->getMessage(), 'r');
+	        }
+	    } else {
+	        $this->logger->write("Administration Controller : listproductoverridelist() : The user is not allowed to perform this function", 'r');
+	    }
+	    
+	    die(json_encode($data));
+	}
+	
+	/**
+	 *	@name listenforcetaxexclusionlist
+	 *  @desc List enforce tax exclusion list
+	 *	@return JSON-encoded object
+	 *	@param NULL
+	 **/
+	function listenforcetaxexclusionlist(){
+	    $permission = 'EDITPRODUCTOVERRIDELIST'; //tblpermissions
+	    $data = array();
+	    
+	    $this->logger->write("Administration Controller : listenforcetaxexclusionlist() : Checking permissions", 'r');
+	    if ($this->userpermissions[$permission]) {
+	        $sql = 'SELECT t.id "ID",
+	                    t.code "Code",
+	                    COALESCE(NULLIF(t.name, ""), p.name) "Name",
+	                    t.modifieddt "Modified Date"
+	                FROM tblenforcetaxexclusionlist t
+	                LEFT JOIN tblproductdetails p ON TRIM(p.code) = TRIM(t.code)
+	                ORDER BY t.id DESC';
+	        
+	        try {
+	            $dtls = $this->db->exec($sql);
+	            foreach ($dtls as $obj) {
+	                $data[] = $obj;
+	            }
+	        } catch (Exception $e) {
+	            $this->logger->write("Administration Controller : listenforcetaxexclusionlist() : The operation to list enforce tax exclusions was not successful. The error message is " . $e->getMessage(), 'r');
+	        }
+	    } else {
+	        $this->logger->write("Administration Controller : listenforcetaxexclusionlist() : The user is not allowed to perform this function", 'r');
+	    }
+	    
+	    die(json_encode($data));
+	}
+
+	/**
+	 *	@name listadminsettings
+	 *  @desc List allowlisted admin settings
+	 *	@return JSON-encoded object
+	 *	@param NULL
+	 **/
+	function listadminsettings(){
+	    $permission = 'VIEWSETTINGS'; //tblpermissions
+	    $data = array();
+
+	    $this->logger->write("Administration Controller : listadminsettings() : Checking permissions", 'r');
+	    if ($this->userpermissions[$permission]) {
+	        $allowlist = $this->getadminsettingsallowlist();
+	        $codes = array_keys($allowlist);
+
+	        if (!empty($codes)) {
+	            $quotedCodes = array();
+	            foreach ($codes as $code) {
+	                $quotedCodes[] = '"' . addslashes($code) . '"';
+	            }
+
+	            $sql = 'SELECT s.id "ID",
+	                        s.groupcode "Group",
+	                        s.code "Code",
+	                        s.name "Name",
+	                        s.value "Value",
+	                        s.modifieddt "Modified Date",
+	                        u.username "Modified By"
+	                    FROM tblsettings s
+	                    LEFT JOIN tblusers u ON s.modifiedby = u.id
+	                    WHERE s.disabled = 0
+	                    AND s.sensitivityflag = 0
+	                    AND s.code IN (' . implode(', ', $quotedCodes) . ')
+	                    ORDER BY s.groupcode ASC, s.name ASC';
+
+	            try {
+	                $dtls = $this->db->exec($sql);
+	                foreach ($dtls as $obj) {
+	                    $code = trim((string)$obj['Code']);
+	                    $rule = isset($allowlist[$code]) ? $allowlist[$code] : array('type' => 'string', 'max' => 255);
+	                    $obj['Type'] = isset($rule['type']) ? $rule['type'] : 'string';
+	                    $obj['Editable'] = $this->isadminsettingeditable($code, $rule) ? 1 : 0;
+	                    $data[] = $obj;
+	                }
+	            } catch (Exception $e) {
+	                $this->logger->write("Administration Controller : listadminsettings() : The operation to list admin settings was not successful. The error message is " . $e->getMessage(), 'r');
+	            }
+	        }
+	    } else {
+	        $this->logger->write("Administration Controller : listadminsettings() : The user is not allowed to perform this function", 'r');
+	    }
+
+	    die(json_encode($data));
+	}
+
+	/**
+	 *	@name editadminsetting
+	 *  @desc Edit allowlisted admin setting
+	 *	@return JSON-encoded object
+	 *	@param NULL
+	 **/
+	function editadminsetting(){
+	    $operation = NULL; //tblevents
+	    $permission = 'VIEWSETTINGS'; //tblpermissions
+	    $event = NULL; //tblevents
+	    $eventnotification = NULL; //tbleventnotifications
+
+	    header('Content-Type: application/json');
+
+	    $this->logger->write("Administration Controller : editadminsetting() : Checking permissions", 'r');
+	    if (!$this->userpermissions[$permission]) {
+	        $this->logger->write("Administration Controller : editadminsetting() : The user is not allowed to perform this function", 'r');
+	        die(json_encode(array('success' => false, 'message' => 'You are not allowed to edit settings')));
+	    }
+
+	    $code = trim((string)$this->f3->get('POST.settingcode'));
+	    $value = (string)$this->f3->get('POST.settingvalue');
+
+	    if ($code === '') {
+	        die(json_encode(array('success' => false, 'message' => 'No setting code was specified')));
+	    }
+
+	    $allowlist = $this->getadminsettingsallowlist();
+	    if (!isset($allowlist[$code])) {
+	        $this->logger->write("Administration Controller : editadminsetting() : The setting code " . $code . " is not allowlisted", 'r');
+	        die(json_encode(array('success' => false, 'message' => 'This setting cannot be edited from Administration')));
+	    }
+
+	    if (!$this->isadminsettingeditable($code, $allowlist[$code])) {
+	        $this->logger->write("Administration Controller : editadminsetting() : The setting code " . $code . " is view-only in Administration", 'r');
+	        die(json_encode(array('success' => false, 'message' => 'This setting is view-only in Administration')));
+	    }
+
+	    $setting = new settings($this->db);
+	    $setting->getByCode($code);
+	    if ($setting->dry()) {
+	        die(json_encode(array('success' => false, 'message' => 'The selected setting was not found')));
+	    }
+
+	    if ((int)$setting->sensitivityflag === 1 || (int)$setting->disabled === 1) {
+	        die(json_encode(array('success' => false, 'message' => 'This setting is locked and cannot be edited')));
+	    }
+
+	    $normalizeResult = $this->normalizeadminsettingvalue($allowlist[$code], $value);
+	    if (!$normalizeResult['success']) {
+	        die(json_encode(array('success' => false, 'message' => $normalizeResult['message'])));
+	    }
+
+	    $newValue = $normalizeResult['value'];
+	    $oldValue = (string)$setting->value;
+
+	    if ($oldValue === $newValue) {
+	        die(json_encode(array('success' => true, 'message' => 'No changes were made to this setting')));
+	    }
+
+	    $this->f3->set('POST.value', $newValue);
+	    $this->f3->set('POST.modifieddt', date('Y-m-d H:i:s'));
+	    $this->f3->set('POST.modifiedby', $this->f3->get('SESSION.id'));
+
+	    try {
+	        $setting->edit($code);
+	        $this->util->createinappnotification(NULL, NULL, NULL, self::$module, self::$submodule, $operation, $event, $eventnotification, NULL, $this->f3->get('SESSION.id'), "The setting " . $code . " has been edited by " . $this->f3->get('SESSION.username'));
+	        $this->logger->write("Administration Controller : editadminsetting() : The setting " . $code . " has been edited. Old value = " . $oldValue . ", New value = " . $newValue, 'r');
+	        die(json_encode(array('success' => true, 'message' => 'The setting has been updated successfully')));
+	    } catch (Exception $e) {
+	        $this->logger->write("Administration Controller : editadminsetting() : The operation to edit setting " . $code . " was not successful. The error message is " . $e->getMessage(), 'r');
+	        die(json_encode(array('success' => false, 'message' => 'The operation to edit this setting was not successful')));
+	    }
+	}
+
+	// 2026-04-26 16:40:00 +03:00 - Allowlist-only settings exposure for Administration Settings tab.
+	private function getadminsettingsallowlist(){
+	    // Explicit type overrides for known setting codes.
+	    $typedRules = array(
+	        'APPLONGNAME' => array('type' => 'string', 'max' => 100),
+	        'APPSHORTNAME' => array('type' => 'string', 'max' => 20),
+	        'APPVERSION' => array('type' => 'string', 'max' => 30),
+	        'APPDOMAIN' => array('type' => 'string', 'max' => 120),
+	        'HOME' => array('type' => 'string', 'max' => 255),
+	        'APIHOME' => array('type' => 'string', 'max' => 255),
+	        'APPPORT' => array('type' => 'int', 'min' => 1, 'max' => 65535),
+	        'SUPERADMINROLEID' => array('type' => 'int', 'min' => 1, 'max' => 999999),
+	        'SYSTEMEMAILPORT' => array('type' => 'int', 'min' => 1, 'max' => 65535),
+	        'FINYEAR' => array('type' => 'int', 'min' => 2000, 'max' => 2100),
+	        'PROCDATE' => array('type' => 'date'),
+	        'MAXINACTIVITYTIME' => array('type' => 'int', 'min' => 1, 'max' => 10080),
+	        'OVERRIDE_TAXRATE_FLAG' => array('type' => 'bool01'),
+	        'ENFORCE_TAX_EXCLUSION_FLAG' => array('type' => 'bool01'),
+	        'TAXPAYER_CHECK_FLAG' => array('type' => 'bool01'),
+	        'ERP_USER_AUTH_SWITCH' => array('type' => 'bool01'),
+	        'CHECK_FEE_MAP_FLAG' => array('type' => 'bool01')
+	    );
+
+	    // Even when sensitivityflag is 0, keep secret-like settings out of Administration edits.
+	    $excludedCodePattern = '/(PASSWORD|PASSWD|TOKEN|SECRET|PRIVATE|KEY|INTERNALAPI|ACCESSTOKEN|REFRESHTOKEN|APIUSER|DBPWD|DBPASS|SMTPPASS)/i';
+
+	    $allowlist = array();
+	    $rows = $this->db->exec('SELECT code FROM tblsettings WHERE disabled = 0 AND sensitivityflag = 0 ORDER BY code ASC');
+	    foreach ($rows as $row) {
+	        $code = trim((string)$row['code']);
+	        if ($code === '') {
+	            continue;
+	        }
+
+	        if (preg_match($excludedCodePattern, $code)) {
+	            continue;
+	        }
+
+	        if (isset($typedRules[$code])) {
+	            $allowlist[$code] = $typedRules[$code];
+	        } else {
+	            $allowlist[$code] = array('type' => 'string', 'max' => 255);
+	        }
+	    }
+
+	    return $allowlist;
+	}
+
+	// 2026-04-26: Governance layer - keep selected operational settings visible but non-editable.
+	private function isadminsettingeditable($code, $rule){
+	    $code = trim((string)$code);
+	    if ($code === '') {
+	        return false;
+	    }
+
+	    // 2026-04-26: Policy groups keep non-editable governance easier to review and tune safely.
+	    $nonEditableGroups = $this->getadminsettingnoneditablegroups();
+	    foreach ($nonEditableGroups as $group => $patterns) {
+	        foreach ($patterns as $pattern) {
+	            if (preg_match($pattern, $code)) {
+	                return false;
+	            }
+	        }
+	    }
+
+	    return true;
+	}
+
+	// 2026-04-26: Named governance groups for Administration Settings edit locks.
+	private function getadminsettingnoneditablegroups(){
+	    return array(
+	        // Runtime identity and path/bootstrap settings.
+	        'runtime_core' => array(
+	            '/^APPVERSION$/i',
+	            '/^HOME$/i',
+	            '/^APIHOME$/i',
+	            '/^APPPORT$/i',
+	            '/LASTRUNID/i'
+	        ),
+	        // Logging sinks and operational log routing keys.
+	        'logging' => array(
+	            '/LOGEXTENSION/i',
+	            '/APPLOG/i',
+	            '/APPUTIL/i',
+	            '/APPERRORLOG/i',
+	            '/APILOG/i',
+	            '/APIUTIL/i',
+	            '/APIERRORLOG/i'
+	        ),
+	        // Integration endpoints/redirects/base URLs and service scopes.
+	        'integration_endpoints' => array(
+	            '/(_URL$)/i',
+	            '/(^URL$)/i',
+	            '/ENDPOINT/i',
+	            '/REDIRECT_URI/i',
+	            '/(^SCOPE$)/i',
+	            '/BASE_URL/i'
+	        ),
+	        // Filesystem topology and directory/path-level settings.
+	        'filesystem_paths' => array(
+	            '/DIRECTORY/i',
+	            '/(^PATH$)/i'
+	        )
+	    );
+	}
+
+	private function normalizeadminsettingvalue($rule, $value){
+	    $type = isset($rule['type']) ? $rule['type'] : 'string';
+	    $normalized = trim((string)$value);
+
+	    if ($type === 'string') {
+	        if (isset($rule['max']) && strlen($normalized) > (int)$rule['max']) {
+	            return array('success' => false, 'message' => 'The value exceeds the allowed length for this setting');
+	        }
+	        return array('success' => true, 'value' => $normalized);
+	    }
+
+	    if ($type === 'int') {
+	        if ($normalized === '' || !preg_match('/^\d+$/', $normalized)) {
+	            return array('success' => false, 'message' => 'A valid numeric value is required for this setting');
+	        }
+
+	        $intValue = (int)$normalized;
+	        if (isset($rule['min']) && $intValue < (int)$rule['min']) {
+	            return array('success' => false, 'message' => 'The value is below the minimum allowed for this setting');
+	        }
+	        if (isset($rule['max']) && $intValue > (int)$rule['max']) {
+	            return array('success' => false, 'message' => 'The value is above the maximum allowed for this setting');
+	        }
+
+	        return array('success' => true, 'value' => (string)$intValue);
+	    }
+
+	    if ($type === 'bool01') {
+	        if ($normalized !== '0' && $normalized !== '1') {
+	            return array('success' => false, 'message' => 'This setting accepts only 0 or 1');
+	        }
+	        return array('success' => true, 'value' => $normalized);
+	    }
+
+	    if ($type === 'date') {
+	        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized)) {
+	            return array('success' => false, 'message' => 'The date format must be YYYY-MM-DD');
+	        }
+
+	        $parts = explode('-', $normalized);
+	        if (!checkdate((int)$parts[1], (int)$parts[2], (int)$parts[0])) {
+	            return array('success' => false, 'message' => 'The date value is invalid');
+	        }
+
+	        return array('success' => true, 'value' => $normalized);
+	    }
+
+	    return array('success' => false, 'message' => 'Unsupported setting type');
 	}
 	
 	/**
@@ -1571,159 +1930,133 @@ Class AdministrationController extends MainController{
 	    $permission = 'RECYLELOGS'; //tblpermissions
 	    $event = NULL; //tblevents
 	    $eventnotification = NULL; //tbleventnotifications
+	    $username = $this->f3->get('SESSION.username');
 	    
 	    if(trim(date_default_timezone_get() !== trim($this->appsettings['EFRIS_TIMEZONE']))){
 	        date_default_timezone_set($this->appsettings['EFRIS_TIMEZONE']);
 	    }
 	    
+	    // 2026-04-26 10:40:00 +03:00 - Enforce POST-only execution for this state-changing action.
+	    if (strtoupper($this->f3->get('VERB')) !== 'POST') {
+	        $this->logger->write("Administration Controller : recyclelogs() : Invalid method", 'r');
+	        $this->f3->reroute('/forbidden');
+	        return;
+	    }
+	    
 	    $this->logger->write("Administration Controller : recyclelogs() : Checking permissions", 'r');
 	    if ($this->userpermissions[$permission]) {
+	        $csrfToken = trim((string)$this->f3->get('POST.recyclelogs_csrf_token'));
+	        $sessionCsrfToken = trim((string)$this->f3->get('SESSION.recyclelogs_csrf_token'));
+	        
+	        // 2026-04-26 10:40:00 +03:00 - Block replay/cross-site requests when token pair is missing or mismatched.
+	        if ($csrfToken === '' || $sessionCsrfToken === '' || !hash_equals($sessionCsrfToken, $csrfToken)) {
+	            $this->logger->write("Administration Controller : recyclelogs() : CSRF validation failed", 'r');
+	            $this->util->createinappnotification(NULL, NULL, NULL, self::$module, self::$submodule, $operation, $event, $eventnotification, NULL, $this->f3->get('SESSION.id'), "The operation to recycle logs by " . $username . " was blocked due to invalid request token");
+	            self::$systemalert = "The operation to recycle logs by " . $username . " was not successful. Please refresh and try again.";
+	            self::index('tab_users', 'tab_1', self::$systemalert);
+	            return;
+	        }
+	        
+	        $this->f3->clear('SESSION.recyclelogs_csrf_token');
+	        
 	        $logExtension = trim($this->appsettings['LOGEXTENSION']);
 	        
 	        $appLogName = trim($this->appsettings['APPLOG']);
 	        $appUtilLogName = trim($this->appsettings['APPUTIL']);
 	        $appErrorLogName = trim($this->appsettings['APPERRORLOG']);
-	        
+	        $appTraceLogName = $appLogName . '-trace';
+	        $appUtilTraceLogName = $appUtilLogName . '-trace';
+	        $results = array();
 
 	        $appbasefolder = trim($this->appsettings['HOME']);
 	        $appfs = new \FAL\LocalFS($appbasefolder);
 	        $this->logger->write("Administration Controller : recyclelogs() : The app base folder is: " . $appbasefolder, 'r');
-	        
-	        $appLogNewName = '//' . $appLogName . '-' . date('Y-m-d') . '.' . $logExtension;
-	        $appLogFullName = '//' . $appLogName . '.' . $logExtension;
-	        
-        
-	        try {
-	            if($appfs->exists($appLogFullName)){
-	                $this->logger->write("Administration Controller : recyclelogs() : The file exists", 'r');
-	                
-	                if($appfs->exists($appLogNewName)){
-	                    $appLogNewName = '//' . $appLogName . '-' . date('Y-m-d') . ' (' . md5(uniqid(rand(), true)) . ').' . $logExtension;
-	                } 	
-	                
-	                $appfs->move($appLogFullName, $appLogNewName);
-	            } else {
-	                $this->logger->write("Administration Controller : recyclelogs() : The file does not exist", 'r');
-	            }
-	        } catch (Exception $e) {
-	            $this->logger->write("Administration Controller : recyclelogs() : There was an error. The error message is " . $e->getMessage(), 'r');
-	        }
-	        
-	        $appUtilLogNewName = '//' . $appUtilLogName . '-' . date('Y-m-d') . '.' . $logExtension;
-	        $appUtilLogFullName = '//' . $appUtilLogName . '.' . $logExtension;
-	        
-	        
-	        try {
-	            if($appfs->exists($appUtilLogFullName)){
-	                $this->logger->write("Administration Controller : recyclelogs() : The file exists", 'r');
-	                
-	                if($appfs->exists($appUtilLogNewName)){
-	                    $appUtilLogNewName = '//' . $appUtilLogName . '-' . date('Y-m-d') . ' (' . md5(uniqid(rand(), true)) . ').' . $logExtension;
-	                }
-	                
-	                $appfs->move($appUtilLogFullName, $appUtilLogNewName);
-	            } else {
-	                $this->logger->write("Administration Controller : recyclelogs() : The file does not exist", 'r');
-	            }
-	        } catch (Exception $e) {
-	            $this->logger->write("Administration Controller : recyclelogs() : There was an error. The error message is " . $e->getMessage(), 'r');
-	        }
-	        
-	        $appErrorLogNewName = '//' . $appErrorLogName . '-' . date('Y-m-d') . '.' . $logExtension;
-	        $appErrorLogFullName = '//' . $appErrorLogName . '.' . $logExtension;
-	        
-	        
-	        try {
-	            if($appfs->exists($appErrorLogFullName)){
-	                $this->logger->write("Administration Controller : recyclelogs() : The file exists", 'r');
-	                
-	                if($appfs->exists($appErrorLogNewName)){
-	                    $appErrorLogNewName = '//' . $appErrorLogName . '-' . date('Y-m-d') . ' (' . md5(uniqid(rand(), true)) . ').' . $logExtension;
-	                }
-	                
-	                $appfs->move($appErrorLogFullName, $appErrorLogNewName);
-	            } else {
-	                $this->logger->write("Administration Controller : recyclelogs() : The file does not exist", 'r');
-	            }
-	        } catch (Exception $e) {
-	            $this->logger->write("Administration Controller : recyclelogs() : There was an error. The error message is " . $e->getMessage(), 'r');
-	        }
+	        $this->recyclelogfile($appfs, $appLogName, $logExtension, 'APP', $results);
+	        $this->recyclelogfile($appfs, $appUtilLogName, $logExtension, 'APP', $results);
+	        // 2026-04-26 11:00:00 +03:00 - Rotate split trace files introduced by SmartLogger.
+	        $this->recyclelogfile($appfs, $appTraceLogName, $logExtension, 'APP', $results);
+	        $this->recyclelogfile($appfs, $appUtilTraceLogName, $logExtension, 'APP', $results);
+	        $this->recyclelogfile($appfs, $appErrorLogName, $logExtension, 'APP', $results);
 
 	        $apiLogName = trim($this->appsettings['APILOG']);
 	        $apiUtilLogName = trim($this->appsettings['APIUTIL']);
 	        $apiErrorLogName = trim($this->appsettings['APIERRORLOG']);
+	        $apiTraceLogName = $apiLogName . '-trace';
+	        $apiUtilTraceLogName = $apiUtilLogName . '-trace';
 	        
 	        $apibasefolder = trim($this->appsettings['APIHOME']);
 	        $apifs = new \FAL\LocalFS($apibasefolder);
 	        $this->logger->write("Administration Controller : recyclelogs() : The api base folder is: " . $apibasefolder, 'r');
+	        $this->recyclelogfile($apifs, $apiLogName, $logExtension, 'API', $results);
+	        $this->recyclelogfile($apifs, $apiUtilLogName, $logExtension, 'API', $results);
+	        // 2026-04-26 11:00:00 +03:00 - Rotate split trace files introduced by SmartLogger.
+	        $this->recyclelogfile($apifs, $apiTraceLogName, $logExtension, 'API', $results);
+	        $this->recyclelogfile($apifs, $apiUtilTraceLogName, $logExtension, 'API', $results);
+	        $this->recyclelogfile($apifs, $apiErrorLogName, $logExtension, 'API', $results);
 	        
-	        $apiLogNewName = '//' . $apiLogName . '-' . date('Y-m-d') . '.' . $logExtension;
-	        $apiLogFullName = '//' . $apiLogName . '.' . $logExtension;
-	        
-	        
-	        try {
-	            if($apifs->exists($apiLogFullName)){
-	                $this->logger->write("Administration Controller : recyclelogs() : The file exists", 'r');
-	                
-	                if($apifs->exists($apiLogNewName)){
-	                    $apiLogNewName = '//' . $apiLogName . '-' . date('Y-m-d') . ' (' . md5(uniqid(rand(), true)) . ').' . $logExtension;
-	                }
-	                
-	                $apifs->move($apiLogFullName, $apiLogNewName);
+	        $rotatedCount = 0;
+	        $missingCount = 0;
+	        $failedCount = 0;
+	        foreach ($results as $result) {
+	            if ($result['status'] === 'rotated') {
+	                $rotatedCount++;
+	            } elseif ($result['status'] === 'missing') {
+	                $missingCount++;
 	            } else {
-	                $this->logger->write("Administration Controller : recyclelogs() : The file does not exist", 'r');
+	                $failedCount++;
 	            }
-	        } catch (Exception $e) {
-	            $this->logger->write("Administration Controller : recyclelogs() : There was an error. The error message is " . $e->getMessage(), 'r');
 	        }
 	        
-	        $apiUtilLogNewName = '//' . $apiUtilLogName . '-' . date('Y-m-d') . '.' . $logExtension;
-	        $apiUtilLogFullName = '//' . $apiUtilLogName . '.' . $logExtension;
-	        
-	        
-	        try {
-	            if($apifs->exists($apiUtilLogFullName)){
-	                $this->logger->write("Administration Controller : recyclelogs() : The file exists", 'r');
-	                
-	                if($apifs->exists($apiUtilLogNewName)){
-	                    $apiUtilLogNewName = '//' . $apiUtilLogName . '-' . date('Y-m-d') . ' (' . md5(uniqid(rand(), true)) . ').' . $logExtension;
-	                }
-	                
-	                $apifs->move($apiUtilLogFullName, $apiUtilLogNewName);
-	            } else {
-	                $this->logger->write("Administration Controller : recyclelogs() : The file does not exist", 'r');
-	            }
-	        } catch (Exception $e) {
-	            $this->logger->write("Administration Controller : recyclelogs() : There was an error. The error message is " . $e->getMessage(), 'r');
+	        // 2026-04-26 10:40:00 +03:00 - Report outcome counts so partial failures are visible to operations.
+	        if ($failedCount > 0) {
+	            $this->util->createinappnotification(NULL, NULL, NULL, self::$module, self::$submodule, $operation, $event, $eventnotification, NULL, $this->f3->get('SESSION.id'), "The operation to recycle logs by " . $username . " completed with errors. Rotated=" . $rotatedCount . ", Missing=" . $missingCount . ", Failed=" . $failedCount);
+	            self::$systemalert = "The operation to recycle logs by " . $username . " completed with issues. Rotated=" . $rotatedCount . ", Missing=" . $missingCount . ", Failed=" . $failedCount;
+	        } else {
+	            $this->util->createinappnotification(NULL, NULL, NULL, self::$module, self::$submodule, $operation, $event, $eventnotification, NULL, $this->f3->get('SESSION.id'), "The operation to recycle logs by " . $username . " was successful. Rotated=" . $rotatedCount . ", Missing=" . $missingCount . ", Failed=" . $failedCount);
+	            self::$systemalert = "The operation to recycle logs by " . $username . " was successful. Rotated=" . $rotatedCount . ", Missing=" . $missingCount . ", Failed=" . $failedCount;
 	        }
-	        
-	        $apiErrorLogNewName = '//' . $apiErrorLogName . '-' . date('Y-m-d') . '.' . $logExtension;
-	        $apiErrorLogFullName = '//' . $apiErrorLogName . '.' . $logExtension;
-	        
-	        
-	        try {
-	            if($apifs->exists($apiErrorLogFullName)){
-	                $this->logger->write("Administration Controller : recyclelogs() : The file exists", 'r');
-	                
-	                if($apifs->exists($apiErrorLogNewName)){
-	                    $apiErrorLogNewName = '//' . $apiErrorLogName . '-' . date('Y-m-d') . ' (' . md5(uniqid(rand(), true)) . ').' . $logExtension;
-	                }
-	                
-	                $apifs->move($apiErrorLogFullName, $apiErrorLogNewName);
-	            } else {
-	                $this->logger->write("Administration Controller : recyclelogs() : The file does not exist", 'r');
-	            }
-	        } catch (Exception $e) {
-	            $this->logger->write("Administration Controller : recyclelogs() : There was an error. The error message is " . $e->getMessage(), 'r');
-	        }
-	        
-	        $this->util->createinappnotification(NULL, NULL, NULL, self::$module, self::$submodule, $operation, $event, $eventnotification, NULL, $this->f3->get('SESSION.id'), "The operation to recycle logs by " . $this->f3->get('SESSION.username') . " was successful");
-	        self::$systemalert = "The operation to recyle logs by " . $this->f3->get('SESSION.username') . " was successful";
 	        
 	        self::index('tab_users', 'tab_1', self::$systemalert);
 	    } else {
 	        $this->logger->write("Administration Controller : recyclelogs() : The user is not allowed to perform this function", 'r');
 	        $this->f3->reroute('/forbidden');
+	    }
+	}
+	
+	// 2026-04-26 10:40:00 +03:00 - CSRF helper for recycle-logs action; token is session-scoped and one-time-consumed.
+	private function generaterecyclelogscsrftoken() {
+	    try {
+	        $token = bin2hex(random_bytes(32));
+	    } catch (Exception $e) {
+	        $token = md5(uniqid(rand(), true));
+	    }
+	    
+	    $this->f3->set('SESSION.recyclelogs_csrf_token', $token);
+	    return $token;
+	}
+	
+	// 2026-04-26 10:40:00 +03:00 - Standardized per-file rotation helper that captures rotated/missing/failed outcomes.
+	private function recyclelogfile($filesystem, $logName, $logExtension, $scope, &$results) {
+	    $fullName = '//' . $logName . '.' . $logExtension;
+	    $archiveName = '//' . $logName . '-' . date('Y-m-d') . '.' . $logExtension;
+	    
+	    try {
+	        if (!$filesystem->exists($fullName)) {
+	            $this->logger->write("Administration Controller : recyclelogs() : [" . $scope . "] " . $fullName . " does not exist", 'r');
+	            $results[] = array('file' => $fullName, 'status' => 'missing');
+	            return;
+	        }
+	        
+	        if ($filesystem->exists($archiveName)) {
+	            $archiveName = '//' . $logName . '-' . date('Y-m-d') . ' (' . md5(uniqid(rand(), true)) . ').' . $logExtension;
+	        }
+	        
+	        $filesystem->move($fullName, $archiveName);
+	        $this->logger->write("Administration Controller : recyclelogs() : [" . $scope . "] moved " . $fullName . " to " . $archiveName, 'r');
+	        $results[] = array('file' => $fullName, 'status' => 'rotated');
+	    } catch (Exception $e) {
+	        $this->logger->write("Administration Controller : recyclelogs() : [" . $scope . "] failed for " . $fullName . ". Error: " . $e->getMessage(), 'r');
+	        $results[] = array('file' => $fullName, 'status' => 'failed', 'message' => $e->getMessage());
 	    }
 	}
 }

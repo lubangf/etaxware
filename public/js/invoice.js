@@ -457,6 +457,9 @@ $(function(){
 	// before submit, especially select2-backed item and required selects.
 	$(document).on('submit', '#modal-add-good form', function(e) {
 		var missing = [];
+		var showSystemAlert = function(message) {
+			window.showSystemAlertByMessage(message);
+		};
 		var itemCode = $.trim($('#additem').val() || '');
 		var qty = $.trim($('#addqty').val() || '');
 		var unitPrice = $.trim($('#addunitprice').val() || '');
@@ -485,7 +488,7 @@ $(function(){
 
 		if (missing.length > 0) {
 			e.preventDefault();
-			alert('Please complete required field(s): ' + missing.join(', '));
+			showSystemAlert('Please complete required field(s): ' + missing.join(', '));
 
 			if (missing[0] === 'Item') {
 				$('#additem').select2('open');

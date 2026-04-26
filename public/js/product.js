@@ -828,6 +828,9 @@ $(function(){
 	};
 
 	var validateExcisePieceRules = function(){
+		var showSystemAlert = function(message) {
+			window.showSystemAlertByMessage(message);
+		};
 		var hasExciseTax = $.trim($('#producthasexcisetax').val() || '');
 		if(hasExciseTax !== '101'){
 			return true;
@@ -841,7 +844,7 @@ $(function(){
 		var pieceScaledValue = $.trim($('#productpiecescaledvalue').val() || '');
 
 		if(exciseDutyCode === '' || havePieceUnit !== '101' || pieceMeasureUnit === '' || pieceUnitPrice === '' || packageScaledValue === '' || pieceScaledValue === ''){
-			alert('When Have Excise Duty is Yes, please populate Excise Duty Code, set Have Piece Units to Yes, and fill all piece-unit fields.');
+			showSystemAlert('When Have Excise Duty is Yes, please populate Excise Duty Code, set Have Piece Units to Yes, and fill all piece-unit fields.');
 			return false;
 		}
 

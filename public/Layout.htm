@@ -163,7 +163,7 @@
 						</check>																
 						<check if="{{@userpermissions.VIEWCURRENCIES == true}}"><true><li id="li-currencies-1"><a href="{{@BASE . '/currency'}}"><i class="fa fa-money"></i> <span>Currencies</span></a></li></true></check>
 						<check if="{{@userpermissions.VIEWADMIN == true}}"><true><li id="li-administration-1"><a href="{{@BASE . '/administration'}}"><i class="fa fa-briefcase"></i> <span>Administration</span></a></li></true></check>
-						<check if="{{@userpermissions.VIEWSETTINGS == true}}"><true><li id="li-settings-1"><a href="{{@BASE . '/setting'}}"><i class="fa fa-cogs"></i> <span>Settings</span></a></li></true></check>
+						<check if="{{@userpermissions.VIEWSETTINGS == true}}"><true><li id="li-settings-1"><a href="{{@BASE . '/administration#tab_11'}}"><i class="fa fa-cogs"></i> <span>Settings</span></a></li></true></check>
 						<check if="{{@userpermissions.VIEWREPORTS == true}}"><true><li id="li-reports-1"><a href="{{@BASE . '/report'}}"><i class="fa fa-pie-chart"></i> <span>Reports</span></a></li></true></check>
 					</ul>
 				</section><!-- /.sidebar -->
@@ -304,7 +304,7 @@
 						<div class="modal-dialog">
 							<div class="modal-content">
 								<div class="modal-header">
-									<h4 class="modal-title"><i class="fa fa-info-circle"></i> System Alert</h4>
+									<h4 class="modal-title"><i id="icon-system-alert" class="fa fa-info-circle"></i> <span id="title-system-alert">System Alert</span></h4>
 								</div>
 								<div class="modal-body">
 									<p class=""><span id="text-system-alert">{{@systemalert}}</span></p>
@@ -340,7 +340,7 @@
 		<!-- AdminLTE App -->
 		<script src="{{@path . 'js/app.min.js'}}"></script>
 		<!-- Layout JS -->
-		<script src="{{@path . 'js/layout.js'}}"></script>
+		<script src="{{@path . 'js/layout.js?v=20260426-2'}}"></script>
 		<script>			
 			var notid;
 			var systemalerttext = $('#text-system-alert').text();
@@ -350,6 +350,9 @@
 				event.preventDefault();//stop normal behavior
 			    //$(this).off("click");
 				$('#text-system-alert').text('');//clear out the alert
+				$('#modal-system-alert').removeClass('modal-success modal-warning modal-danger').addClass('modal-info');
+				$('#icon-system-alert').removeClass('fa-check-circle fa-exclamation-triangle fa-times-circle').addClass('fa-info-circle');
+				$('#title-system-alert').text('System Alert');
 			    $('#modal-system-alert').modal('hide');//close form
 			});
 			

@@ -480,6 +480,69 @@ class ApikeyController extends MainController{
         echo \Template::instance()->render('Layout.htm');
     }
     
+    /**
+     *	@name delete
+     *  @desc delete apikey
+     *	@return JSON-encoded object
+     *	@param NULL
+     */
+    function delete(){
+        $operation = NULL; //tblevents
+        $permission = NULL; //tblpermissions
+        $event = NULL; //tblevents
+        $eventnotification = NULL; //tbleventnotifications
+
+        header('Content-Type: application/json');
+
+        $id = '';
+        if (trim((string)$this->f3->get('POST.id')) !== '') {
+            $id = trim((string)$this->f3->get('POST.id'));
+        } elseif (trim((string)$this->f3->get('PARAMS[id]')) !== '') {
+            $id = trim((string)$this->f3->get('PARAMS[id]'));
+        }
+
+        if ($id === '') {
+            die(json_encode(array('success' => false, 'message' => 'No API key id was specified')));
+        }
+
+        $apikey = new apikeys($this->db);
+        $apikey->getByID($id);
+
+        if ($apikey->dry()) {
+            die(json_encode(array('success' => false, 'message' => 'The selected API key was not found')));
+        }
+
+        $isSuperAdmin = ((string)$this->f3->get('SESSION.userrole') === (string)$this->appsettings['SUPERADMINROLEID']);
+        $isOwner = ((string)$apikey->insertedby === (string)$this->f3->get('SESSION.id'));
+
+        if (!$isSuperAdmin && !$isOwner) {
+            $this->logger->write("Apikey Controller : delete() : User is not allowed to delete apikey id " . $id, 'r');
+            die(json_encode(array('success' => false, 'message' => 'You are not allowed to delete this API key')));
+        }
+
+        try {
+            if (!empty($apikey->permissiongroup)) {
+                try {
+                    $this->db->exec(array('DELETE FROM tblpermissiondetails WHERE groupid = ' . (int)$apikey->permissiongroup));
+                    $this->db->exec(array('DELETE FROM tblpermissiongroups WHERE id = ' . (int)$apikey->permissiongroup));
+                } catch (Exception $e) {
+                    $this->logger->write("Apikey Controller : delete() : Failed to cleanup permission group for apikey id " . $id . ". Error is " . $e->getMessage(), 'r');
+                }
+            }
+
+            $apikeyValue = $apikey->apikey;
+            $apikey->delete($id);
+
+            $this->util->createinappnotification(NULL, NULL, NULL, self::$module, self::$submodule, $operation, $event, $eventnotification, NULL, $this->f3->get('SESSION.id'), "The API key " . $id . " has been deleted by " . $this->f3->get('SESSION.username'));
+            $this->logger->write("Apikey Controller : delete() : The API key " . $id . " - " . $apikeyValue . " has been deleted", 'r');
+
+            die(json_encode(array('success' => true, 'message' => 'The API key has been deleted successfully')));
+        } catch (Exception $e) {
+            $this->logger->write("Apikey Controller : delete() : The operation to delete apikey " . $id . " was not successful. The error message is " . $e->getMessage(), 'r');
+            die(json_encode(array('success' => false, 'message' => 'The operation to delete the API key was not successful')));
+        }
+    }
+
 
     /**
      *	@name list

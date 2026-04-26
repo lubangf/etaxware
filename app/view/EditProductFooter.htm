@@ -4,7 +4,7 @@
 		<!-- Select2 -->
         <script src="{{@path . 'plugins/select2/select2.full.min.js'}}"></script>		
 		<!-- product JS -->
-		<script src="{{@path . 'js/product.js?v=20260420-3'}}"></script>
+		<script src="{{@path . 'js/product.js?v=20260426-1'}}"></script>
 		<script>
 			var currenttab = $('#currenttab').text();
 			//console.log(currenttab);
@@ -98,7 +98,7 @@
 								
 				/*Check system alert & session id are the same, then display alert*/
 				if(systemalerttext !== ''){
-					$('#modal-system-alert').modal('show');
+					window.showSystemAlertByMessage(systemalerttext);
 				}
 				
 				// 2026-04-11 19:07:14 +03:00 - Guard Select2 prefill against empty/NULL-string code values and use code fallback for display label.

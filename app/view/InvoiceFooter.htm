@@ -6,8 +6,8 @@
 		<!-- bootstrap datepicker -->
 		<script src="{{@path . 'plugins/datepicker/bootstrap-datepicker.js'}}"></script>
 		<!-- Invoice JS -->
-		<!-- 2026-04-12: cache-bust invoice.js to load live backend excise-rule preview in goods modal -->
-		<script src="{{@path . 'js/invoice.js?v=20260412g'}}"></script>
+		<!-- 2026-04-26: cache-bust invoice.js to load system-modal validation feedback updates -->
+		<script src="{{@path . 'js/invoice.js?v=20260426-1'}}"></script>
 		<script>
 		    /**
 		     * @desc initialise a date picker called startdate
@@ -42,7 +42,7 @@
 
 		        /*Check system alert & session id are the same, then display alert*/
 		        if (systemalerttext !== '') {
-		            $('#modal-system-alert').modal('show');
+		            window.showSystemAlertByMessage(systemalerttext);
 		        }
 		    });
 

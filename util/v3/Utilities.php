@@ -5439,6 +5439,140 @@ pieceMeasureUnit,
     }
 
     /**
+     * @name generatefetchcommoditycodecsrftoken
+     * @desc Generate deterministic CSRF token for commodity fetch action.
+     * @return string
+     */
+    public function generatefetchcommoditycodecsrftoken()
+    {
+        $sessionId = (string)session_id();
+        $sessionUserId = (string)$this->f3->get('SESSION.id');
+        $appSalt = trim((string)$this->appsettings['APPNAME']);
+
+        if ($sessionId === '' || $sessionUserId === '') {
+            return '';
+        }
+
+        return hash('sha256', $sessionId . '|' . $sessionUserId . '|' . $appSalt);
+    }
+
+    /**
+     * @name fetchcommoditycode
+     * @desc Fetch commodity categories from EFRIS.
+     * @return JSON-encoded object
+     * @param $userid int, $pageNo int, $pageSize int
+     */
+    public function fetchcommoditycode($userid, $pageNo = 1, $pageSize = 90)
+    {
+        $web = \Web::instance();
+        $url = $this->appsettings['EFRIS_ENDPOINT'];
+        $content = json_encode(new stdClass());
+        $this->logger->write("Utilities : fetchcommoditycode() : The current time is " . date('Y-m-d H:i:s'), 'r');
+        $this->logger->write("Utilities : fetchcommoditycode() : The current timezone is " . date_default_timezone_get(), 'r');
+
+        if (trim(date_default_timezone_get() !== trim($this->appsettings['EFRIS_TIMEZONE']))) {
+            date_default_timezone_set($this->appsettings['EFRIS_TIMEZONE']);
+        }
+
+        $this->logger->write("Utilities : fetchcommoditycode() : The current time is " . date('Y-m-d H:i:s'), 'r');
+        $this->logger->write("Utilities : fetchcommoditycode() : The current timezone is " . date_default_timezone_get(), 'r');
+        $this->logger->write("Utilities : fetchcommoditycode() : The user id is " . $userid, 'r');
+
+        try {
+            $header = array('Content-Type: application/json');
+            $interfaceCode = 'T124';
+            $tcsdetails = new tcsdetails($this->db);
+            $tcsdetails->getByID($this->appsettings['EFRIS_TCS_RECORD_ID']);
+            $this->logger->write($this->db->log(true), 'r');
+
+            $companydetails = new organisations($this->db);
+            $companydetails->getByID($this->appsettings['SELLER_RECORD_ID']);
+
+            $devicedetails = new devices($this->db);
+            $devicedetails->getByID($this->appsettings['EFRIS_DEVICE_RECORD_ID']);
+
+            $payload = array(
+                'goodsName' => '',
+                'goodsCode' => '',
+                'commodityCategoryName' => '',
+                'pageNo' => strval($pageNo),
+                'pageSize' => strval($pageSize),
+                'branchId' => ''
+            );
+
+            $payload = base64_encode(json_encode($payload));
+            $this->logger->write("Utilities : fetchcommoditycode() : Encoded payload prepared", 'r');
+
+            $data = array(
+                'data' => array(
+                    'content' => $payload,
+                    'signature' => '',
+                    'dataDescription' => array(
+                        'codeType' => '0',
+                        'encryptCode' => '2',
+                        'zipCode' => '0'
+                    )
+                ),
+                'globalInfo' => array(
+                    'appId' => $tcsdetails->appid,
+                    'version' => $tcsdetails->version,
+                    'dataExchangeId' => $tcsdetails->dataexchangeid,
+                    'interfaceCode' => $interfaceCode,
+                    'requestCode' => $tcsdetails->requestcode,
+                    'requestTime' => date('Y-m-d H:i:s'),
+                    'responseCode' => $tcsdetails->resposecode,
+                    'userName' => $tcsdetails->username,
+                    'deviceMAC' => $devicedetails->devicemac,
+                    'deviceNo' => $devicedetails->deviceno,
+                    'tin' => $companydetails->tin,
+                    'taxpayerID' => $companydetails->taxpayerid,
+                    'longitude' => $companydetails->longitude,
+                    'latitude' => $companydetails->latitude,
+                    'extendField' => array(
+                        'responseDateFormat' => $tcsdetails->responsedataformat,
+                        'responseTimeFormat' => $tcsdetails->responsetimeformat,
+                    )
+                ),
+                'returnStateInfo' => array(
+                    'returnCode' => '',
+                    'returnMessage' => '',
+                )
+            );
+
+            $options = array(
+                'method' => 'POST',
+                'content' => json_encode($data),
+                'header' => $header
+            );
+
+            $response = $web->request($url, $options);
+            $j_response = json_decode($response['body'], true);
+
+            $returninfo = $j_response['returnStateInfo'];
+            $content = $j_response['data']['content'];
+            $this->logger->write("Utilities : fetchcommoditycode() : The response content is: " . $content, 'r');
+
+            $dataDesc = $j_response['data']['dataDescription'];
+
+            if ($returninfo['returnCode'] == '00') {
+                if ($dataDesc['zipCode'] == '1') {
+                    $this->logger->write("Utilities : fetchcommoditycode() : The response is zipped", 'r');
+                    return gzdecode(base64_decode($content));
+                }
+
+                $this->logger->write("Utilities : fetchcommoditycode() : The response is NOT zipped", 'r');
+                return base64_decode($content);
+            }
+
+            $this->logger->write("Utilities : fetchcommoditycode() : The API call was not successful. The return code is: " . $returninfo['returnCode'] . ' - ' . $returninfo['returnMessage'], 'r');
+            return json_encode(array('returnCode' => $returninfo['returnCode'], 'returnMessage' => $returninfo['returnMessage']));
+        } catch (Exception $e) {
+            $this->logger->write("Utilities : fetchcommoditycode() : Error " . $e->getMessage(), 'r');
+            return json_encode(array('returnCode' => '500', 'returnMessage' => $e->getMessage()));
+        }
+    }
+
+    /**
      * @name syncbranches
      * @desc Sync branches from EFRIS
      * @return JSON-encoded object
@@ -10127,7 +10261,8 @@ pieceMeasureUnit,
         ));
 
         $this->db = $db;
-        $logger = new Log('util.log');
+        // 2026-04-26 11:00:00 +03:00 - Split integration/service traces from operational utility logs.
+        $logger = new SmartLogger('util.log', 'util-trace.log');
         $this->logger = $logger;
 
         $data = array();

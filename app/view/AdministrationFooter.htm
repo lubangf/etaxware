@@ -4,19 +4,13 @@
 		<!-- Bootstrap Dual Listbox -->
         <script src="{{@path . 'plugins/bootstrap-duallistbox/jquery.bootstrap-duallistbox.js'}}"></script>		
 		<!-- administration JS -->
-		<script src="{{@path . 'js/administration.js'}}"></script>
+		<script src="{{@path . 'js/administration.js?v=20260426-3'}}"></script>
 		<script>
 			var currenttab = $('#currenttab').text();
 			//console.log(currenttab);
 			
 			var currenttabpane = $('#currenttabpane').text();
 			//console.log(currenttabpane);	
-			
-			var varoverridelists = $('[id=editoverridelists]').bootstrapDualListbox();
-			
-			
-			var varenforcetaxexclusionlists = $('[id=editenforcetaxexclusionlists]').bootstrapDualListbox();
-			
 			
 			var companydetailstin_1 = $('#companydetailstin_1').text();
 			var companydetailstaxpayerid_1 = $('#companydetailstaxpayerid_1').text();
@@ -35,10 +29,19 @@
 				$('#li-administration-1').addClass('active');//mark the administration link as active
 				$('#' + currenttab).addClass('active');//set the tab to active
 				$('#' + currenttabpane).addClass('active');//set the corresponding tab-pane to active
+
+				// 2026-04-26: Support deep-linking to a specific Administration tab (e.g. #tab_11 from deprecated /setting route).
+				var hashTab = (window.location.hash || '').replace('#', '');
+				if(hashTab !== ''){
+					var hashTabLink = $('a[href="#' + hashTab + '"]');
+					if(hashTabLink.length){
+						hashTabLink.tab('show');
+					}
+				}
 								
 				/*Check system alert & session id are the same, then display alert*/
 				if(systemalerttext !== ''){
-					$('#modal-system-alert').modal('show');
+					window.showSystemAlertByMessage(systemalerttext);
 				}
 				
 				$('#companydetailstin').val(companydetailstin_1);
@@ -53,6 +56,9 @@
 				listroles();
 				listbranches();
 				listtaxtypes();
+				listproductoverridelist();
+				listenforcetaxexclusionlist();
+				listadminsettings();
 			});	
 			
 			//ensure the tab content are refreshed again when user is navigating through the tabs
@@ -97,11 +103,18 @@
 					} else if(anchor == "tab_9"){// Call the ajax associated with the tab					
 						$('#tab_overridelist').addClass('active');
 						$('#tab_9').addClass('active');
-						listtaxtypes();
+						$('#ctnr-tbl-productoverridelist').append('<div class="overlay" id="otbl-productoverridelist"><i class="fa fa-refresh fa-spin"></i></div>');
+						listproductoverridelist();
 					} else if(anchor == "tab_10"){// Call the ajax associated with the tab					
 						$('#tab_enforcetaxexclusionlist').addClass('active');
 						$('#tab_10').addClass('active');
-						listtaxtypes();
+						$('#ctnr-tbl-enforcetaxexclusionlist').append('<div class="overlay" id="otbl-enforcetaxexclusionlist"><i class="fa fa-refresh fa-spin"></i></div>');
+						listenforcetaxexclusionlist();
+					} else if(anchor == "tab_11"){// Call the ajax associated with the tab					
+						$('#tab_settingsadmin').addClass('active');
+						$('#tab_11').addClass('active');
+						$('#ctnr-tbl-admin-settings').append('<div class="overlay" id="otbl-admin-settings"><i class="fa fa-refresh fa-spin"></i></div>');
+						listadminsettings();
 					}
 				});
 			});
@@ -139,5 +152,26 @@
 				e.preventDefault(); //prevent anchor from behaving normally
 				$('#ctnr-tbl-taxtypes').append('<div class="overlay" id="otbl-taxtypes"><i class="fa fa-refresh fa-spin"></i></div>');
 				listtaxtypes();
+			});
+			
+			//onclick event handler for the anchor called refresh-productoverridelist-list-2
+			$('#refresh-productoverridelist-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-productoverridelist').append('<div class="overlay" id="otbl-productoverridelist"><i class="fa fa-refresh fa-spin"></i></div>');
+				listproductoverridelist();
+			});
+			
+			//onclick event handler for the anchor called refresh-enforcetaxexclusionlist-list-2
+			$('#refresh-enforcetaxexclusionlist-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-enforcetaxexclusionlist').append('<div class="overlay" id="otbl-enforcetaxexclusionlist"><i class="fa fa-refresh fa-spin"></i></div>');
+				listenforcetaxexclusionlist();
+			});
+
+			//onclick event handler for the anchor called refresh-admin-settings-list-2
+			$('#refresh-admin-settings-list-2').click(function(e){
+				e.preventDefault(); //prevent anchor from behaving normally
+				$('#ctnr-tbl-admin-settings').append('<div class="overlay" id="otbl-admin-settings"><i class="fa fa-refresh fa-spin"></i></div>');
+				listadminsettings();
 			});		
 		</script>

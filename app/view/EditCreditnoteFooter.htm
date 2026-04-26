@@ -86,7 +86,7 @@
 				
 				/*Check system alert & session id are the same, then display alert*/
 				if(systemalerttext !== ''){
-					$('#modal-system-alert').modal('show');
+					window.showSystemAlertByMessage(systemalerttext);
 				}	
 				
 				if (gooddetailgroupid_2 !== undefined) {

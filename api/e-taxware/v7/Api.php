@@ -4625,7 +4625,8 @@ class Api
         
         $this->db = $db;
         
-        $logger = new Log('api.log');
+        // 2026-04-26 11:00:00 +03:00 - Split endpoint trace chatter from operational API logs.
+        $logger = new SmartLogger('api.log', 'api-trace.log');
         $this->logger = $logger;
         
         $data = array();

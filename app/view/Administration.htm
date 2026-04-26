@@ -32,6 +32,7 @@
 									<li id="tab_taxtypes"><a href="#tab_8" data-toggle="tab"><i class="fa fa-th-list"></i> Tax Types</a></li>
 									<check if="{{@appsettings.OVERRIDE_TAXRATE_FLAG == '1'}}"><true><li id="tab_overridelist"><a href="#tab_9" data-toggle="tab"><i class="fa fa-stop"></i> Tax Override List</a></li></true></check>
 									<check if="{{@appsettings.ENFORCE_TAX_EXCLUSION_FLAG == '1'}}"><true><li id="tab_enforcetaxexclusionlist"><a href="#tab_10" data-toggle="tab"><i class="fa fa-filter"></i> Enforce Tax Exclusion List</a></li></true></check>
+									<check if="{{@userpermissions.VIEWSETTINGS == true}}"><true><li id="tab_settingsadmin"><a href="#tab_11" data-toggle="tab"><i class="fa fa-cogs"></i> Settings</a></li></true></check>
 									<li class="dropdown">
 										<a class="dropdown-toggle" data-toggle="dropdown" href="#">
 											<i class="fa fa-plane" style="color: red;"></i> <span style="font-weight: bold; color: red;">EFRIS Actions</span> <span class="caret"></span>
@@ -53,7 +54,11 @@
 											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createrole'}}" id="create-new-role-2"><i class="fa fa-plus-circle"></i>New Role</a></li>
 											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/createbranch'}}" id="create-new-branch-2"><i class="fa fa-plus-circle"></i>New Branch</a></li>
 											<li role="presentation" class="divider"></li>
-											<li role="presentation"><a role="menuitem" tabindex="-1" href="{{@BASE . '/recyclelogs'}}" id="recycle-logs-2"><i class="fa fa-refresh"></i>Recycle Logs</a></li>
+											<!-- 2026-04-26 10:48:00 +03:00 - Keep native dropdown anchor styling while posting recycle action via hidden CSRF form. -->
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="recycle-logs-2" onclick="document.getElementById('recycle-logs-form').submit(); return false;"><i class="fa fa-refresh"></i>Recycle Logs</a></li>
+											<form id="recycle-logs-form" action="{{@BASE . '/recyclelogs'}}" method="post" style="display:none; margin:0;">
+												<input type="hidden" name="recyclelogs_csrf_token" value="{{@recyclelogsCsrfToken}}">
+											</form>
 										</ul>
 									</li>
 								</ul><!-- ./nav-tabs -->
@@ -491,25 +496,28 @@
 									<div class="tab-pane" id="tab_9">
 										<div class="row">
 											<div class="col-xs-12">
-												<div class="box box-info">
-													<form class="form-horizontal" role="form" action="{{@BASE . '/editproductoverridelist'}}" method="post" enctype="multipart/form-data" name="user-overridelist-form">
-														<div class="box-body">
-															<div class="form-group">
-																<div class="col-xs-12">
-																	<select class="form-control" multiple="multiple" size="10" name="editoverridelists[]" id="editoverridelists">
-																		<repeat group="{{@polsts}}" value="{{@polst}}">
-																			{{@polst}}
-																		</repeat>
-																	</select>
-																</div>
-															</div><!-- /.form-group -->								
-														</div><!-- /.box-body -->
-														<div class="box-footer">
-															<button type="submit" class="btn btn-info pull-right">Save</button>
-															<input type="hidden" name="overridelistcurrenttab" id="overridelistcurrenttab" value="tab_overridelist" />
-															<input type="hidden" name="overridelistcurrenttabpane" id="overridelistcurrenttabpane"  value="tab_9" />
-														</div><!-- /.box-footer -->
-													</form><!-- /.form -->
+												<div class="box box-info" id="ctnr-tbl-productoverridelist">
+													<div class="box-header">
+														<h3 class="box-title">Tax Override List</h3>
+														<div class="box-tools pull-right">
+															<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+														</div>
+													</div><!-- /.box-header -->
+													<div class="box-body">
+														<table id="tbl-productoverridelist" class="table table-bordered table-striped">
+															<thead>
+																<tr>
+																	<th>ID</th>
+																	<th>Code</th>
+																	<th>Name</th>
+																	<th>Modified Date</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<a href="#" id="refresh-productoverridelist-list-2" class="btn btn-sm btn-info btn-flat pull-right"><i class="fa fa-refresh"></i><span> Refresh</span></a>
+													</div>
 												</div><!-- /.box -->																
 											</div><!-- ./col-xs-12 -->
 										</div><!-- ./row -->
@@ -517,26 +525,62 @@
 									<div class="tab-pane" id="tab_10">
 										<div class="row">
 											<div class="col-xs-12">
-												<div class="box box-info">
-													<form class="form-horizontal" role="form" action="{{@BASE . '/editenforcetaxexclusionlist'}}" method="post" enctype="multipart/form-data" name="user-enforcetaxexclusionlist-form">
-														<div class="box-body">
-															<div class="form-group">
-																<div class="col-xs-12">
-																	<select class="form-control" multiple="multiple" size="10" name="editenforcetaxexclusionlists[]" id="editenforcetaxexclusionlists">
-																		<repeat group="{{@pelsts}}" value="{{@pelst}}">
-																			{{@pelst}}
-																		</repeat>
-																	</select>
-																</div>
-															</div><!-- /.form-group -->								
-														</div><!-- /.box-body -->
-														<div class="box-footer">
-															<button type="submit" class="btn btn-info pull-right">Save</button>
-															<input type="hidden" name="enforcetaxexclusionlistcurrenttab" id="enforcetaxexclusionlistcurrenttab" value="tab_enforcetaxexclusionlist" />
-															<input type="hidden" name="enforcetaxexclusionlistcurrenttabpane" id="enforcetaxexclusionlistcurrenttabpane"  value="tab_10" />
-														</div><!-- /.box-footer -->
-													</form><!-- /.form -->
+												<div class="box box-info" id="ctnr-tbl-enforcetaxexclusionlist">
+													<div class="box-header">
+														<h3 class="box-title">Enforce Tax Exclusion List</h3>
+														<div class="box-tools pull-right">
+															<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+														</div>
+													</div><!-- /.box-header -->
+													<div class="box-body">
+														<table id="tbl-enforcetaxexclusionlist" class="table table-bordered table-striped">
+															<thead>
+																<tr>
+																	<th>ID</th>
+																	<th>Code</th>
+																	<th>Name</th>
+																	<th>Modified Date</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<a href="#" id="refresh-enforcetaxexclusionlist-list-2" class="btn btn-sm btn-info btn-flat pull-right"><i class="fa fa-refresh"></i><span> Refresh</span></a>
+													</div>
 												</div><!-- /.box -->																
+											</div><!-- ./col-xs-12 -->
+										</div><!-- ./row -->
+									</div><!-- /.tab-pane -->
+									<div class="tab-pane" id="tab_11">
+										<div class="row">
+											<div class="col-xs-12">
+												<div class="box box-info" id="ctnr-tbl-admin-settings">
+													<div class="box-header">
+														<h3 class="box-title">Administration Settings</h3>
+														<div class="box-tools pull-right">
+															<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+														</div>
+													</div><!-- /.box-header -->
+													<div class="box-body">
+														<table id="tbl-admin-settings" class="table table-bordered table-striped">
+															<thead>
+																<tr>
+																	<th>ID</th>
+																	<th>Group</th>
+																	<!-- 2026-04-26: Code column intentionally hidden from end users; code remains server-side/internal only. -->
+																	<th>Name</th>
+																	<th>Value</th>
+																	<th>Modified By</th>
+																	<th>Modified Date</th>
+																	<th>Actions</th>
+																</tr>
+															</thead>
+														</table>
+													</div><!-- /.box-body -->
+													<div class="box-footer clearfix">
+														<a href="#" id="refresh-admin-settings-list-2" class="btn btn-sm btn-info btn-flat pull-right"><i class="fa fa-refresh"></i><span> Refresh</span></a>
+													</div>
+												</div><!-- /.box -->
 											</div><!-- ./col-xs-12 -->
 										</div><!-- ./row -->
 									</div><!-- /.tab-pane -->						
@@ -546,5 +590,38 @@
 					</div><!-- ./row -->
 															
 				</section>
+
+				<div class="modal fade" id="modal-edit-admin-setting" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+								<h4 class="modal-title"><i class="fa fa-cog"></i> Edit Setting</h4>
+							</div>
+							<div class="modal-body">
+								<form id="form-edit-admin-setting" class="form-horizontal">
+									<div class="form-group">
+										<!-- 2026-04-26: Show friendly setting name only; raw setting code is kept hidden. -->
+										<label class="col-xs-3 control-label">Name</label>
+										<div class="col-xs-9">
+											<input type="text" class="form-control" id="admin-setting-name-display" disabled>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="admin-setting-value" class="col-xs-3 control-label">Value</label>
+										<div class="col-xs-9">
+											<input type="text" class="form-control" id="admin-setting-value" name="admin-setting-value" required>
+										</div>
+									</div>
+									<input type="hidden" id="admin-setting-code" name="admin-setting-code">
+								</form>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-info" id="btn-save-admin-setting">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
 				
 				
