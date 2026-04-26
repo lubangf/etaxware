@@ -59,6 +59,9 @@ Class ReportController extends MainController{
         $user = new users($this->db);
         $users = $user->all();
         $this->f3->set('users', $users);
+
+        // 2026-04-26: One shared CSRF token for Reports page form submit and AJAX lookups.
+        $this->f3->set('reportCsrfToken', $this->generatereportcsrftoken());
         
         $this->f3->set('pagetitle','Reports');
         $this->f3->set('pagecontent','Report.htm');
@@ -78,7 +81,13 @@ Class ReportController extends MainController{
         $event = NULL; //tblevents
         $eventnotification = NULL; //tbleventnotifications
         
+        header('Content-Type: application/json');
         $this->logger->write("Report Controller : listreportgroups() : Processing list of report groups started", 'r');
+
+        if (!$this->validatereportpostrequest('listreportgroups', true)) {
+            return;
+        }
+
         $sql = '';
         
         $data = array ();
@@ -113,20 +122,26 @@ Class ReportController extends MainController{
         $event = NULL; //tblevents
         $eventnotification = NULL; //tbleventnotifications
         
+        header('Content-Type: application/json');
         $this->logger->write("Report Controller : listreports() : Processing list of reports started", 'r');
+
+        if (!$this->validatereportpostrequest('listreports', true)) {
+            return;
+        }
+
         $sql = '';
         
         $data = array ();
         
-        $groupid = trim($this->f3->get('POST.id'));
+        $groupid = trim((string)$this->f3->get('POST.id'));
         
         if (trim($groupid) !== '' || !empty(trim($groupid))) {
-            $sql = 'SELECT r.id "ID", r.name "Name", r.disabled "Disabled"
+                $sql = 'SELECT r.id "ID", r.name "Name", r.disabled "Disabled"
                     FROM tblreports r
-                    WHERE r.groupid = ' . $groupid;
+                    WHERE r.groupid = ?';
             
             try {
-                $dtls = $this->db->exec($sql);
+                $dtls = $this->db->exec($sql, array((int)$groupid));
                 
                 //$this->logger->write($this->db->log(TRUE), 'r');
                 foreach ( $dtls as $obj ) {
@@ -154,26 +169,32 @@ Class ReportController extends MainController{
         $eventnotification = NULL; //tbleventnotifications
         
         $this->logger->write("Report Controller : executereport() : Execution of a report started", 'r');
+
+        if (!$this->validatereportpostrequest('runreport', true)) {
+            return;
+        }
         
-        $rptgroup = $this->f3->get('POST.rptgroup');
-        $report = $this->f3->get('POST.reports');
+        $rptgroup = trim((string)$this->f3->get('POST.rptgroup'));
+        $report = trim((string)$this->f3->get('POST.reports'));
         
-        $user = $this->f3->get('POST.users');
+        $user = trim((string)$this->f3->get('POST.users'));
         
-        $format = $this->f3->get('POST.format');
-        $startdate = date('Y-m-d H:i:s', strtotime($this->f3->get('POST.startdate')));
-        $enddate = date('Y-m-d H:i:s', strtotime($this->f3->get('POST.enddate')));
+        $format = trim((string)$this->f3->get('POST.format'));
+        $startdateRaw = trim((string)$this->f3->get('POST.startdate'));
+        $enddateRaw = trim((string)$this->f3->get('POST.enddate'));
+        $startdate = ($startdateRaw === '' ? null : date('Y-m-d H:i:s', strtotime($startdateRaw)));
+        $enddate = ($enddateRaw === '' ? null : date('Y-m-d H:i:s', strtotime($enddateRaw)));
         
-        $product = $this->f3->get('POST.product');
-        $fromamount = $this->f3->get('POST.fromamount');
-        $toamount = $this->f3->get('POST.toamount');
-        $buyertin = $this->f3->get('POST.buyertin');
-        $buyerlegalname = $this->f3->get('POST.buyerlegalname');
-        $fdn = $this->f3->get('POST.fdn');
-        $currency = $this->f3->get('POST.currency');
-        $invoicetype = $this->f3->get('POST.invoicetype');
-        $invoicekind = $this->f3->get('POST.invoicekind');
-        $creditnotestatus = $this->f3->get('POST.creditnotestatus');
+        $product = trim((string)$this->f3->get('POST.product'));
+        $fromamount = trim((string)$this->f3->get('POST.fromamount'));
+        $toamount = trim((string)$this->f3->get('POST.toamount'));
+        $buyertin = trim((string)$this->f3->get('POST.buyertin'));
+        $buyerlegalname = trim((string)$this->f3->get('POST.buyerlegalname'));
+        $fdn = trim((string)$this->f3->get('POST.fdn'));
+        $currency = trim((string)$this->f3->get('POST.currency'));
+        $invoicetype = trim((string)$this->f3->get('POST.invoicetype'));
+        $invoicekind = trim((string)$this->f3->get('POST.invoicekind'));
+        $creditnotestatus = trim((string)$this->f3->get('POST.creditnotestatus'));
         
         $this->logger->write("Report Controller : executereport() : The report group is: " . $rptgroup, 'r');
         $this->logger->write("Report Controller : executereport() : The report id is: " . $report, 'r');
@@ -182,7 +203,6 @@ Class ReportController extends MainController{
         $this->logger->write("Report Controller : executereport() : The report endate is: " . $enddate, 'r');
         
         $excel = new Sheet();
-        $sql = '';
         $rpt = new reports($this->db);
         $rpt->getByID($report);
         
@@ -205,38 +225,38 @@ Class ReportController extends MainController{
         
         $fullreportpath = $basefolder . $downloadfolder;
         
-        if ($report == '150') {
-            //RPTUSERS
-            $sql = '';
-            
-            $headers = array();
-        } elseif($report == '1') {
-            //RPTAUDIT
-            $sql = 'SELECT  p.id "ID",
-                        p.windowsuser "OS User",
-                        p.ipaddress "IP Address",
-                        p.systemname "System Name",
-                        p.voucherNumber "Voucher Number",
-                        p.voucherRef "Voucher Ref",
-                        p.productCode "Product Code",
-                        p.responseCode "Response Code",
-                        p.responseMessage "Response Message",
-                        p.TIN "TIN",
-                        p.description "Operation",
-                        p.inserteddt "Creation Date",
-                        s.username "Created By"
-                    FROM tblerpauditlogs p
-                    LEFT JOIN tblusers s ON p.insertedby = s.id
-                    ORDER By p.id DESC';
-            
-            $headers = array('ID', 'OS User', 'IP Address', 'System Name', 'Voucher Number', 'Voucher Ref', 'Product Code', 'Response Code', 'Response Message', 'TIN', 'Operation', 'Creation Date', 'Created By');
-        } else {
+        $filters = array(
+            'rptgroup' => $rptgroup,
+            'report' => $report,
+            'user' => $user,
+            'startdate' => $startdate,
+            'enddate' => $enddate,
+            'product' => $product,
+            'fromamount' => $fromamount,
+            'toamount' => $toamount,
+            'buyertin' => $buyertin,
+            'buyerlegalname' => $buyerlegalname,
+            'fdn' => $fdn,
+            'currency' => $currency,
+            'invoicetype' => $invoicetype,
+            'invoicekind' => $invoicekind,
+            'creditnotestatus' => $creditnotestatus
+        );
+
+        $reportDefinition = $this->getreportdefinition($report);
+        if (!$reportDefinition) {
             $this->logger->write("Report Controller : executereport() : There was no report selected", 'r');
             $this->f3->reroute('/report');
+            return;
         }
+
+        $headers = $reportDefinition['headers'];
+        $queryPayload = call_user_func($reportDefinition['queryBuilder'], $filters);
+        $sql = $queryPayload['sql'];
+        $queryParams = $queryPayload['params'];
         
         try{
-            $dtls = $this->db->exec($sql);
+            $dtls = $this->db->exec($sql, $queryParams);
             //$this->logger->write($this->db->log(TRUE), 'r');
             $this->f3->set('rows', $dtls);
             
@@ -308,5 +328,117 @@ Class ReportController extends MainController{
         }
         
         $this->logger->write("Report Controller : executereport() : Execution of a report completed", 'r');
+    }
+
+    // 2026-04-26: Centralized report registry so new report handlers can be added without expanding runreport() branching.
+    private function getreportdefinition($reportId){
+        $definitions = array(
+            '1' => array(
+                'headers' => array('ID', 'OS User', 'IP Address', 'System Name', 'Voucher Number', 'Voucher Ref', 'Product Code', 'Response Code', 'Response Message', 'TIN', 'Operation', 'Creation Date', 'Created By'),
+                'queryBuilder' => array($this, 'buildauditrptquery')
+            )
+        );
+
+        if (!isset($definitions[$reportId])) {
+            return null;
+        }
+
+        return $definitions[$reportId];
+    }
+
+    // 2026-04-26: Parameterized SQL builder for audit report (RPTAUDIT) to avoid string-concatenated user input.
+    private function buildauditrptquery($filters){
+        $sql = 'SELECT  p.id "ID",
+                    p.windowsuser "OS User",
+                    p.ipaddress "IP Address",
+                    p.systemname "System Name",
+                    p.voucherNumber "Voucher Number",
+                    p.voucherRef "Voucher Ref",
+                    p.productCode "Product Code",
+                    p.responseCode "Response Code",
+                    p.responseMessage "Response Message",
+                    p.TIN "TIN",
+                    p.description "Operation",
+                    p.inserteddt "Creation Date",
+                    s.username "Created By"
+                FROM tblerpauditlogs p
+                LEFT JOIN tblusers s ON p.insertedby = s.id
+                WHERE 1=1';
+
+        $params = array();
+
+        if (!empty($filters['startdate'])) {
+            $sql .= ' AND p.inserteddt >= ?';
+            $params[] = $filters['startdate'];
+        }
+
+        if (!empty($filters['enddate'])) {
+            $sql .= ' AND p.inserteddt <= ?';
+            $params[] = $filters['enddate'];
+        }
+
+        if (!empty($filters['user'])) {
+            $sql .= ' AND p.insertedby = ?';
+            $params[] = (int)$filters['user'];
+        }
+
+        if (!empty($filters['product'])) {
+            $sql .= ' AND TRIM(p.productCode) = ?';
+            $params[] = trim((string)$filters['product']);
+        }
+
+        if (!empty($filters['buyertin'])) {
+            $sql .= ' AND TRIM(p.TIN) = ?';
+            $params[] = trim((string)$filters['buyertin']);
+        }
+
+        if (!empty($filters['fdn'])) {
+            $sql .= ' AND TRIM(p.voucherNumber) = ?';
+            $params[] = trim((string)$filters['fdn']);
+        }
+
+        $sql .= ' ORDER By p.id DESC';
+
+        return array('sql' => $sql, 'params' => $params);
+    }
+
+    private function validatereportpostrequest($actionName, $jsonResponse = false){
+        if (strtoupper($this->f3->get('VERB')) !== 'POST') {
+            $this->logger->write('Report Controller : ' . $actionName . '() : Invalid HTTP method', 'r');
+            if ($jsonResponse) {
+                header('Content-Type: application/json');
+                http_response_code(405);
+                die(json_encode(array('success' => false, 'message' => 'Method not allowed')));
+            }
+            $this->f3->reroute('/report');
+            return false;
+        }
+
+        $csrfToken = trim((string)$this->f3->get('POST.report_csrf_token'));
+        $sessionToken = trim((string)$this->f3->get('SESSION.report_csrf_token'));
+        if ($csrfToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $csrfToken)) {
+            $this->logger->write('Report Controller : ' . $actionName . '() : CSRF validation failed', 'r');
+            if ($jsonResponse) {
+                header('Content-Type: application/json');
+                http_response_code(403);
+                die(json_encode(array('success' => false, 'message' => 'Invalid request token. Please refresh and try again.')));
+            }
+            $this->f3->set('SESSION.systemalert', 'Invalid request token. Please refresh and try again.');
+            $this->f3->reroute('/report');
+            return false;
+        }
+
+        return true;
+    }
+
+    private function generatereportcsrftoken(){
+        try {
+            $token = bin2hex(random_bytes(32));
+        } catch (Exception $e) {
+            $token = md5(uniqid(rand(), true));
+        }
+
+        $this->f3->set('SESSION.report_csrf_token', $token);
+        return $token;
     }
 }

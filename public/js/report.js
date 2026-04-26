@@ -10,6 +10,7 @@
  */
 $(function(){
 	'use strict';	
+    var reportCsrfToken = $.trim($('#report-csrf-token').text());
 	
 	/**
 	 * @desc initialise a date picker called startdate
@@ -52,7 +53,7 @@ $(function(){
             delay : 0,
             cache : false,
             data : {
-                //insert parameters here
+                'report_csrf_token': reportCsrfToken
             },
             processResults : function(data) {
 				return {
@@ -75,6 +76,9 @@ $(function(){
     }).on("select2:close", function(e) {
         $("#reports").empty().trigger('change');//clear selections
         var data = $(this).val();
+        if (!data) {
+            return;
+        }
         var rptgroup = data.toString();
         $('#reports').select2({
             placeholder : "Select report",
@@ -90,7 +94,7 @@ $(function(){
                 delay : 0,
                 cache : false,
                 data : {
-                    //insert parameters here
+                    'report_csrf_token': reportCsrfToken,
                     'id' : rptgroup,                   
                 },
                 processResults : function(data) {

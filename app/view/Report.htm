@@ -9,6 +9,7 @@
 				</section><!-- ./content-header -->
 				
 				<section class="content"><!-- Main content -->
+					<span id="report-csrf-token" style="display:none;">{{@reportCsrfToken}}</span>
 					<div class="row">
 						<div class="col-xs-12">
 							<div class="box box-info">
@@ -214,6 +215,7 @@
 										</fieldset>							
 									</div><!-- /.box-body -->
 									<div class="box-footer">
+										<input type="hidden" name="report_csrf_token" id="report_csrf_token" value="{{@reportCsrfToken}}" />
 										<button type="submit" class="btn btn-info pull-right">Execute</button>
 									</div><!-- /.box-footer -->
 								</form><!-- /.form -->
