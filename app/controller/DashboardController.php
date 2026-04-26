@@ -30,6 +30,12 @@ class DashboardController extends MainController{
     protected function fetchmonthlycountmap($tableName){
         $result = array();
 
+        // Guard table identifiers even though current calls are internal constants.
+        $allowedTables = array('tblinvoices', 'tblcreditnotes', 'tbldebitnotes');
+        if (!in_array($tableName, $allowedTables, true)) {
+            return $result;
+        }
+
         // Keep the chart lightweight by only loading the most recent 6 monthly buckets.
         $sql = 'SELECT DATE_FORMAT(inserteddt, "%Y-%m") "bucket", COUNT(*) "value" '
             . 'FROM ' . $tableName . ' '
