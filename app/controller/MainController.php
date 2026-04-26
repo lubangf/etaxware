@@ -23,6 +23,7 @@ class MainController{
     protected $platformMode; //Determine if the platform is running in Integrated Mode OR as an Abridged ERP itself
     protected $efrisMode; //Determine if we are hitting the offline enabler or direct online APIs
     protected $integratedErp; //Determine the Type of ERP Integrated
+    protected $csrfTokenSessionKey = 'csrf_token';
     
     //protected $api;// store api here  
 
@@ -88,6 +89,11 @@ class MainController{
             } else {
                 error_reporting(0);
                 ini_set('display_errors', 0);
+
+                // 2026-04-26: Enforce CSRF validation for all state-changing authenticated requests.
+                if (!$this->validatecsrfrequest()) {
+                    return;
+                }
                 
                 $this->f3->set('path', $this->path);
                 $this->logger->write("Main Controller : beforeroute() : The path is " . $this->path, 'r');
@@ -162,9 +168,79 @@ class MainController{
                 $this->f3->set('platformMode', $this->platformMode);
                 $this->f3->set('efrisMode', $this->efrisMode);
                 $this->f3->set('integratedErp', $this->integratedErp);
+                $this->f3->set('csrfToken', $this->ensurecsrftoken());
             }
         }
         
+    }
+
+    // 2026-04-26: Generate one session-scoped CSRF token for all authenticated UI calls.
+    protected function ensurecsrftoken(){
+        $token = trim((string)$this->f3->get('SESSION.' . $this->csrfTokenSessionKey));
+        if ($token !== '') {
+            return $token;
+        }
+
+        try {
+            $token = bin2hex(random_bytes(32));
+        } catch (Exception $e) {
+            $token = md5(uniqid(rand(), true));
+        }
+
+        $this->f3->set('SESSION.' . $this->csrfTokenSessionKey, $token);
+        return $token;
+    }
+
+    protected function validatecsrfrequest(){
+        $verb = strtoupper((string)$this->f3->get('VERB'));
+        if ($verb !== 'POST' && $verb !== 'PUT' && $verb !== 'PATCH' && $verb !== 'DELETE') {
+            return true;
+        }
+
+        if (!$this->iscsrfvalidationrequired()) {
+            return true;
+        }
+
+        $sessionToken = $this->ensurecsrftoken();
+        $requestToken = trim((string)$this->f3->get('POST.csrf_token'));
+        if ($requestToken === '') {
+            $requestToken = trim((string)$this->f3->get('REQUEST.csrf_token'));
+        }
+
+        if ($requestToken !== '' && hash_equals($sessionToken, $requestToken)) {
+            return true;
+        }
+
+        $this->logger->write('Main Controller : validatecsrfrequest() : CSRF validation failed for ' . $verb . ' ' . (string)$this->f3->get('PATH'), 'r');
+
+        if ($this->isajaxrequest()) {
+            header('Content-Type: application/json');
+            http_response_code(403);
+            die(json_encode(array('success' => false, 'message' => 'Invalid request token. Please refresh and try again.')));
+        }
+
+        $this->f3->set('SESSION.systemalert', 'Invalid request token. Please refresh and try again.');
+        $this->f3->reroute('/forbidden');
+        return false;
+    }
+
+    protected function iscsrfvalidationrequired(){
+        $path = (string)$this->f3->get('PATH');
+
+        // Login/reset routes are handled by AuthenticationController and can be reached before session bootstrap.
+        $exemptPrefixes = array('/authenticate', '/resetaccount', '/resetpassword', '/login');
+        foreach ($exemptPrefixes as $prefix) {
+            if (strpos($path, $prefix) === 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function isajaxrequest(){
+        $requestedWith = strtolower(trim((string)$this->f3->get('HEADERS.X-Requested-With')));
+        return ($requestedWith === 'xmlhttprequest');
     }
 
     /**

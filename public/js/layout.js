@@ -10,6 +10,69 @@
  */
 $(function(){
 	'use strict';
+	var globalCsrfToken = $.trim($('#global-csrf-token').text() || '');
+
+	// 2026-04-26: Ensure all same-origin form submissions carry CSRF token automatically.
+	var attachCsrfTokenToForm = function($form){
+		if(!$form || !$form.length || globalCsrfToken === ''){
+			return;
+		}
+
+		var $tokenInput = $form.find('input[name="csrf_token"]');
+		if($tokenInput.length){
+			$tokenInput.val(globalCsrfToken);
+		}else{
+			$form.append('<input type="hidden" name="csrf_token" value="' + globalCsrfToken + '">');
+		}
+	};
+
+	$('form').each(function(){
+		attachCsrfTokenToForm($(this));
+	});
+
+	$(document).on('submit', 'form', function(){
+		attachCsrfTokenToForm($(this));
+	});
+
+	// 2026-04-26: Attach CSRF token to every same-origin non-GET AJAX call by default.
+	$.ajaxPrefilter(function(options, originalOptions, jqXHR){
+		if(globalCsrfToken === ''){
+			return;
+		}
+
+		var method = (options.type || options.method || originalOptions.type || originalOptions.method || 'GET').toUpperCase();
+		if(method === 'GET' || method === 'HEAD' || method === 'OPTIONS'){
+			return;
+		}
+
+		var url = options.url || '';
+		var isAbsolute = /^(?:[a-z]+:)?\/\//i.test(url);
+		if(isAbsolute && url.indexOf(window.location.origin) !== 0){
+			return;
+		}
+
+		if(options.data instanceof FormData){
+			if(!options.data.has('csrf_token')){
+				options.data.append('csrf_token', globalCsrfToken);
+			}
+			return;
+		}
+
+		if(typeof options.data === 'string'){
+			if(!/(^|&)csrf_token=/.test(options.data)){
+				options.data += (options.data.length ? '&' : '') + 'csrf_token=' + encodeURIComponent(globalCsrfToken);
+			}
+			return;
+		}
+
+		if(!options.data){
+			options.data = {};
+		}
+
+		if(typeof options.data === 'object' && options.data.csrf_token === undefined){
+			options.data.csrf_token = globalCsrfToken;
+		}
+	});
 
 	/**
 	 * Show a standardized system alert modal with optional severity.
